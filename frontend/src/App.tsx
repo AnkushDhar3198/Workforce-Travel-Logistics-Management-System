@@ -76,33 +76,42 @@ function DashboardContent() {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen relative overflow-hidden bg-[#06080e]">
+      {/* Background drifting blur blobs */}
+      <div className="bg-blob-container">
+        <div className="bg-blob bg-blob-1"></div>
+        <div className="bg-blob bg-blob-2"></div>
+        <div className="bg-blob bg-blob-3"></div>
+      </div>
+
       <Sidebar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
         sosStatus={sosStatus} 
         triggerSOS={triggerSOS} 
       />
-      <div className="flex-1 flex flex-col min-w-0 bg-[#070a13]">
+      <div className="flex-1 flex flex-col min-w-0 bg-transparent relative z-10">
         <Header 
           activeTab={activeTab} 
           notifications={notifications} 
           loadNotifications={loadNotifications} 
         />
         <div className="flex-1 p-8 overflow-y-auto">
-          {activeTab === 'itinerary' && <ItineraryTab />}
-          {activeTab === 'requisition' && <RequisitionTab />}
-          {activeTab === 'expenses-employee' && <ExpensesEmployeeTab />}
-          {activeTab === 'docs-employee' && <DocsEmployeeTab />}
-          {activeTab === 'approvals' && <ApprovalsTab />}
-          {activeTab === 'vendors' && <VendorsTab />}
-          {activeTab === 'policy' && <PolicyRulesTab />}
-          {activeTab === 'expenses-finance' && <ExpensesFinanceTab />}
-          {activeTab === 'logistics' && <LogisticsTab />}
-          {activeTab === 'security' && <SecurityTab />}
-          {activeTab === 'analytics' && <AnalyticsTab />}
-          {activeTab === 'audit' && <AuditLogsTab />}
-          {activeTab === 'users' && <UsersTab />}
+          <div key={activeTab} className="animate-fade-in-up">
+            {activeTab === 'itinerary' && <ItineraryTab />}
+            {activeTab === 'requisition' && <RequisitionTab />}
+            {activeTab === 'expenses-employee' && <ExpensesEmployeeTab />}
+            {activeTab === 'docs-employee' && <DocsEmployeeTab />}
+            {activeTab === 'approvals' && <ApprovalsTab />}
+            {activeTab === 'vendors' && <VendorsTab />}
+            {activeTab === 'policy' && <PolicyRulesTab />}
+            {activeTab === 'expenses-finance' && <ExpensesFinanceTab />}
+            {activeTab === 'logistics' && <LogisticsTab />}
+            {activeTab === 'security' && <SecurityTab />}
+            {activeTab === 'analytics' && <AnalyticsTab />}
+            {activeTab === 'audit' && <AuditLogsTab />}
+            {activeTab === 'users' && <UsersTab />}
+          </div>
         </div>
       </div>
     </div>

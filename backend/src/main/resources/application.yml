@@ -1,0 +1,28 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://ep-rapid-voice-azjk3ju5-pooler.c-3.ap-southeast-1.aws.neon.tech:5432/neondb?sslmode=require
+    username: neondb_owner
+    password: npg_e9JDmCMfIcn2
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+app:
+  jwt:
+    secret: 9a62e3d36e2f1e2f4b4f3b7d8d2f1e6b3b5f7d2f9a2f1c8b3b4d5e6f7a8b9c0d
+    expiration-ms: 86400000 # 24 hours
+  upload:
+    dir: uploads

@@ -1,0 +1,32 @@
+# Neon DB Parameters & Business Requirements
+project_materials/
+
+# Spring Boot Maven Build Artifacts
+backend/target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+.mvn/
+
+# Local Uploads Directory
+backend/uploads/
+
+# Maven Tooling Binary
+apache-maven-3.9.8/
+apache-maven-3.9.8-bin.zip
+
+# Node & Vite Frontend Artifacts
+frontend/node_modules/
+frontend/dist/
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# IDE Settings & OS Files
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db

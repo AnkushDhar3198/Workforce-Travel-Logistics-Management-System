@@ -1,0 +1,11 @@
+package com.cbg.travel.entity;
+
+public enum UserRole {
+    TRAVELING_EMPLOYEE,
+    APPROVING_MANAGER,
+    CORPORATE_TRAVEL_MANAGER,
+    FINANCE_PROCUREMENT,
+    SECURITY_RISK_OFFICER,
+    LOGISTICS_COORDINATOR,
+    ADMIN
+}

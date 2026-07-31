@@ -26,7 +26,8 @@ export const useAuth = () => {
   return context;
 };
 
-export const API_BASE = 'http://localhost:8080/api';
+export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+export const API_BASE = `${BACKEND_URL}/api`;
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [token, setToken] = useState<string | null>(localStorage.getItem('jwt_token'));

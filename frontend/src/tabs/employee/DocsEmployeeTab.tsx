@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Trash2, BadgeAlert } from 'lucide-react';
-import { useAuth, API_BASE } from '../../context/AuthContext';
+import { useAuth, API_BASE, BACKEND_URL } from '../../context/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
@@ -13,7 +13,7 @@ export default function DocsEmployeeTab() {
   const [docs, setDocs] = useState<any[]>([]);
   const [docType, setDocType] = useState('PASSPORT');
   const [expiryDate, setExpiryDate] = useState('');
-  const [fileUrl] = useState('http://localhost:8080/uploads/bob_docs.pdf');
+  const [fileUrl] = useState(`${BACKEND_URL}/uploads/bob_docs.pdf`);
   const [submitting, setSubmitting] = useState(false);
 
   const loadDocs = async () => {

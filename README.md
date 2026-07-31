@@ -22,37 +22,46 @@ Ensure you have the following directories created in the workspace:
 
 ---
 
-## 2. Database Parameters Configuration Guide
+## 2. Environment & Database Configuration Guide
 
-The database credentials provided in [db_connection.txt](file:///c:/Users/Trinankur/Desktop/Ankush/project_materials/db_connection.txt) are configured in the Spring Boot backend. 
+The database parameters and other application configurations have been secured and are loaded dynamically from environment variables.
 
-If you need to update credentials or configure a different database host, modify the properties file at:
-[backend/src/main/resources/application.yml](file:///c:/Users/Trinankur/Desktop/Ankush/backend/src/main/resources/application.yml)
+### Local Environment Files
+To run the applications locally, configure environment variables in `.env` files:
+1. **Backend**: Copy [backend/.env.example](file:///c:/Users/Trinankur/Desktop/Ankush/backend/.env.example) to `backend/.env` and update the values.
+2. **Frontend**: Copy [frontend/.env.example](file:///c:/Users/Trinankur/Desktop/Ankush/frontend/.env.example) to `frontend/.env` and update the values.
 
-### Parameter Mapping Schema
+These `.env` files are ignored by git to keep your production credentials secure.
 
-Map properties from the connection text file into the YAML configuration file according to the parameters below:
+### Backend Parameter Mapping Schema
+The database credentials provided in [db_connection.txt](file:///c:/Users/Trinankur/Desktop/Ankush/project_materials/db_connection.txt) map to the following backend environment variables:
 
-| Property in `db_connection.txt` | Mapped YAML Path | Target Value |
+| Property in `db_connection.txt` | Environment Variable | Purpose |
 |---|---|---|
-| `PGHOST` | `spring.datasource.url` | Hostname inside the JDBC URL connection string: `jdbc:postgresql://<PGHOST>:5432/neondb` |
-| `PGDATABASE` | `spring.datasource.url` | Database name path at the end of the JDBC string: `/neondb` |
-| `PGUSER` | `spring.datasource.username` | `neondb_owner` |
-| `PGPASSWORD` | `spring.datasource.password` | `npg_e9JDmCMfIcn2` |
-| `PGSSLMODE` | `spring.datasource.url` | Query parameter added to connection string: `?sslmode=require` |
+| `PGHOST` | `PGHOST` | Database host |
+| `PGDATABASE` | `PGDATABASE` | Database name |
+| `PGUSER` | `PGUSER` | Database username |
+| `PGPASSWORD` | `PGPASSWORD` | Database password |
+| `PGSSLMODE` | `PGSSLMODE` | SSL Mode (e.g. `require`) |
 
-### Resulting `application.yml` block:
+Alternatively, you can override the full connection settings using:
+- `SPRING_DATASOURCE_URL`
+- `SPRING_DATASOURCE_USERNAME`
+- `SPRING_DATASOURCE_PASSWORD`
+- `SERVER_PORT` (Server running port, defaults to `8080`)
+- `APP_JWT_SECRET` (JWT signing key)
+
+### Secured `application.yml` block:
 ```yaml
+server:
+  port: ${SERVER_PORT:8080}
+
 spring:
   datasource:
-    url: jdbc:postgresql://ep-rapid-voice-azjk3ju5-pooler.c-3.ap-southeast-1.aws.neon.tech:5432/neondb?sslmode=require
-    username: neondb_owner
-    password: npg_e9JDmCMfIcn2
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${PGHOST:localhost}:5432/${PGDATABASE:neondb}}
+    username: ${SPRING_DATASOURCE_USERNAME:${PGUSER:postgres}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${PGPASSWORD:}}
     driver-class-name: org.postgresql.Driver
-  jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    hibernate:
-      ddl-auto: update
 ```
 
 ---

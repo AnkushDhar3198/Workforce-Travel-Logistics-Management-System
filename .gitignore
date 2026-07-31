@@ -30,3 +30,6 @@ frontend/yarn-error.log*
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Sensitive local environment variables
+.env

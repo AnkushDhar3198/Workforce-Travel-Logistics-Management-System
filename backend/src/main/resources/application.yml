@@ -1,11 +1,11 @@
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
 
 spring:
   datasource:
-    url: jdbc:postgresql://ep-rapid-voice-azjk3ju5-pooler.c-3.ap-southeast-1.aws.neon.tech:5432/neondb?sslmode=require
-    username: neondb_owner
-    password: npg_e9JDmCMfIcn2
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${PGHOST:localhost}:5432/${PGDATABASE:neondb}}
+    username: ${SPRING_DATASOURCE_USERNAME:${PGUSER:postgres}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${PGPASSWORD:}}
     driver-class-name: org.postgresql.Driver
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -22,7 +22,7 @@ spring:
 
 app:
   jwt:
-    secret: 9a62e3d36e2f1e2f4b4f3b7d8d2f1e6b3b5f7d2f9a2f1c8b3b4d5e6f7a8b9c0d
+    secret: ${APP_JWT_SECRET}
     expiration-ms: 86400000 # 24 hours
   upload:
     dir: uploads

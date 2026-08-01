@@ -259,11 +259,15 @@ export default function Sidebar({ activeTab, setActiveTab, sosStatus, triggerSOS
 
           <button
             onClick={logout}
-            className="w-full py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer transition-all"
-            style={{ color: 'var(--text-muted)' }}
+            className="w-full py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer transition-all font-bold"
+            style={{
+              background: 'rgba(239,68,68,0.1)',
+              border: '1px solid rgba(239,68,68,0.3)',
+              color: '#f87171',
+            }}
           >
             <LogOut className="w-3.5 h-3.5" />
-            {!isEffectiveCollapsed && <span className="font-semibold">Sign Out</span>}
+            <span>Sign Out</span>
           </button>
         </div>
       </aside>

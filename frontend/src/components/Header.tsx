@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, X, Check, Sparkles, Menu } from 'lucide-react';
+import { Bell, X, Check, Sparkles, Menu, LogOut } from 'lucide-react';
 import { useAuth, API_BASE } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
@@ -27,7 +27,7 @@ const TAB_LABELS: Record<string, { label: string; emoji: string }> = {
 };
 
 export default function Header({ activeTab, notifications, loadNotifications, onOpenMobileMenu }: HeaderProps) {
-  const { authFetch } = useAuth();
+  const { authFetch, logout } = useAuth();
   const { themeData } = useTheme();
   const [showNotifPanel, setShowNotifPanel] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -102,6 +102,21 @@ export default function Header({ activeTab, notifications, loadNotifications, on
           <span>{themeData.emoji}</span>
           <span>{themeData.name}</span>
         </div>
+
+        {/* Smartphone Sign Out Button */}
+        <button
+          onClick={logout}
+          title="Sign Out"
+          className="px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shrink-0"
+          style={{
+            background: 'rgba(239,68,68,0.1)',
+            border: '1px solid rgba(239,68,68,0.3)',
+            color: '#f87171',
+          }}
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          <span className="hidden xs:inline sm:inline">Sign Out</span>
+        </button>
 
         {/* Notification bell */}
         <div className="relative" ref={panelRef}>

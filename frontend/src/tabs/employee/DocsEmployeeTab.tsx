@@ -49,6 +49,8 @@ export default function DocsEmployeeTab() {
   const [pnr, setPnr] = useState('');
   const [carrier, setCarrier] = useState('Delta Air Lines');
   const [flightNo, setFlightNo] = useState('');
+  const [departureCity, setDepartureCity] = useState('ORD - Chicago');
+  const [arrivalCity, setArrivalCity] = useState('LHR - London');
 
   // Insurance
   const [policyNumber, setPolicyNumber] = useState('');
@@ -125,7 +127,7 @@ export default function DocsEmployeeTab() {
     } else if (docType === 'TICKET') {
       docNum = pnr || 'PNR-DL9842';
       authority = carrier;
-      detailsObj = { pnr: docNum, carrier, flightNo: flightNo || 'DL-104' };
+      detailsObj = { pnr: docNum, carrier, flightNo: flightNo || 'DL-104', depAirport: departureCity, arrAirport: arrivalCity };
     } else if (docType === 'INSURANCE') {
       docNum = policyNumber || 'AGS-992014';
       authority = provider;

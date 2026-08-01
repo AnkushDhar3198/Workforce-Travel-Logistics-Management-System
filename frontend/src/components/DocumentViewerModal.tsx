@@ -20,17 +20,77 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
     } catch (e) {}
   }
 
+  // -------------------------------------------------------------
+  // Dynamic Extraction & Smart Deterministic Computation Per Document
+  // -------------------------------------------------------------
+
+  // 1. TICKET DYNAMICS
+  const pnr = doc.docNumber || details.pnr || 'PNR-DL9842A';
+  const carrier = details.carrier || doc.issuingAuthority || 'Delta Air Lines';
+  const flightNo = details.flightNo || 'DL-104';
+  const travelDate = doc.expiryDate || details.travelDate || '2026-08-03';
+
+  // Departure & Arrival Airports / Cities
+  const rawDep = details.depAirport || details.departureCity || 'ORD - Chicago';
+  const rawArr = details.arrAirport || details.arrivalCity || 'LHR - London';
+
+  const depParts = rawDep.split('-');
+  const depCode = (depParts[0] || 'ORD').trim().toUpperCase().slice(0, 4);
+  const depCityName = (depParts[1] || depParts[0] || "CHICAGO O'HARE").trim().toUpperCase();
+
+  const arrParts = rawArr.split('-');
+  const arrCode = (arrParts[0] || 'LHR').trim().toUpperCase().slice(0, 4);
+  const arrCityName = (arrParts[1] || arrParts[0] || 'LONDON HEATHROW').trim().toUpperCase();
+
+  // Smart hash to derive distinct seats, gates, and times per PNR if not manually set
+  const pnrHash = (pnr + flightNo).split('').reduce((acc: number, c: string) => acc + c.charCodeAt(0), 0);
+  const seats = ['14A', '08B', '22F', '11C', '04D', '19E', '12A', '07K'];
+  const seatNo = details.seatNo || seats[pnrHash % seats.length];
+
+  const gates = ['B22', 'A14', 'C08', 'D19', 'E02', 'F11'];
+  const gateNo = details.gateNo || gates[pnrHash % gates.length];
+
+  const boardingTime = details.boardingTime || `${8 + (pnrHash % 4)}:${(pnrHash % 2 === 0 ? '15' : '45')} AM`;
+  const depTime = details.depTime || `${9 + (pnrHash % 4)}:00 AM EST`;
+  const arrTime = details.arrTime || `${7 + (pnrHash % 4)}:45 PM GMT`;
+  const duration = `${6 + (pnrHash % 5)}h ${(pnrHash % 3 === 0 ? '45m' : '20m')} NON-STOP`;
+
+  // 2. PASSPORT DYNAMICS
+  const passportNo = doc.docNumber || details.passportNo || 'P-984201948';
+  const issuingCountry = (doc.issuingAuthority || details.issuingCountry || 'UNITED STATES').toUpperCase();
+  const passportExpiry = doc.expiryDate || '2030-07-31';
+  const userFullName = (doc.userName || 'BOB EMPLOYEE').toUpperCase();
+  const [givenName, ...surnameParts] = userFullName.split(' ');
+  const surname = surnameParts.join(' ') || 'EMPLOYEE';
+
+  // 3. VISA DYNAMICS
+  const visaNo = doc.docNumber || details.visaNumber || 'GBR-VISA-883912';
+  const destCountry = (doc.issuingAuthority || details.destinationCountry || 'UNITED KINGDOM').toUpperCase();
+  const visaEntryType = (details.entryType || 'MULTIPLE ENTRY').toUpperCase();
+  const visaExpiry = doc.expiryDate || '2027-12-31';
+
+  // 4. INSURANCE DYNAMICS
+  const policyNo = doc.docNumber || details.policyNumber || 'AGS-992014';
+  const insProvider = (doc.issuingAuthority || details.provider || 'ALLIANZ GLOBAL CORPORATE SHIELD').toUpperCase();
+  const coveragePlan = details.coverageType || details.planType || 'Comprehensive Medical & Evacuation';
+  const insExpiry = doc.expiryDate || '2026-12-31';
+
+  // 5. SHIPMENT DYNAMICS
+  const waybillNo = doc.docNumber || details.waybillNumber || 'FX-9842019';
+  const logisticsCompany = (doc.issuingAuthority || details.carrier || details.logisticsCarrier || 'FEDEX EXPRESS FREIGHT').toUpperCase();
+  const carnetNo = details.carnetNumber || details.carnetNo || 'ATA-Carnet-GB-8832';
+  const shipmentExpiry = doc.expiryDate || '2026-12-31';
+
+  // Isolated Print Handler using dynamic iframe
   const handlePrint = () => {
     const printElement = document.getElementById('printable-document');
     if (!printElement) return;
 
-    // Remove any existing print iframe
     const oldIframe = document.getElementById('doc-print-iframe');
     if (oldIframe) {
       oldIframe.remove();
     }
 
-    // Create a hidden print iframe to isolate document printing
     const iframe = document.createElement('iframe');
     iframe.id = 'doc-print-iframe';
     iframe.style.position = 'fixed';
@@ -100,7 +160,6 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
     `);
     docContent.close();
 
-    // Trigger iframe print after Tailwind stylesheet loads
     setTimeout(() => {
       iframe.contentWindow?.focus();
       iframe.contentWindow?.print();
@@ -109,7 +168,6 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
 
   return (
     <div id="printable-wrapper" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
-      {/* Print Specific CSS Fallback */}
       <style>{`
         @media print {
           body * {
@@ -185,10 +243,9 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
         {/* Modal Main Content Canvas Body */}
         <div className="p-6 md:p-8 overflow-y-auto bg-slate-950/40 flex justify-center items-center">
           
-          {/* 1. REALISTIC PASSPORT DOCUMENT */}
+          {/* 1. REALISTIC DYNAMIC PASSPORT DOCUMENT */}
           {docType === 'PASSPORT' && (
             <div id="printable-document" className="w-full max-w-2xl bg-[#0f172a] rounded-2xl border-2 border-[#1e293b] p-6 md:p-8 shadow-2xl text-slate-100 relative overflow-hidden font-sans">
-              {/* Gold Foil Header Seal */}
               <div className="absolute top-0 right-0 w-36 h-36 bg-gradient-to-bl from-amber-500/10 to-transparent rounded-bl-full pointer-events-none" />
               
               <div className="flex justify-between items-start border-b-2 border-amber-500/40 pb-4 mb-6">
@@ -197,19 +254,17 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
                     <Globe className="w-7 h-7 text-slate-950" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-black tracking-widest text-amber-400 uppercase">UNITED STATES OF AMERICA</h2>
+                    <h2 className="text-lg font-black tracking-widest text-amber-400 uppercase">{issuingCountry}</h2>
                     <p className="text-xs font-bold tracking-wider text-slate-350 uppercase">OFFICIAL PASSPORT & BORDER CLEARANCE</p>
                   </div>
                 </div>
                 <div className="text-right">
                   <span className="text-[10px] uppercase font-bold text-amber-500 tracking-wider">PASSPORT NO.</span>
-                  <p className="text-lg font-mono font-black text-amber-300">{doc.docNumber || details.passportNo || 'P-984201948'}</p>
+                  <p className="text-lg font-mono font-black text-amber-300">{passportNo}</p>
                 </div>
               </div>
 
-              {/* Photo & Passport Data Grid */}
               <div className="grid grid-cols-12 gap-6 items-center">
-                {/* Photo & Biometric Hologram Badge */}
                 <div className="col-span-12 sm:col-span-4 flex flex-col items-center">
                   <div className="relative w-32 h-40 bg-slate-900 border-2 border-amber-500/40 rounded-xl overflow-hidden shadow-inner flex flex-col items-center justify-center bg-gradient-to-b from-slate-800 to-slate-950">
                     <User className="w-20 h-20 text-slate-400 mt-2" />
@@ -221,23 +276,22 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
                   <span className="text-[10px] text-slate-400 font-bold uppercase mt-2">Hologram Audited</span>
                 </div>
 
-                {/* Passport Details Column */}
                 <div className="col-span-12 sm:col-span-8 space-y-3.5 text-left text-xs">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase font-semibold">SURNAME / NOM</span>
-                      <p className="font-black text-white text-sm">EMPLOYEE</p>
+                      <p className="font-black text-white text-sm">{surname}</p>
                     </div>
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase font-semibold">GIVEN NAMES / PRENOMS</span>
-                      <p className="font-black text-white text-sm">BOB</p>
+                      <p className="font-black text-white text-sm">{givenName}</p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase font-semibold">NATIONALITY / NATIONALITE</span>
-                      <p className="font-bold text-amber-200">{doc.issuingAuthority || details.issuingCountry || 'UNITED STATES'}</p>
+                      <p className="font-bold text-amber-200">{issuingCountry}</p>
                     </div>
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase font-semibold">EMPLOYEE ID / MATRICULE</span>
@@ -248,7 +302,7 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase font-semibold">DATE OF EXPIRY / EXPIRATION</span>
-                      <p className="font-bold text-cyan-400">{doc.expiryDate || '2030-07-31'}</p>
+                      <p className="font-bold text-cyan-400">{passportExpiry}</p>
                     </div>
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase font-semibold">AUTHORITY / AUTORITE</span>
@@ -266,48 +320,44 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
                 </div>
               </div>
 
-              {/* Machine Readable Zone (MRZ Barcode) */}
               <div className="mt-8 pt-4 border-t-2 border-slate-800 font-mono text-[11px] text-amber-400 tracking-widest bg-slate-950/80 p-3 rounded-lg border border-slate-800 shadow-inner">
-                <p>P&lt;USAPASSPORT&lt;&lt;EMPLOYEE&lt;&lt;BOB&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</p>
-                <p>{doc.docNumber || 'P984201948'}8USA3007315M3007315&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;04</p>
+                <p>P&lt;{issuingCountry.slice(0, 3)}PASSPORT&lt;&lt;{surname}&lt;&lt;{givenName}&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</p>
+                <p>{passportNo.padEnd(9, 'X')}8{issuingCountry.slice(0, 3)}3007315M3007315&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;04</p>
               </div>
             </div>
           )}
 
-          {/* 2. REALISTIC FLIGHT / TRANSIT E-TICKET & BOARDING PASS */}
+          {/* 2. REALISTIC DYNAMIC FLIGHT / TRANSIT E-TICKET */}
           {docType === 'TICKET' && (
             <div id="printable-document" className="w-full max-w-3xl bg-gradient-to-r from-slate-900 via-slate-900 to-cyan-950 rounded-2xl border border-cyan-500/30 shadow-2xl overflow-hidden font-sans text-left">
-              {/* Ticket Top Airline Banner */}
               <div className="bg-gradient-to-r from-cyan-600 via-cyan-500 to-blue-600 px-6 py-4 flex justify-between items-center text-slate-950">
                 <div className="flex items-center gap-3">
                   <Plane className="w-7 h-7 text-slate-950" />
                   <div>
-                    <h2 className="text-lg font-black tracking-wider uppercase">DELTA AIR LINES</h2>
+                    <h2 className="text-lg font-black tracking-wider uppercase">{carrier}</h2>
                     <p className="text-[11px] font-bold opacity-90">BOARDING PASS & ELECTRONIC TICKET</p>
                   </div>
                 </div>
                 <div className="text-right font-mono font-black">
                   <span className="text-[10px] block opacity-80 uppercase">CONFIRMATION PNR</span>
                   <span className="text-lg bg-slate-950 text-cyan-400 px-3 py-1 rounded-md shadow border border-slate-800">
-                    {doc.docNumber || details.pnr || 'PNR-DL9842A'}
+                    {pnr}
                   </span>
                 </div>
               </div>
 
-              {/* Boarding Pass Body & Perforated Stub Grid */}
               <div className="grid grid-cols-12 p-6 gap-6 relative">
-                {/* Main Flight Info (8 Cols) */}
                 <div className="col-span-12 md:col-span-8 space-y-6">
                   {/* Route Airport Graphic */}
                   <div className="flex justify-between items-center p-4 rounded-xl bg-slate-950/70 border border-slate-800">
                     <div>
-                      <h3 className="text-3xl font-black text-white">ORD</h3>
-                      <p className="text-[11px] text-slate-400 font-semibold">CHICAGO O'HARE</p>
-                      <p className="text-xs font-bold text-cyan-400 mt-1">10:00 AM EST</p>
+                      <h3 className="text-3xl font-black text-white">{depCode}</h3>
+                      <p className="text-[11px] text-slate-400 font-semibold">{depCityName}</p>
+                      <p className="text-xs font-bold text-cyan-400 mt-1">{depTime}</p>
                     </div>
 
                     <div className="flex flex-col items-center px-4">
-                      <span className="text-[10px] text-slate-400 font-bold mb-1">7h 45m NON-STOP</span>
+                      <span className="text-[10px] text-slate-400 font-bold mb-1">{duration}</span>
                       <div className="flex items-center gap-2">
                         <div className="w-12 h-0.5 bg-cyan-500" />
                         <Plane className="w-5 h-5 text-cyan-400 transform rotate-90" />
@@ -317,13 +367,12 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
                     </div>
 
                     <div className="text-right">
-                      <h3 className="text-3xl font-black text-white">LHR</h3>
-                      <p className="text-[11px] text-slate-400 font-semibold">LONDON HEATHROW</p>
-                      <p className="text-xs font-bold text-cyan-400 mt-1">10:45 PM GMT</p>
+                      <h3 className="text-3xl font-black text-white">{arrCode}</h3>
+                      <p className="text-[11px] text-slate-400 font-semibold">{arrCityName}</p>
+                      <p className="text-xs font-bold text-cyan-400 mt-1">{arrTime}</p>
                     </div>
                   </div>
 
-                  {/* Passenger Details Grid */}
                   <div className="grid grid-cols-3 gap-4 text-xs bg-slate-950/40 p-4 rounded-xl border border-slate-800/80">
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase font-semibold">PASSENGER NAME</span>
@@ -331,26 +380,26 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
                     </div>
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase font-semibold">FLIGHT NUMBER</span>
-                      <p className="font-mono font-extrabold text-cyan-400">{details.flightNo || 'DL-104'}</p>
+                      <p className="font-mono font-extrabold text-cyan-400">{flightNo}</p>
                     </div>
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase font-semibold">TRAVEL DATE</span>
-                      <p className="font-extrabold text-white">{doc.expiryDate || '2026-08-03'}</p>
+                      <p className="font-extrabold text-white">{travelDate}</p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-4 gap-3 text-xs bg-slate-950/40 p-3 rounded-xl border border-slate-800/80">
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase">GATE</span>
-                      <p className="font-black text-amber-400 text-sm">B22</p>
+                      <p className="font-black text-amber-400 text-sm">{gateNo}</p>
                     </div>
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase">BOARDING</span>
-                      <p className="font-black text-white text-sm">09:15 AM</p>
+                      <p className="font-black text-white text-sm">{boardingTime}</p>
                     </div>
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase">SEAT</span>
-                      <p className="font-mono font-black text-cyan-400 text-sm">14A</p>
+                      <p className="font-mono font-black text-cyan-400 text-sm">{seatNo}</p>
                     </div>
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase">CLASS</span>
@@ -359,15 +408,13 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
                   </div>
                 </div>
 
-                {/* Perforated Divider */}
                 <div className="hidden md:block absolute top-0 bottom-0 left-[66.6%] border-r-2 border-dashed border-slate-800" />
 
-                {/* Detachable Right Boarding Pass Stub (4 Cols) */}
                 <div className="col-span-12 md:col-span-4 flex flex-col justify-between space-y-4 pl-0 md:pl-4">
                   <div className="space-y-3 bg-slate-950/80 p-4 rounded-xl border border-slate-800 text-xs">
                     <div className="flex justify-between items-center border-b border-slate-800 pb-2">
                       <span className="text-[10px] text-slate-400 font-bold uppercase">BOARDING STUB</span>
-                      <span className="font-mono text-cyan-400 font-bold">DL-104</span>
+                      <span className="font-mono text-cyan-400 font-bold">{flightNo}</span>
                     </div>
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase">PASSENGER</span>
@@ -376,7 +423,7 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
                     <div className="grid grid-cols-2 gap-2">
                       <div>
                         <span className="text-[10px] text-slate-400 uppercase">SEAT</span>
-                        <p className="font-mono font-black text-cyan-300">14A</p>
+                        <p className="font-mono font-black text-cyan-300">{seatNo}</p>
                       </div>
                       <div>
                         <span className="text-[10px] text-slate-400 uppercase">ZONE</span>
@@ -385,35 +432,32 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
                     </div>
                   </div>
 
-                  {/* Simulated QR Code Barcode */}
                   <div className="bg-white p-3 rounded-xl flex flex-col items-center justify-center space-y-1 shadow">
                     <QrCode className="w-16 h-16 text-slate-950" />
-                    <span className="text-[9px] font-mono text-slate-700 font-bold">CBG-TKT-DL9842A</span>
+                    <span className="text-[9px] font-mono text-slate-700 font-bold">CBG-TKT-{pnr}</span>
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* 3. REALISTIC BUSINESS VISA STICKER */}
+          {/* 3. REALISTIC DYNAMIC BUSINESS VISA */}
           {docType === 'VISA' && (
             <div id="printable-document" className="w-full max-w-2xl bg-[#fffbeb] rounded-2xl border-4 border-amber-600 p-6 md:p-8 shadow-2xl text-slate-900 relative overflow-hidden font-serif">
-              {/* Intricate Security Background & Crest Header */}
               <div className="flex justify-between items-start border-b-2 border-amber-800 pb-4 mb-4">
                 <div className="flex items-center gap-3">
                   <Building className="w-10 h-10 text-amber-900" />
                   <div>
-                    <h2 className="text-base font-black text-amber-950 tracking-wider uppercase">UNITED KINGDOM VISAS & IMMIGRATION</h2>
+                    <h2 className="text-base font-black text-amber-950 tracking-wider uppercase">{destCountry} VISAS & IMMIGRATION</h2>
                     <p className="text-xs font-bold text-amber-800 uppercase">ENTRY CLEARANCE & BUSINESS PERMIT</p>
                   </div>
                 </div>
                 <div className="text-right font-mono">
                   <span className="text-[9px] font-bold text-amber-900 block">VISA NUMBER</span>
-                  <span className="text-base font-black text-red-700">{doc.docNumber || details.visaNumber || 'GBR-VISA-883912'}</span>
+                  <span className="text-base font-black text-red-700">{visaNo}</span>
                 </div>
               </div>
 
-              {/* Visa Sticker Body Details */}
               <div className="grid grid-cols-2 gap-4 text-xs font-sans">
                 <div>
                   <span className="text-[10px] font-bold text-slate-600 uppercase">NAME OF HOLDER</span>
@@ -424,24 +468,23 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
                   <p className="font-bold text-amber-900">TIER-2 BUSINESS & NEGOTIATIONS</p>
                 </div>
                 <div>
-                  <span className="text-[10px] font-bold text-slate-600 uppercase">VALID FROM</span>
-                  <p className="font-bold text-slate-900">01 JAN 2025</p>
+                  <span className="text-[10px] font-bold text-slate-600 uppercase">DESTINATION COUNTRY</span>
+                  <p className="font-bold text-slate-900">{destCountry}</p>
                 </div>
                 <div>
                   <span className="text-[10px] font-bold text-slate-600 uppercase">VALID UNTIL</span>
-                  <p className="font-bold text-red-700">{doc.expiryDate || '2027-12-31'}</p>
+                  <p className="font-bold text-red-700">{visaExpiry}</p>
                 </div>
                 <div>
                   <span className="text-[10px] font-bold text-slate-600 uppercase">NUMBER OF ENTRIES</span>
-                  <p className="font-black text-emerald-800">{details.entryType || 'MULTIPLE ENTRY'}</p>
+                  <p className="font-black text-emerald-800">{visaEntryType}</p>
                 </div>
                 <div>
                   <span className="text-[10px] font-bold text-slate-600 uppercase">SPONSOR ORGANISATION</span>
-                  <p className="font-bold text-slate-900">CBG UK OPERATIONS LTD</p>
+                  <p className="font-bold text-slate-900">CBG GLOBAL OPERATIONS LTD</p>
                 </div>
               </div>
 
-              {/* Official Red Embossed Stamp */}
               <div className="mt-6 flex justify-between items-end border-t border-amber-800/40 pt-4">
                 <div className="font-mono text-[10px] text-slate-600">
                   <p>REMARKS: WORKFORCE LOGISTICS AUTHORIZED</p>
@@ -449,18 +492,17 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
                 </div>
 
                 <div className="w-20 h-20 border-2 border-red-700 rounded-full flex flex-col items-center justify-center text-red-700 transform -rotate-12 shadow-sm font-sans font-black text-[9px] uppercase p-1 text-center bg-red-500/10">
-                  <span>UKVI OFFICIAL</span>
-                  <span className="text-[11px] font-extrabold text-red-800">STAMPED</span>
                   <span>IMMIGRATION</span>
+                  <span className="text-[11px] font-extrabold text-red-800">STAMPED</span>
+                  <span>{destCountry.slice(0, 8)}</span>
                 </div>
               </div>
             </div>
           )}
 
-          {/* 4. REALISTIC CORPORATE HEALTH INSURANCE CARD */}
+          {/* 4. REALISTIC DYNAMIC HEALTH INSURANCE CARD */}
           {docType === 'INSURANCE' && (
             <div id="printable-document" className="w-full max-w-xl bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 rounded-2xl border-2 border-indigo-500/40 p-6 md:p-8 shadow-2xl text-white relative overflow-hidden font-sans text-left">
-              {/* Holographic metallic shield background accent */}
               <div className="absolute top-0 right-0 w-44 h-44 bg-gradient-to-bl from-cyan-400/15 via-indigo-500/10 to-transparent rounded-full pointer-events-none" />
 
               <div className="flex justify-between items-start border-b border-indigo-800/80 pb-4 mb-6">
@@ -469,13 +511,13 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
                     <ShieldCheck className="w-6 h-6 text-slate-950" />
                   </div>
                   <div>
-                    <h2 className="text-base font-black text-white tracking-wider">ALLIANZ GLOBAL CORPORATE SHIELD</h2>
-                    <p className="text-xs text-cyan-400 font-bold">INTERNATIONAL WORKFORCE MEDICAL PROTECTION</p>
+                    <h2 className="text-base font-black text-white tracking-wider">{insProvider}</h2>
+                    <p className="text-xs text-cyan-400 font-bold">{coveragePlan.toUpperCase()}</p>
                   </div>
                 </div>
                 <div className="text-right">
                   <span className="text-[9px] text-slate-400 uppercase block font-bold">POLICY NO.</span>
-                  <span className="font-mono font-black text-amber-400 text-sm">{doc.docNumber || details.policyNumber || 'AGS-992014'}</span>
+                  <span className="font-mono font-black text-amber-400 text-sm">{policyNo}</span>
                 </div>
               </div>
 
@@ -498,7 +540,7 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
                   </div>
                   <div>
                     <span className="text-[10px] text-slate-400 uppercase">POLICY EXPIRY</span>
-                    <p className="font-bold text-amber-300">{doc.expiryDate || '2026-12-31'}</p>
+                    <p className="font-bold text-amber-300">{insExpiry}</p>
                   </div>
                 </div>
 
@@ -515,20 +557,20 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
             </div>
           )}
 
-          {/* 5. REALISTIC CUSTOMS MANIFEST & ATA CARNET */}
+          {/* 5. REALISTIC DYNAMIC CUSTOMS MANIFEST */}
           {docType === 'SHIPMENT_DOC' && (
             <div id="printable-document" className="w-full max-w-2xl bg-slate-900 rounded-2xl border-2 border-slate-700 p-6 md:p-8 shadow-2xl text-slate-100 text-left font-sans">
               <div className="flex justify-between items-start border-b-2 border-slate-700 pb-4 mb-4">
                 <div className="flex items-center gap-3">
                   <Box className="w-8 h-8 text-cyan-400" />
                   <div>
-                    <h2 className="text-base font-black text-white tracking-wider uppercase">FEDEX LOGISTICS / CARGO MANIFEST</h2>
+                    <h2 className="text-base font-black text-white tracking-wider uppercase">{logisticsCompany} / CARGO MANIFEST</h2>
                     <p className="text-xs text-slate-400 font-bold">INTERNATIONAL ATA CARNET CUSTOMS DECLARATION</p>
                   </div>
                 </div>
                 <div className="text-right font-mono">
                   <span className="text-[9px] text-slate-400 uppercase block font-bold">WAYBILL / TRACKING</span>
-                  <span className="font-black text-cyan-400 text-sm">{doc.docNumber || details.waybillNumber || 'FX-9842019'}</span>
+                  <span className="font-black text-cyan-400 text-sm">{waybillNo}</span>
                 </div>
               </div>
 
@@ -536,15 +578,14 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
                 <div className="grid grid-cols-2 gap-4 bg-slate-950 p-3.5 rounded-xl border border-slate-800">
                   <div>
                     <span className="text-[10px] text-slate-400 uppercase">LOGISTICS CARRIER</span>
-                    <p className="font-bold text-white">FEDEX EXPRESS FREIGHT</p>
+                    <p className="font-bold text-white">{logisticsCompany}</p>
                   </div>
                   <div>
                     <span className="text-[10px] text-slate-400 uppercase">ATA CARNET PERMIT NO.</span>
-                    <p className="font-mono font-bold text-amber-400">ATA-Carnet-GB-8832</p>
+                    <p className="font-mono font-bold text-amber-400">{carnetNo}</p>
                   </div>
                 </div>
 
-                {/* Cargo Manifest Items Table */}
                 <div>
                   <span className="text-[10px] text-slate-400 uppercase font-bold block mb-2">DECLARATION CARGO MANIFEST ITEMS</span>
                   <div className="border border-slate-800 rounded-xl overflow-hidden bg-slate-950">
@@ -558,7 +599,7 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
                       </thead>
                       <tbody className="divide-y divide-slate-850 text-slate-300">
                         <tr>
-                          <td className="p-2.5 font-semibold text-white">CBG Gen-5 Mobile Prototypes & Telemetry Gear</td>
+                          <td className="p-2.5 font-semibold text-white">CBG Mobile Prototypes & Telemetry Gear</td>
                           <td className="p-2.5 font-mono">2 Crates</td>
                           <td className="p-2.5 font-mono text-right text-emerald-400 font-bold">$30,000 USD</td>
                         </tr>

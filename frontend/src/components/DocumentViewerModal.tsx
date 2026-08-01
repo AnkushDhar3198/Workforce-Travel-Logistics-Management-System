@@ -97,6 +97,11 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
     const printElement = document.getElementById('printable-document');
     if (!printElement) return;
 
+    // Inherit all active stylesheets from document head
+    const headStyles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
+      .map(s => s.outerHTML)
+      .join('\n');
+
     const oldIframe = document.getElementById('doc-print-iframe');
     if (oldIframe) {
       oldIframe.remove();
@@ -121,44 +126,36 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
       <html>
         <head>
           <title>Official ${docType} - ${doc.docNumber || 'Credential'}</title>
-          <script src="https://cdn.tailwindcss.com"></script>
+          ${headStyles}
           <style>
-            @media print {
-              @page {
-                size: portrait;
-                margin: 8mm;
-              }
-              body {
-                background: white !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                display: flex !important;
-                justify-content: center !important;
-                align-items: center !important;
-                min-height: 100vh !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-              }
-              .print-wrapper {
-                width: 100% !important;
-                max-width: 720px !important;
-                margin: 0 auto !important;
-                box-shadow: none !important;
-              }
+            @page {
+              size: portrait;
+              margin: 6mm;
+            }
+            * {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+              color-adjust: exact !important;
             }
             body {
-              background-color: #020617;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              min-height: 100vh;
-              padding: 20px;
-              color: white;
-              font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+              background-color: #030712 !important;
+              margin: 0 !important;
+              padding: 16px !important;
+              display: flex !important;
+              justify-content: center !important;
+              align-items: center !important;
+              min-height: 100vh !important;
+              color: white !important;
+              font-family: Inter, system-ui, -apple-system, sans-serif !important;
             }
             .print-wrapper {
-              width: 100%;
-              max-width: 720px;
+              width: 100% !important;
+              max-width: 760px !important;
+              margin: 0 auto !important;
+            }
+            #printable-document {
+              width: 100% !important;
+              max-width: 100% !important;
             }
           </style>
         </head>
@@ -174,7 +171,7 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
     setTimeout(() => {
       iframe.contentWindow?.focus();
       iframe.contentWindow?.print();
-    }, 650);
+    }, 350);
   };
 
   return (
@@ -185,20 +182,20 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
     >
       <style>{`
         @media print {
-          body * {
-            visibility: hidden !important;
+          body > *:not(#printable-wrapper) {
+            display: none !important;
           }
-          #printable-document, #printable-document * {
-            visibility: visible !important;
+          #printable-wrapper {
+            position: absolute !important;
+            inset: 0 !important;
+            background: #030712 !important;
+            padding: 0 !important;
+            z-index: 9999 !important;
           }
           #printable-document {
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
             width: 100% !important;
             max-width: 100% !important;
             margin: 0 !important;
-            padding: 15px !important;
             box-shadow: none !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;

@@ -302,12 +302,18 @@ public class DatabaseSeeder implements CommandLineRunner {
                 .type("PASSPORT")
                 .fileUrl("/uploads/passport_bob.pdf")
                 .expiryDate(LocalDate.now().plusDays(10)) // expiring soon warning!
+                .docNumber("P-984201948")
+                .issuingAuthority("United States")
+                .detailsJson("{\"passportNo\":\"P-984201948\",\"issuingCountry\":\"United States\",\"clearanceLevel\":\"Level-3 Authorized\"}")
                 .build();
         Document doc2 = Document.builder()
                 .userId(employee.getId())
                 .type("VISA")
                 .fileUrl("/uploads/visa_uk_bob.pdf")
                 .expiryDate(LocalDate.now().plusDays(400))
+                .docNumber("GBR-VISA-883912")
+                .issuingAuthority("United Kingdom")
+                .detailsJson("{\"visaNumber\":\"GBR-VISA-883912\",\"destinationCountry\":\"United Kingdom\",\"entryType\":\"Multiple Entry\"}")
                 .build();
         documentRepository.saveAll(Arrays.asList(doc1, doc2));
 

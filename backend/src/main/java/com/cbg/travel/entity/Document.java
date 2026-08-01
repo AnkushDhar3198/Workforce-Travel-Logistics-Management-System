@@ -29,4 +29,13 @@ public class Document {
 
     @Column(name = "expiry_date")
     private LocalDate expiryDate;
+
+    @Column(name = "doc_number")
+    private String docNumber;
+
+    @Column(name = "issuing_authority")
+    private String issuingAuthority;
+
+    @Column(name = "details_json", columnDefinition = "TEXT")
+    private String detailsJson;
 }

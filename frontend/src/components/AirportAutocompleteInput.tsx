@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plane, X, Check } from 'lucide-react';
+import { Plane, X, Check, Globe } from 'lucide-react';
 import { OFFICIAL_AIRPORTS, type Airport } from '../data/flightRegistry';
 
 interface AirportAutocompleteInputProps {
@@ -16,6 +16,7 @@ export default function AirportAutocompleteInput({
   onChange
 }: AirportAutocompleteInputProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const [searchTerm, setSearchTerm] = useState(value);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -28,14 +29,22 @@ export default function AirportAutocompleteInput({
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setIsOpen(false);
+        setIsFocused(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Filter airports based on search term
-  const query = searchTerm.trim().toLowerCase();
+  // Check if current search term is an exact formatted selection
+  const isExactSelection = OFFICIAL_AIRPORTS.some(
+    ap => `${ap.code} - ${ap.name} (${ap.country})` === searchTerm ||
+          `${ap.code} - ${ap.name}, ${ap.city}` === searchTerm
+  );
+
+  // If focused and input is a complete formatted selection, show ALL airports to allow switching!
+  const query = (isFocused && isExactSelection) ? '' : searchTerm.trim().toLowerCase();
+
   const filteredAirports = OFFICIAL_AIRPORTS.filter(ap => {
     if (!query) return true;
     return (
@@ -51,6 +60,7 @@ export default function AirportAutocompleteInput({
     setSearchTerm(formatted);
     onChange(formatted);
     setIsOpen(false);
+    setIsFocused(false);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,6 +86,11 @@ export default function AirportAutocompleteInput({
     setIsOpen(true);
   };
 
+  const handleFocus = () => {
+    setIsOpen(true);
+    setIsFocused(true);
+  };
+
   return (
     <div ref={containerRef} className="relative w-full text-left">
       <label className="block text-[11px] font-semibold text-slate-400 mb-1">{label}</label>
@@ -88,7 +103,7 @@ export default function AirportAutocompleteInput({
           placeholder={placeholder}
           value={searchTerm}
           onChange={handleInputChange}
-          onFocus={() => setIsOpen(true)}
+          onFocus={handleFocus}
           className="w-full bg-slate-900 border border-slate-800 rounded-lg pl-9 pr-8 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all font-sans"
         />
 
@@ -105,7 +120,15 @@ export default function AirportAutocompleteInput({
 
       {/* Floating Autocomplete Dropdown List */}
       {isOpen && (
-        <div className="absolute z-50 left-0 right-0 mt-1 max-h-64 overflow-y-auto bg-slate-900/95 border border-slate-800 rounded-xl shadow-2xl backdrop-blur-md divide-y divide-slate-850 animate-fade-in">
+        <div className="absolute z-50 left-0 right-0 mt-1 max-h-72 overflow-y-auto bg-slate-900/98 border border-slate-700 rounded-xl shadow-2xl backdrop-blur-md divide-y divide-slate-800 animate-fade-in">
+          <div className="p-2 bg-slate-950/80 sticky top-0 border-b border-slate-800 flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+            <span className="flex items-center gap-1.5 text-cyan-400">
+              <Globe className="w-3 h-3" />
+              <span>Select Airport ({filteredAirports.length} Available)</span>
+            </span>
+            <span className="text-slate-500 font-mono">IATA Directory</span>
+          </div>
+
           {filteredAirports.length > 0 ? (
             filteredAirports.map(ap => {
               const fullFormatted = `${ap.code} - ${ap.name} (${ap.country})`;
@@ -115,8 +138,8 @@ export default function AirportAutocompleteInput({
                 <div
                   key={ap.code}
                   onClick={() => handleSelect(ap)}
-                  className={`p-2.5 flex items-center justify-between cursor-pointer transition-colors hover:bg-cyan-500/10 ${
-                    isSelected ? 'bg-cyan-500/15 border-l-2 border-cyan-400' : ''
+                  className={`p-2.5 flex items-center justify-between cursor-pointer transition-colors hover:bg-cyan-500/15 ${
+                    isSelected ? 'bg-cyan-500/20 border-l-4 border-cyan-400' : ''
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">

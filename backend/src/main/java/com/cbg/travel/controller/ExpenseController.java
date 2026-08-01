@@ -101,7 +101,7 @@ public class ExpenseController {
             Path path = Paths.get(uploadDir, filename);
             Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
 
-            response.put("url", "http://localhost:8080/uploads/" + filename);
+            response.put("url", "/uploads/" + filename);
             response.put("filename", file.getOriginalFilename());
             return ResponseEntity.ok(response);
         } catch (IOException e) {

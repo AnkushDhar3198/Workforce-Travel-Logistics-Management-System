@@ -29,6 +29,17 @@ export const useAuth = () => {
 export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
 export const API_BASE = `${BACKEND_URL}/api`;
 
+export const getFileUrl = (url?: string) => {
+  if (!url) return '';
+  if (url.startsWith('http://localhost:8080')) {
+    return url.replace('http://localhost:8080', BACKEND_URL);
+  }
+  if (url.startsWith('/')) {
+    return `${BACKEND_URL}${url}`;
+  }
+  return url;
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [token, setToken] = useState<string | null>(localStorage.getItem('jwt_token'));
   const [user, setUser] = useState<User | null>(() => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, DollarSign, CheckCircle, Clock, TrendingDown, ShieldAlert } from 'lucide-react';
-import { useAuth, API_BASE } from '../../context/AuthContext';
+import { useAuth, API_BASE, getFileUrl } from '../../context/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
@@ -178,7 +178,7 @@ export default function ExpensesFinanceTab() {
                               <span className="font-bold text-slate-400">Claim Details:</span>
                               <div>Category: {exp.category}</div>
                               <div>Amount: ${exp.amount}</div>
-                              <div>Uploaded File: <a href={exp.receiptUrl} target="_blank" rel="noreferrer" className="text-cyan-400 underline hover:text-cyan-300">View Receipt Document</a></div>
+                              <div>Uploaded File: <a href={getFileUrl(exp.receiptUrl)} target="_blank" rel="noreferrer" className="text-cyan-400 underline hover:text-cyan-300">View Receipt Document</a></div>
                             </div>
                             <div className={`p-3 rounded-lg border space-y-1 ${
                               hasDiscrepancy ? 'bg-red-950/20 border-red-900/30 text-red-300' : 'bg-slate-950/20 border-slate-850 text-slate-350'

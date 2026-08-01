@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Trash2, BadgeAlert } from 'lucide-react';
-import { useAuth, API_BASE, BACKEND_URL } from '../../context/AuthContext';
+import { useAuth, API_BASE, BACKEND_URL, getFileUrl } from '../../context/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
@@ -13,7 +13,7 @@ export default function DocsEmployeeTab() {
   const [docs, setDocs] = useState<any[]>([]);
   const [docType, setDocType] = useState('PASSPORT');
   const [expiryDate, setExpiryDate] = useState('');
-  const [fileUrl] = useState(`${BACKEND_URL}/uploads/bob_docs.pdf`);
+  const [fileUrl] = useState('/uploads/bob_docs.pdf');
   const [submitting, setSubmitting] = useState(false);
 
   const loadDocs = async () => {
@@ -217,7 +217,7 @@ export default function DocsEmployeeTab() {
                         </div>
                         <div className="flex items-center gap-2 pt-2 border-t border-slate-850">
                           <a 
-                            href={doc.fileUrl} 
+                            href={getFileUrl(doc.fileUrl)} 
                             target="_blank" 
                             rel="noreferrer" 
                             className="flex-1 inline-flex items-center justify-center h-8 rounded-lg border border-slate-800 bg-slate-950 px-3 text-xs font-bold text-cyan-400 hover:bg-slate-800 transition-colors cursor-pointer"

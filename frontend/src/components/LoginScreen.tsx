@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Plane, ShieldAlert, Eye, EyeOff, ArrowRight, X, ChevronDown, Lock, UserCheck, Sparkles, Globe, Shield, Truck } from 'lucide-react';
+import React, { useState } from 'react';
+import { Plane, ShieldAlert, Eye, EyeOff, ArrowRight, X, ChevronDown, Sparkles } from 'lucide-react';
 import { useAuth, API_BASE } from '../context/AuthContext';
 import { useTheme, THEMES, type ThemeId } from '../context/ThemeContext';
 import Canvas3DBackground from './Canvas3DBackground';
@@ -87,7 +87,6 @@ export default function LoginScreen() {
     <div
       style={{
         width: '100vw',
-        height: '100vh',
         height: '100dvh',
         position: 'fixed',
         inset: 0,

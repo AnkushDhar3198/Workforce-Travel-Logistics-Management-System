@@ -275,7 +275,7 @@ export default function Sidebar({ activeTab, setActiveTab, sosStatus, triggerSOS
       {/* Mobile Drawer Overlay Backdrop */}
       {isMobileOpen && (
         <div
-          className="md:hidden fixed inset-0 z-40 bg-black/65 backdrop-blur-sm transition-opacity"
+          className="md:hidden fixed inset-0 z-40 bg-transparent backdrop-blur-sm transition-opacity"
           onClick={onCloseMobile}
         />
       )}

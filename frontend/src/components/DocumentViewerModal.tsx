@@ -178,7 +178,11 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
   };
 
   return (
-    <div id="printable-wrapper" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
+    <div 
+      id="printable-wrapper" 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-transparent backdrop-blur-md animate-fade-in"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
       <style>{`
         @media print {
           body * {
@@ -202,10 +206,21 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
         }
       `}</style>
 
-      <div className="relative w-full max-w-4xl max-h-[92vh] bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden text-left">
+      <div 
+        className="relative w-full max-w-4xl max-h-[92vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden text-left"
+        style={{
+          background: 'var(--card-bg)',
+          border: '1px solid var(--card-border)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+        }}
+      >
         
         {/* Modal Top Navigation Bar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/60 print:hidden">
+        <div 
+          className="flex items-center justify-between px-6 py-4 border-b print:hidden"
+          style={{ borderBottomColor: 'var(--border-subtle)', background: 'var(--nav-hover-bg)' }}
+        >
           <div className="flex items-center gap-3">
             <span className="p-2 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
               {docType === 'PASSPORT' && <Globe className="w-5 h-5" />}

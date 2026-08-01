@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth, API_BASE } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import LoginScreen from './components/LoginScreen';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -25,7 +26,6 @@ function DashboardContent() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [sosStatus, setSosStatus] = useState<string>('idle');
 
-  // Trigger default landing tab by role
   useEffect(() => {
     if (!user) return;
     const defaultTabs: Record<string, string> = {
@@ -43,10 +43,8 @@ function DashboardContent() {
   const loadNotifications = async () => {
     try {
       const res = await authFetch(`${API_BASE}/notifications`);
-      if (res.ok) {
-        setNotifications(await res.json());
-      }
-    } catch (err) {}
+      if (res.ok) setNotifications(await res.json());
+    } catch {}
   };
 
   useEffect(() => {
@@ -59,10 +57,8 @@ function DashboardContent() {
     if (!window.confirm('Are you sure you want to trigger an emergency SOS panic alert? Security risk officers will be notified immediately.')) return;
     setSosStatus('sending');
     try {
-      const location = "GPS Coords: " + (13.75 + Math.random() * 2).toFixed(4) + ", " + (100.5 + Math.random() * 2).toFixed(4) + " (Mock Geolocation)";
-      const res = await authFetch(`${API_BASE}/alerts/sos?location=${encodeURIComponent(location)}`, {
-        method: 'POST'
-      });
+      const location = `GPS Coords: ${(13.75 + Math.random() * 2).toFixed(4)}, ${(100.5 + Math.random() * 2).toFixed(4)} (Mock Geolocation)`;
+      const res = await authFetch(`${API_BASE}/alerts/sos?location=${encodeURIComponent(location)}`, { method: 'POST' });
       if (res.ok) {
         setSosStatus('triggered');
         loadNotifications();
@@ -70,34 +66,42 @@ function DashboardContent() {
       } else {
         setSosStatus('error');
       }
-    } catch (e) {
+    } catch {
       setSosStatus('error');
     }
   };
 
   return (
-    <div className="flex min-h-screen relative overflow-hidden bg-[#06080e]">
-      {/* Background drifting blur blobs */}
-      <div className="bg-blob-container">
-        <div className="bg-blob bg-blob-1"></div>
-        <div className="bg-blob bg-blob-2"></div>
-        <div className="bg-blob bg-blob-3"></div>
+    <div className="flex min-h-screen relative overflow-hidden" style={{ background: 'var(--bg-base)' }}>
+      {/* Animated background */}
+      <div className="app-bg" aria-hidden>
+        <div className="mesh-orb mesh-orb-1" />
+        <div className="mesh-orb mesh-orb-2" />
+        <div className="mesh-orb mesh-orb-3" />
       </div>
 
-      <Sidebar 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-        sosStatus={sosStatus} 
-        triggerSOS={triggerSOS} 
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        sosStatus={sosStatus}
+        triggerSOS={triggerSOS}
       />
-      <div className="flex-1 flex flex-col min-w-0 bg-transparent relative z-10">
-        <Header 
-          activeTab={activeTab} 
-          notifications={notifications} 
-          loadNotifications={loadNotifications} 
+
+      <div
+        className="flex-1 flex flex-col min-w-0 relative z-10 overflow-hidden"
+        style={{ background: 'transparent' }}
+      >
+        <Header
+          activeTab={activeTab}
+          notifications={notifications}
+          loadNotifications={loadNotifications}
         />
-        <div className="flex-1 p-8 overflow-y-auto">
-          <div key={activeTab} className="animate-fade-in-up">
+
+        <main
+          className="flex-1 overflow-y-auto p-6"
+          style={{ scrollBehavior: 'smooth' }}
+        >
+          <div key={activeTab} className="animate-fade-slide-up h-full">
             {activeTab === 'itinerary' && <ItineraryTab />}
             {activeTab === 'requisition' && <RequisitionTab />}
             {activeTab === 'expenses-employee' && <ExpensesEmployeeTab />}
@@ -112,7 +116,7 @@ function DashboardContent() {
             {activeTab === 'audit' && <AuditLogsTab />}
             {activeTab === 'users' && <UsersTab />}
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );
@@ -125,8 +129,10 @@ function MainApp() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <MainApp />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <MainApp />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

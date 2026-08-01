@@ -123,11 +123,11 @@ export default function Header({ activeTab, notifications, loadNotifications, on
           </button>
         )}
 
-        {/* Smartphone Sign Out Button */}
+        {/* Smartphone-only Sign Out Button */}
         <button
           onClick={logout}
           title="Sign Out"
-          className="px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shrink-0"
+          className="md:hidden px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shrink-0"
           style={{
             background: 'var(--nav-hover-bg)',
             border: '1px solid var(--border-subtle)',
@@ -135,7 +135,7 @@ export default function Header({ activeTab, notifications, loadNotifications, on
           }}
         >
           <LogOut className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Sign Out</span>
+          <span>Sign Out</span>
         </button>
 
         {/* Notification bell */}

@@ -130,7 +130,7 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
           <style>
             @page {
               size: portrait;
-              margin: 6mm;
+              margin: 8mm;
             }
             * {
               -webkit-print-color-adjust: exact !important;
@@ -138,24 +138,41 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
               color-adjust: exact !important;
             }
             body {
-              background-color: #030712 !important;
+              background-color: #ffffff !important;
+              color: #0f172a !important;
               margin: 0 !important;
-              padding: 16px !important;
+              padding: 12px !important;
               display: flex !important;
               justify-content: center !important;
-              align-items: center !important;
+              align-items: flex-start !important;
               min-height: 100vh !important;
-              color: white !important;
               font-family: Inter, system-ui, -apple-system, sans-serif !important;
             }
             .print-wrapper {
               width: 100% !important;
               max-width: 760px !important;
               margin: 0 auto !important;
+              background-color: #ffffff !important;
             }
             #printable-document {
               width: 100% !important;
               max-width: 100% !important;
+              box-shadow: none !important;
+            }
+            /* Clean print styling for paper & PDF export */
+            .bg-\\[\\#0f172a\\], .bg-slate-900, .bg-slate-950, .bg-slate-900\\/40 {
+              background-color: #f8fafc !important;
+              color: #0f172a !important;
+              border-color: #cbd5e1 !important;
+            }
+            .text-white {
+              color: #0f172a !important;
+            }
+            .text-slate-400, .text-slate-350, .text-slate-500, .text-slate-300 {
+              color: #334155 !important;
+            }
+            .border-slate-800, .border-\\[\\#1e293b\\], .border-slate-850 {
+              border-color: #cbd5e1 !important;
             }
           </style>
         </head>
@@ -188,7 +205,7 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
           #printable-wrapper {
             position: absolute !important;
             inset: 0 !important;
-            background: #030712 !important;
+            background: #ffffff !important;
             padding: 0 !important;
             z-index: 9999 !important;
           }

@@ -109,37 +109,28 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
             size: portrait;
             margin: 8mm;
           }
-          body > * {
-            display: none !important;
-          }
-          #printable-wrapper {
-            display: flex !important;
-            position: fixed !important;
-            inset: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
+          html, body {
             background: #ffffff !important;
             margin: 0 !important;
-            padding: 10px !important;
-            justify-content: center !important;
-            align-items: flex-start !important;
-            z-index: 999999 !important;
-            overflow: visible !important;
+            padding: 0 !important;
           }
-          .print\\:hidden {
-            display: none !important;
+          body * {
+            visibility: hidden !important;
+          }
+          #printable-document, #printable-document * {
+            visibility: visible !important;
           }
           #printable-document {
-            display: block !important;
+            position: absolute !important;
+            left: 0 !important;
+            right: 0 !important;
+            top: 0 !important;
+            margin: 0 auto !important;
             width: 100% !important;
             max-width: 680px !important;
-            margin: 0 auto !important;
             box-shadow: none !important;
             border-radius: 16px !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          #printable-document * {
+            z-index: 999999 !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }

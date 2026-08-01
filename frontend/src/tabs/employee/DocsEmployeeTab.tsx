@@ -6,6 +6,8 @@ import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 
+import DocumentViewerModal from '../../components/DocumentViewerModal';
+
 const DOCUMENT_TYPES = [
   { id: 'PASSPORT', label: 'Passport & Border Clearance', icon: Globe },
   { id: 'VISA', label: 'Business Visa & Permits', icon: FileCheck },
@@ -23,6 +25,15 @@ export default function DocsEmployeeTab() {
   const [uploadingFile, setUploadingFile] = useState(false);
   const [fileUrl, setFileUrl] = useState('/uploads/passport_bob.pdf');
   const [fileName, setFileName] = useState('');
+
+  // Modal Viewer State
+  const [selectedDoc, setSelectedDoc] = useState<any>(null);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+
+  const openViewer = (doc: any) => {
+    setSelectedDoc(doc);
+    setIsViewerOpen(true);
+  };
 
   // Dynamic Document Specific Form Fields
   // Passport
@@ -625,14 +636,12 @@ export default function DocsEmployeeTab() {
                         </div>
 
                         <div className="flex items-center gap-2 pt-2 border-t border-slate-850">
-                          <a 
-                            href={getFileUrl(doc.fileUrl)} 
-                            target="_blank" 
-                            rel="noreferrer" 
-                            className="flex-1 inline-flex items-center justify-center h-8 rounded-lg border border-slate-800 bg-slate-950 px-3 text-xs font-bold text-cyan-400 hover:bg-slate-800 transition-colors cursor-pointer"
+                          <button 
+                            onClick={() => openViewer(doc)}
+                            className="flex-1 inline-flex items-center justify-center h-8 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-3 text-xs font-bold text-cyan-400 hover:bg-cyan-500/20 transition-colors cursor-pointer"
                           >
                             View Document PDF
-                          </a>
+                          </button>
                           <Button 
                             onClick={() => deleteDoc(doc.id)} 
                             variant="destructive" 
@@ -661,6 +670,13 @@ export default function DocsEmployeeTab() {
           </Card>
         </div>
       </div>
+
+      {/* Interactive Document Specific Preview Modal */}
+      <DocumentViewerModal 
+        isOpen={isViewerOpen} 
+        onClose={() => setIsViewerOpen(false)} 
+        doc={selectedDoc} 
+      />
     </div>
   );
 }

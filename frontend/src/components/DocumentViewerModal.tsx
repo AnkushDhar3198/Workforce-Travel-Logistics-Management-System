@@ -22,37 +22,56 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
 
   const handlePrint = () => {
     const printElement = document.getElementById('printable-document');
-    if (!printElement) {
-      window.print();
-      return;
+    if (!printElement) return;
+
+    // Remove any existing print iframe
+    const oldIframe = document.getElementById('doc-print-iframe');
+    if (oldIframe) {
+      oldIframe.remove();
     }
 
-    const printWindow = window.open('', '_blank', 'width=900,height=950');
-    if (!printWindow) {
-      window.print();
-      return;
-    }
+    // Create a hidden print iframe to isolate document printing
+    const iframe = document.createElement('iframe');
+    iframe.id = 'doc-print-iframe';
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0px';
+    iframe.style.height = '0px';
+    iframe.style.border = 'none';
+    document.body.appendChild(iframe);
 
-    printWindow.document.write(`
+    const docContent = iframe.contentWindow?.document;
+    if (!docContent) return;
+
+    docContent.open();
+    docContent.write(`
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Print Official ${docType} - ${doc.docNumber || 'Credential'}</title>
+          <title>Official ${docType} - ${doc.docNumber || 'Credential'}</title>
           <script src="https://cdn.tailwindcss.com"></script>
           <style>
             @media print {
+              @page {
+                size: portrait;
+                margin: 8mm;
+              }
               body {
                 background: white !important;
                 margin: 0 !important;
                 padding: 0 !important;
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                min-height: 100vh !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
               }
-              .print-container {
+              .print-wrapper {
                 width: 100% !important;
-                max-width: 800px !important;
+                max-width: 720px !important;
                 margin: 0 auto !important;
-                padding: 10px !important;
                 box-shadow: none !important;
               }
             }
@@ -64,27 +83,28 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
               min-height: 100vh;
               padding: 20px;
               color: white;
+              font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
             }
-            .print-container {
+            .print-wrapper {
               width: 100%;
-              max-width: 800px;
+              max-width: 720px;
             }
           </style>
         </head>
         <body>
-          <div class="print-container">
+          <div class="print-wrapper">
             ${printElement.outerHTML}
           </div>
-          <script>
-            setTimeout(() => {
-              window.print();
-              window.close();
-            }, 700);
-          </script>
         </body>
       </html>
     `);
-    printWindow.document.close();
+    docContent.close();
+
+    // Trigger iframe print after Tailwind stylesheet loads
+    setTimeout(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+    }, 650);
   };
 
   return (

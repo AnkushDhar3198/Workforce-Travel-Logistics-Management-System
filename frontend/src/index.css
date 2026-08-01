@@ -370,3 +370,17 @@ body {
   }
 }
 
+/* Global Print Styles - Hide Main Website UI During Print */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  #root {
+    display: none !important;
+  }
+  .bg-blob-container {
+    display: none !important;
+  }
+}
+

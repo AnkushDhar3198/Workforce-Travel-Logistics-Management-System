@@ -83,49 +83,150 @@ public class FileServeController {
 
     public static byte[] generateRichPdfBytes(String filename) {
         String lower = filename.toLowerCase();
-        String docTitle = "CBG WORKFORCE LOGISTICS INC.";
-        String subTitle = "OFFICIAL CORPORATE TRAVEL & IDENTIFICATION VAULT";
-        String docType = "OFFICIAL PASSPORT & CORPORATE BORDER CLEARANCE";
-        String docNo = "P-984201948";
-        String expiry = "2030-07-31 (VALID & ACTIVE)";
+        String docTitle;
+        String[] lines;
 
-        if (lower.contains("visa")) {
+        if (lower.contains("ticket") || lower.contains("flight") || lower.contains("pnr")) {
+            docTitle = "DELTA AIR LINES / CBG WORKFORCE TRAVEL";
+            lines = new String[] {
+                "ELECTRONIC FLIGHT TICKET & ITINERARY BOARDING PASS",
+                "====================================================================================================",
+                "DOCUMENT TYPE: E-TICKET & FLIGHT RESERVATION CONFIRMATION",
+                "",
+                "SECTION: 1. PASSENGER & FLIGHT DETAILS",
+                "Passenger Name:        Bob Employee",
+                "Employee ID:           EMP-88219",
+                "PNR / Confirmation:    PNR-DL9842A",
+                "Operating Airline:     Delta Air Lines",
+                "Flight Number:         DL-104 (Non-Stop)",
+                "Cabin Class / Seat:    Economy Plus / Seat 14A",
+                "Travel Date:           03-AUG-2026",
+                "Departure Time:        10:00 AM EST",
+                "",
+                "SECTION: 2. ROUTING & AIRPORT TERMINAL",
+                "Departure Airport:     Chicago O'Hare Intl (ORD) - Terminal 5",
+                "Arrival Airport:       London Heathrow (LHR) - Terminal 3",
+                "Flight Duration:       7 Hours 45 Minutes",
+                "Baggage Allowance:     2 Checked Bags (23kg max each) Included",
+                "Boarding Gate:         Gate B22 (Boarding starts 09:15 AM)",
+                "",
+                "SECTION: 3. CORPORATE FARE & BILLING DETAILS",
+                "Fare Basis Code:       Y-CORP-BIZ-FLEX",
+                "Billing Account:       CBG Corporate Master Amex (**** 8821)",
+                "Ticket Status:         CONFIRMED & ISSUED",
+                "====================================================================================================",
+                "CONFIDENTIAL - PRESENT THIS E-TICKET AT AIRPORT CHECK-IN & BORDER CONTROL",
+                "Digital Verification Signature: CBG-TKT-DL9842A-VERIFIED-OK"
+            };
+        } else if (lower.contains("visa") || lower.contains("permit")) {
             docTitle = "UK VISAS & IMMIGRATION / CBG TRAVEL";
-            subTitle = "OFFICIAL UK BUSINESS TRAVEL VISA CLEARANCE CERTIFICATE";
-            docType = "MULTIPLE ENTRY UK BUSINESS VISA";
-            docNo = "GBR-VISA-883912";
-            expiry = "2027-12-31 (ACTIVE PERMIT)";
+            lines = new String[] {
+                "OFFICIAL UK BUSINESS TRAVEL VISA CLEARANCE CERTIFICATE",
+                "====================================================================================================",
+                "DOCUMENT TYPE: MULTIPLE ENTRY UK BUSINESS VISA",
+                "",
+                "SECTION: 1. VISA HOLDER IDENTIFICATION",
+                "Full Legal Name:       Bob Employee",
+                "Employee Ref:          EMP-88219",
+                "Nationality:           United States of America",
+                "Corporate Sponsor:     CBG UK Operations Ltd, London UK",
+                "",
+                "SECTION: 2. VISA PERMIT DETAILS",
+                "Visa Permit Number:    GBR-VISA-883912",
+                "Permit Category:       Tier-2 Business & Commercial Negotiations",
+                "Valid From:            01-JAN-2025",
+                "Valid Until:           31-DEC-2027 (ACTIVE PERMIT)",
+                "Entries Allowed:       MULTIPLE ENTRIES PERMITTED",
+                "====================================================================================================",
+                "CONFIDENTIAL - OFFICIAL UK VISAS & IMMIGRATION DOCUMENT",
+                "Verification Stamp:    GBR-UKVI-APPROVED-2026-STAMPED"
+            };
+        } else if (lower.contains("insurance") || lower.contains("policy") || lower.contains("medical")) {
+            docTitle = "ALLIANZ GLOBAL CORPORATE SHIELD";
+            lines = new String[] {
+                "INTERNATIONAL WORKFORCE MEDICAL & EVACUATION POLICY",
+                "====================================================================================================",
+                "DOCUMENT TYPE: CERTIFICATE OF GLOBAL TRAVEL INSURANCE",
+                "",
+                "SECTION: 1. INSURED TRAVELER DETAILS",
+                "Insured Person:        Bob Employee",
+                "Employee ID:           EMP-88219",
+                "Corporate Sponsor:     CBG Workforce Logistics Inc.",
+                "",
+                "SECTION: 2. POLICY & COVERAGE SPECIFICATIONS",
+                "Policy Number:         AGS-992014",
+                "Coverage Plan:         Comprehensive Medical & Emergency Evacuation",
+                "Medical Benefit Limit: $1,000,000.00 USD",
+                "Emergency SOS Care:    Uncapped 24/7 Global Air Ambulance",
+                "Effective Period:      01-JAN-2026 to 31-DEC-2026 (ACTIVE)",
+                "",
+                "SECTION: 3. ASSISTANCE & SOS HOTLINE",
+                "24/7 Global SOS Line:  +1-800-555-ALLIANZ (+1-800-555-2554)",
+                "Assistance Group ID:   CBG-ALLIANZ-EMERGENCY-01",
+                "====================================================================================================",
+                "CONFIDENTIAL - PRESENT TO MEDICAL PROVIDERS FOR DIRECT BILLING",
+                "Policy Verification:   ALLIANZ-CERT-VALIDATED-2026"
+            };
+        } else if (lower.contains("shipment") || lower.contains("waybill") || lower.contains("carnet") || lower.contains("customs")) {
+            docTitle = "FEDEX LOGISTICS / CBG CARGO OPERATIONS";
+            lines = new String[] {
+                "INTERNATIONAL CUSTOMS DECLARATION & CARGO MANIFEST",
+                "====================================================================================================",
+                "DOCUMENT TYPE: ATA CARNET & COMMERCIAL SHIPMENT MANIFEST",
+                "",
+                "SECTION: 1. SHIPMENT & SENDER DETAILS",
+                "Sender / Origin:       CBG Chicago Tech Hub (USA)",
+                "Destination Office:    CBG London Office / UK Expo Center",
+                "Consignee Contact:     Frank Logistics (+1-555-0128)",
+                "",
+                "SECTION: 2. MANIFEST & CUSTOMS SPECIFICATIONS",
+                "Waybill / Tracking ID: FX-9842019",
+                "Customs Carnet No:     ATA-Carnet-GB-8832",
+                "Cargo Description:     CBG Gen-5 Mobile Prototypes & Exhibition Equipment",
+                "Package Count / Weight: 3 Crates / 85.5 kg",
+                "Declared Value:        $45,000.00 USD (Temporary Duty Free)",
+                "",
+                "SECTION: 3. CLEARANCE & CARRIER COMPLIANCE",
+                "Logistics Carrier:     FedEx Express Freight",
+                "Customs Status:        PRE-CLEARED / PRIORITY GREEN CHANNEL",
+                "Manifest Validity:     Valid until 31-DEC-2026",
+                "====================================================================================================",
+                "CONFIDENTIAL - INTERNATIONAL CUSTOMS CARGO DECLARATION",
+                "Verification Stamp:    CUSTOMS-GB-PRECLEARED-OK-2026"
+            };
+        } else {
+            // PASSPORT / Default
+            docTitle = "CBG WORKFORCE LOGISTICS INC.";
+            lines = new String[] {
+                "OFFICIAL CORPORATE TRAVEL & IDENTIFICATION VAULT",
+                "====================================================================================================",
+                "DOCUMENT TYPE: OFFICIAL PASSPORT & CORPORATE BORDER CLEARANCE",
+                "",
+                "SECTION: 1. TRAVELER PERSONAL IDENTIFICATION",
+                "Full Legal Name:       Bob Employee",
+                "Employee ID:           EMP-88219",
+                "Department / Division: Sales & Field Operations",
+                "Corporate Email:       employee@cbg.com",
+                "Emergency Phone / SOS: +1-555-0124",
+                "",
+                "SECTION: 2. PASSPORT & BORDER CONTROL CREDENTIALS",
+                "Document Number:       P-984201948",
+                "Issuing Authority:     Government Passport Office / CBG Security Clearance",
+                "Date of Issue:         2020-08-01",
+                "Date of Expiry:        2030-07-31 (VALID & ACTIVE)",
+                "Security Clearance:    Level-3 International Overseas Deployment Authorized",
+                "",
+                "SECTION: 3. CORPORATE TRAVEL POLICY & AUTHORIZATION",
+                "Travel Auth ID:        CBG-AUTH-2026-9941",
+                "Approving Manager:     Alice Manager (Sales Director)",
+                "Global Medical Ins.:   Allianz Corporate Health Shield #AG-992014",
+                "SOS Evacuation Plan:   Active 24/7 Global Medical & Rescue Coverage",
+                "Per-Diem Allowance:    $300.00 / day (Policy Compliant)",
+                "====================================================================================================",
+                "CONFIDENTIAL - FOR AUTHORIZED WORKFORCE LOGISTICS & BORDER CONTROL USE ONLY",
+                "Digital Verification Signature: CBG-SEC-VERIFIED-VALIDATED-2026"
+            };
         }
-
-        String[] lines = new String[] {
-            subTitle,
-            "====================================================================================================",
-            "DOCUMENT TYPE: " + docType,
-            "",
-            "SECTION: 1. TRAVELER PERSONAL IDENTIFICATION",
-            "Full Legal Name:       Bob Employee",
-            "Employee ID:           EMP-88219",
-            "Department / Division: Sales & Field Operations",
-            "Corporate Email:       employee@cbg.com",
-            "Emergency Phone / SOS: +1-555-0124",
-            "",
-            "SECTION: 2. PASSPORT & BORDER CONTROL CREDENTIALS",
-            "Document Number:       " + docNo,
-            "Issuing Authority:     Government Passport Office / CBG Security Clearance",
-            "Date of Issue:         2020-08-01",
-            "Date of Expiry:        " + expiry,
-            "Security Clearance:    Level-3 International Overseas Deployment Authorized",
-            "",
-            "SECTION: 3. CORPORATE TRAVEL POLICY & AUTHORIZATION",
-            "Travel Auth ID:        CBG-AUTH-2026-9941",
-            "Approving Manager:     Alice Manager (Sales Director)",
-            "Global Medical Ins.:   Allianz Corporate Health Shield #AG-992014",
-            "SOS Evacuation Plan:   Active 24/7 Global Medical & Rescue Coverage",
-            "Per-Diem Allowance:    $300.00 / day (Policy Compliant)",
-            "====================================================================================================",
-            "CONFIDENTIAL - FOR AUTHORIZED WORKFORCE LOGISTICS & BORDER CONTROL USE ONLY",
-            "Digital Verification Signature: CBG-SEC-VERIFIED-VALIDATED-2026"
-        };
 
         return buildValidPdf(docTitle, lines);
     }

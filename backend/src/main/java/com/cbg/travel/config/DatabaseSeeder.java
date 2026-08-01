@@ -368,6 +368,9 @@ public class DatabaseSeeder implements CommandLineRunner {
             createDummyFileIfMissing(uploadDirPath, "bob_docs.pdf", com.cbg.travel.controller.FileServeController.generateRichPdfBytes("bob_docs.pdf"));
             createDummyFileIfMissing(uploadDirPath, "passport_bob.pdf", com.cbg.travel.controller.FileServeController.generateRichPdfBytes("passport_bob.pdf"));
             createDummyFileIfMissing(uploadDirPath, "visa_uk_bob.pdf", com.cbg.travel.controller.FileServeController.generateRichPdfBytes("visa_uk_bob.pdf"));
+            createDummyFileIfMissing(uploadDirPath, "ticket_bob.pdf", com.cbg.travel.controller.FileServeController.generateRichPdfBytes("ticket_bob.pdf"));
+            createDummyFileIfMissing(uploadDirPath, "insurance_bob.pdf", com.cbg.travel.controller.FileServeController.generateRichPdfBytes("insurance_bob.pdf"));
+            createDummyFileIfMissing(uploadDirPath, "shipment_doc_bob.pdf", com.cbg.travel.controller.FileServeController.generateRichPdfBytes("shipment_doc_bob.pdf"));
             createDummyFileIfMissing(uploadDirPath, "london_hotel_receipt.png", com.cbg.travel.controller.FileServeController.generateRichReceiptImageBytes("london_hotel_receipt.png"));
             createDummyFileIfMissing(uploadDirPath, "dinner_receipt.png", com.cbg.travel.controller.FileServeController.generateRichReceiptImageBytes("dinner_receipt.png"));
             createDummyFileIfMissing(uploadDirPath, "uber_receipt.png", com.cbg.travel.controller.FileServeController.generateRichReceiptImageBytes("uber_receipt.png"));

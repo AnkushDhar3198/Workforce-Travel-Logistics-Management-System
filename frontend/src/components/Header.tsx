@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, X, Check, Sparkles, Menu, LogOut } from 'lucide-react';
+import { Bell, X, Check, Sparkles, Menu, LogOut, ShieldAlert } from 'lucide-react';
 import { useAuth, API_BASE } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
@@ -8,6 +8,8 @@ interface HeaderProps {
   notifications: any[];
   loadNotifications: () => void;
   onOpenMobileMenu?: () => void;
+  sosStatus?: string;
+  triggerSOS?: () => void;
 }
 
 const TAB_LABELS: Record<string, { label: string; emoji: string }> = {
@@ -26,8 +28,8 @@ const TAB_LABELS: Record<string, { label: string; emoji: string }> = {
   users: { label: 'User Directory', emoji: '👥' },
 };
 
-export default function Header({ activeTab, notifications, loadNotifications, onOpenMobileMenu }: HeaderProps) {
-  const { authFetch, logout } = useAuth();
+export default function Header({ activeTab, notifications, loadNotifications, onOpenMobileMenu, sosStatus, triggerSOS }: HeaderProps) {
+  const { user, authFetch, logout } = useAuth();
   const { themeData } = useTheme();
   const [showNotifPanel, setShowNotifPanel] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -103,19 +105,37 @@ export default function Header({ activeTab, notifications, loadNotifications, on
           <span>{themeData.name}</span>
         </div>
 
+        {/* Emergency SOS Button for Traveling Employees */}
+        {user?.role === 'TRAVELING_EMPLOYEE' && triggerSOS && (
+          <button
+            onClick={triggerSOS}
+            title="Trigger Emergency SOS"
+            className="px-2.5 py-1.5 rounded-xl font-black text-xs flex items-center gap-1.5 cursor-pointer transition-all shrink-0"
+            style={{
+              background: sosStatus === 'triggered' ? 'rgba(239,68,68,0.25)' : 'rgba(239,68,68,0.12)',
+              border: '1px solid rgba(239,68,68,0.35)',
+              color: '#f87171',
+              animation: sosStatus === 'triggered' ? 'sos-pulse 1.2s infinite' : undefined,
+            }}
+          >
+            <ShieldAlert className="w-4 h-4" />
+            <span>{sosStatus === 'triggered' ? 'SOS ACTIVE' : 'SOS'}</span>
+          </button>
+        )}
+
         {/* Smartphone Sign Out Button */}
         <button
           onClick={logout}
           title="Sign Out"
           className="px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shrink-0"
           style={{
-            background: 'rgba(239,68,68,0.1)',
-            border: '1px solid rgba(239,68,68,0.3)',
-            color: '#f87171',
+            background: 'var(--nav-hover-bg)',
+            border: '1px solid var(--border-subtle)',
+            color: 'var(--text-secondary)',
           }}
         >
           <LogOut className="w-3.5 h-3.5" />
-          <span className="hidden xs:inline sm:inline">Sign Out</span>
+          <span className="hidden sm:inline">Sign Out</span>
         </button>
 
         {/* Notification bell */}

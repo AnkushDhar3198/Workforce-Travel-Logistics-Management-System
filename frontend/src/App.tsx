@@ -111,6 +111,8 @@ function DashboardContent() {
           notifications={notifications}
           loadNotifications={loadNotifications}
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
+          sosStatus={sosStatus}
+          triggerSOS={triggerSOS}
         />
 
         <main

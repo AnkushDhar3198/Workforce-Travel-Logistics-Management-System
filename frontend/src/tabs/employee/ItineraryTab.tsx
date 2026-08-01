@@ -191,15 +191,31 @@ export default function ItineraryTab() {
       </div>
 
       {/* Select Trip Filter panel */}
-      <div className="flex gap-4 items-center bg-slate-900/30 p-4 rounded-xl border border-slate-850">
-        <label className="text-sm font-bold text-slate-400">Selected Trip:</label>
+      <div 
+        className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch sm:items-center p-3.5 sm:p-4 rounded-2xl w-full max-w-full overflow-hidden"
+        style={{
+          background: 'var(--card-bg)',
+          border: '1px solid var(--card-border)',
+        }}
+      >
+        <label className="text-xs sm:text-sm font-bold shrink-0" style={{ color: 'var(--text-secondary)' }}>
+          Selected Trip:
+        </label>
         <select 
           value={selectedReq?.id || ''} 
           onChange={(e) => setSelectedReq(requests.find(r => r.id === Number(e.target.value)))}
-          className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-cyan-500 cursor-pointer"
+          className="w-full min-w-0 max-w-full rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold truncate cursor-pointer transition-all"
+          style={{
+            background: 'var(--input)',
+            border: '1px solid var(--border-default)',
+            color: 'var(--text-primary)',
+            fontSize: '16px',
+          }}
         >
           {requests.map(r => (
-            <option key={r.id} value={r.id}>{r.destination} ({r.startDate} to {r.endDate}) - {r.status}</option>
+            <option key={r.id} value={r.id} style={{ background: 'var(--bg-elevated)', color: 'var(--text-primary)' }}>
+              {r.destination} ({r.startDate} to {r.endDate}) - {r.status}
+            </option>
           ))}
         </select>
       </div>

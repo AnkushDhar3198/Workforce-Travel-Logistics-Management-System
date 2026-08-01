@@ -1,5 +1,6 @@
 package com.cbg.travel.controller;
 
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -13,12 +14,13 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Locale;
 
 @RestController
 @RequestMapping("/uploads")
@@ -32,39 +34,40 @@ public class FileServeController {
             ensureDirectoryExists();
             Path file = rootLocation.resolve(filename);
 
-            // Re-generate if missing or if file size is trivial (older dummy placeholder)
-            if (!Files.exists(file) || Files.size(file) < 600) {
-                generateRichFile(file, filename);
-            }
+            String lower = filename.toLowerCase();
+            byte[] fileBytes;
 
-            Resource resource = new UrlResource(file.toUri());
-
-            if (resource.exists() && resource.isReadable()) {
-                String contentType = null;
+            if (lower.endsWith(".pdf")) {
+                fileBytes = generateRichPdfBytes(filename);
                 try {
-                    contentType = Files.probeContentType(file);
+                    Files.write(file, fileBytes);
                 } catch (Exception ignored) {}
 
-                if (contentType == null) {
-                    String lower = filename.toLowerCase();
-                    if (lower.endsWith(".pdf")) {
-                        contentType = "application/pdf";
-                    } else if (lower.endsWith(".png")) {
-                        contentType = "image/png";
-                    } else if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) {
-                        contentType = "image/jpeg";
-                    } else {
-                        contentType = "application/octet-stream";
-                    }
-                }
+                return ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_PDF)
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                        .body(new ByteArrayResource(fileBytes));
+            } else if (lower.endsWith(".png") || lower.endsWith(".jpg") || lower.endsWith(".jpeg")) {
+                fileBytes = generateRichReceiptImageBytes(filename);
+                try {
+                    Files.write(file, fileBytes);
+                } catch (Exception ignored) {}
 
                 return ResponseEntity.ok()
-                        .contentType(MediaType.parseMediaType(contentType))
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
-                        .body(resource);
-            } else {
-                return ResponseEntity.notFound().build();
+                        .contentType(MediaType.IMAGE_PNG)
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                        .body(new ByteArrayResource(fileBytes));
             }
+
+            if (Files.exists(file)) {
+                Resource resource = new UrlResource(file.toUri());
+                return ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                        .body(resource);
+            }
+
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
@@ -78,79 +81,124 @@ public class FileServeController {
         } catch (IOException ignored) {}
     }
 
-    private void generateRichFile(Path targetPath, String filename) {
-        try {
-            String lower = filename.toLowerCase();
-            if (lower.endsWith(".pdf")) {
-                generateRichPdf(targetPath, filename);
-            } else if (lower.endsWith(".png") || lower.endsWith(".jpg") || lower.endsWith(".jpeg")) {
-                generateRichReceiptImage(targetPath, filename);
-            }
-        } catch (Exception ignored) {}
-    }
+    public static byte[] generateRichPdfBytes(String filename) {
+        String lower = filename.toLowerCase();
+        String docTitle = "CBG WORKFORCE LOGISTICS INC.";
+        String subTitle = "OFFICIAL CORPORATE TRAVEL & IDENTIFICATION VAULT";
+        String docType = "OFFICIAL PASSPORT & CORPORATE BORDER CLEARANCE";
+        String docNo = "P-984201948";
+        String expiry = "2030-07-31 (VALID & ACTIVE)";
 
-    private void generateRichPdf(Path targetPath, String filename) throws IOException {
-        String docType = "OFFICIAL PASSPORT & CORPORATE CLEARANCE";
-        String passportNo = "P-984201948";
-        String expiry = "2030-07-31";
-        
-        if (filename.toLowerCase().contains("passport")) {
-            docType = "INTERNATIONAL PASSPORT IDENTIFICATION";
-        } else if (filename.toLowerCase().contains("visa")) {
-            docType = "UK BUSINESS TRAVEL VISA CERTIFICATE";
-            passportNo = "GBR-VISA-883912";
-            expiry = "2027-12-31";
+        if (lower.contains("visa")) {
+            docTitle = "UK VISAS & IMMIGRATION / CBG TRAVEL";
+            subTitle = "OFFICIAL UK BUSINESS TRAVEL VISA CLEARANCE CERTIFICATE";
+            docType = "MULTIPLE ENTRY UK BUSINESS VISA";
+            docNo = "GBR-VISA-883912";
+            expiry = "2027-12-31 (ACTIVE PERMIT)";
         }
 
-        String pdfContent = "%PDF-1.4\n" +
-                "1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n" +
-                "2 0 obj<</Type/Pages/Count 1/Kids[3 0 R]>>endobj\n" +
-                "3 0 obj<</Type/Page/MediaBox[0 0 612 792]/Parent 2 0 R/Resources<</Font<</F1 4 0 R>>>>>/Contents 5 0 R>>endobj\n" +
-                "4 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>endobj\n" +
-                "5 0 obj<</Length 1400>>stream\n" +
-                "BT\n" +
-                "/F1 16 Tf 50 740 Td (CBG WORKFORCE LOGISTICS INC.) Tj\n" +
-                "0 -22 Td /F1 12 Tf (CORPORATE TRAVEL & IDENTIFICATION VAULT) Tj\n" +
-                "0 -20 Td /F1 10 Tf (----------------------------------------------------------------------------------------------------) Tj\n" +
-                "0 -25 Td /F1 12 Tf (DOCUMENT TYPE: " + docType + ") Tj\n" +
-                "0 -25 Td /F1 11 Tf (1. TRAVELER PERSONAL INFORMATION) Tj\n" +
-                "0 -16 Td /F1 10 Tf (Full Legal Name:     Bob Employee) Tj\n" +
-                "0 -14 Td (Employee ID:         EMP-88219) Tj\n" +
-                "0 -14 Td (Department:          Sales & Field Operations) Tj\n" +
-                "0 -14 Td (Corporate Email:     employee@cbg.com) Tj\n" +
-                "0 -14 Td (Contact Phone:       +1-555-0124) Tj\n" +
-                "0 -25 Td /F1 11 Tf (2. PASSPORT & BORDER CLEARANCE DETAILS) Tj\n" +
-                "0 -16 Td /F1 10 Tf (Document Number:     " + passportNo + ") Tj\n" +
-                "0 -14 Td (Issuing Authority:   Government Passport Office / CBG Security) Tj\n" +
-                "0 -14 Td (Date of Expiry:      " + expiry + " (VALID & ACTIVE)) Tj\n" +
-                "0 -14 Td (Security Status:     Verified for International Border Control Audit) Tj\n" +
-                "0 -25 Td /F1 11 Tf (3. CORPORATE AUTHORIZATION & POLICY) Tj\n" +
-                "0 -16 Td /F1 10 Tf (Travel Auth ID:        CBG-AUTH-2026-9941) Tj\n" +
-                "0 -14 Td (Approving Manager:   Alice Manager (Sales Director)) Tj\n" +
-                "0 -14 Td (Global Insurance:    Allianz Corporate Medical Shield #AG-992014) Tj\n" +
-                "0 -14 Td (SOS Emergency:       Active 24/7 Global Evacuation Protocol) Tj\n" +
-                "0 -35 Td /F1 10 Tf (----------------------------------------------------------------------------------------------------) Tj\n" +
-                "0 -18 Td /F1 9 Tf (CONFIDENTIAL - FOR AUTHORIZED WORKFORCE LOGISTICS USE ONLY) Tj\n" +
-                "0 -14 Td (Digital Verification Code: CBG-SEC-VERIFIED-OK-2026) Tj\n" +
-                "ET\n" +
-                "endstream\n" +
-                "endobj\n" +
-                "xref\n" +
-                "0 6\n" +
-                "0000000000 65535 f \n" +
-                "0000000009 00000 n \n" +
-                "0000000056 00000 n \n" +
-                "0000000111 00000 n \n" +
-                "0000000224 00000 n \n" +
-                "0000000293 00000 n \n" +
-                "trailer <</Size 6/Root 1 0 R>>\n" +
-                "startxref\n" +
-                "1750\n" +
-                "%%EOF\n";
-        Files.write(targetPath, pdfContent.getBytes(StandardCharsets.UTF_8));
+        String[] lines = new String[] {
+            subTitle,
+            "====================================================================================================",
+            "DOCUMENT TYPE: " + docType,
+            "",
+            "SECTION: 1. TRAVELER PERSONAL IDENTIFICATION",
+            "Full Legal Name:       Bob Employee",
+            "Employee ID:           EMP-88219",
+            "Department / Division: Sales & Field Operations",
+            "Corporate Email:       employee@cbg.com",
+            "Emergency Phone / SOS: +1-555-0124",
+            "",
+            "SECTION: 2. PASSPORT & BORDER CONTROL CREDENTIALS",
+            "Document Number:       " + docNo,
+            "Issuing Authority:     Government Passport Office / CBG Security Clearance",
+            "Date of Issue:         2020-08-01",
+            "Date of Expiry:        " + expiry,
+            "Security Clearance:    Level-3 International Overseas Deployment Authorized",
+            "",
+            "SECTION: 3. CORPORATE TRAVEL POLICY & AUTHORIZATION",
+            "Travel Auth ID:        CBG-AUTH-2026-9941",
+            "Approving Manager:     Alice Manager (Sales Director)",
+            "Global Medical Ins.:   Allianz Corporate Health Shield #AG-992014",
+            "SOS Evacuation Plan:   Active 24/7 Global Medical & Rescue Coverage",
+            "Per-Diem Allowance:    $300.00 / day (Policy Compliant)",
+            "====================================================================================================",
+            "CONFIDENTIAL - FOR AUTHORIZED WORKFORCE LOGISTICS & BORDER CONTROL USE ONLY",
+            "Digital Verification Signature: CBG-SEC-VERIFIED-VALIDATED-2026"
+        };
+
+        return buildValidPdf(docTitle, lines);
     }
 
-    private void generateRichReceiptImage(Path targetPath, String filename) throws IOException {
+    private static byte[] buildValidPdf(String docTitle, String[] lines) {
+        StringBuilder streamBuilder = new StringBuilder();
+        streamBuilder.append("BT\n");
+        streamBuilder.append("/F1 16 Tf 40 740 Td (").append(escapePdfText(docTitle)).append(") Tj\n");
+
+        for (String line : lines) {
+            if (line.isEmpty()) {
+                streamBuilder.append("0 -14 Td () Tj\n");
+            } else if (line.startsWith("SECTION:") || line.startsWith("DOCUMENT TYPE:")) {
+                streamBuilder.append("0 -20 Td /F1 12 Tf (").append(escapePdfText(line)).append(") Tj\n");
+            } else if (line.startsWith("==") || line.startsWith("--")) {
+                streamBuilder.append("0 -14 Td /F1 10 Tf (----------------------------------------------------------------------------------------------------) Tj\n");
+            } else {
+                streamBuilder.append("0 -14 Td /F1 10 Tf (").append(escapePdfText(line)).append(") Tj\n");
+            }
+        }
+        streamBuilder.append("ET\n");
+
+        byte[] streamBytes = streamBuilder.toString().getBytes(StandardCharsets.UTF_8);
+        int streamLength = streamBytes.length;
+
+        String header = "%PDF-1.4\n";
+        String obj1 = "1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n";
+        String obj2 = "2 0 obj<</Type/Pages/Count 1/Kids[3 0 R]>>endobj\n";
+        String obj3 = "3 0 obj<</Type/Page/MediaBox[0 0 612 792]/Parent 2 0 R/Resources<</Font<</F1 4 0 R>>>>>/Contents 5 0 R>>endobj\n";
+        String obj4 = "4 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>endobj\n";
+        String obj5Head = "5 0 obj<</Length " + streamLength + ">>stream\n";
+        String obj5Tail = "\nendstream\nendobj\n";
+
+        int offset1 = header.length();
+        int offset2 = offset1 + obj1.length();
+        int offset3 = offset2 + obj2.length();
+        int offset4 = offset3 + obj3.length();
+        int offset5 = offset4 + obj4.length();
+        int xrefOffset = offset5 + obj5Head.length() + streamLength + obj5Tail.length();
+
+        String xref = String.format(Locale.US,
+                "xref\n0 6\n" +
+                "0000000000 65535 f \n" +
+                "%010d 00000 n \n" +
+                "%010d 00000 n \n" +
+                "%010d 00000 n \n" +
+                "%010d 00000 n \n" +
+                "%010d 00000 n \n" +
+                "trailer<</Size 6/Root 1 0 R>>\n" +
+                "startxref\n%d\n%%EOF\n",
+                offset1, offset2, offset3, offset4, offset5, xrefOffset);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            baos.write(header.getBytes(StandardCharsets.UTF_8));
+            baos.write(obj1.getBytes(StandardCharsets.UTF_8));
+            baos.write(obj2.getBytes(StandardCharsets.UTF_8));
+            baos.write(obj3.getBytes(StandardCharsets.UTF_8));
+            baos.write(obj4.getBytes(StandardCharsets.UTF_8));
+            baos.write(obj5Head.getBytes(StandardCharsets.UTF_8));
+            baos.write(streamBytes);
+            baos.write(obj5Tail.getBytes(StandardCharsets.UTF_8));
+            baos.write(xref.getBytes(StandardCharsets.UTF_8));
+        } catch (IOException ignored) {}
+
+        return baos.toByteArray();
+    }
+
+    private static String escapePdfText(String text) {
+        return text.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)");
+    }
+
+    public static byte[] generateRichReceiptImageBytes(String filename) throws IOException {
         int width = 500;
         int height = 650;
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -256,6 +304,8 @@ public class FileServeController {
         }
 
         g.dispose();
-        ImageIO.write(image, "png", targetPath.toFile());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(image, "png", baos);
+        return baos.toByteArray();
     }
 }

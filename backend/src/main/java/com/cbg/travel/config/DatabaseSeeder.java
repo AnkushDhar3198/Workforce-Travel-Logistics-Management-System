@@ -359,12 +359,12 @@ public class DatabaseSeeder implements CommandLineRunner {
             if (!java.nio.file.Files.exists(uploadDirPath)) {
                 java.nio.file.Files.createDirectories(uploadDirPath);
             }
-            createDummyFileIfMissing(uploadDirPath, "bob_docs.pdf", generateDummyPdfContent("Corporate Travel Documents - Bob Employee"));
-            createDummyFileIfMissing(uploadDirPath, "passport_bob.pdf", generateDummyPdfContent("Passport Copy - Bob Employee"));
-            createDummyFileIfMissing(uploadDirPath, "visa_uk_bob.pdf", generateDummyPdfContent("UK Business Visa Certificate - Bob Employee"));
-            createDummyFileIfMissing(uploadDirPath, "london_hotel_receipt.png", generateDummyPngContent());
-            createDummyFileIfMissing(uploadDirPath, "dinner_receipt.png", generateDummyPngContent());
-            createDummyFileIfMissing(uploadDirPath, "uber_receipt.png", generateDummyPngContent());
+            createDummyFileIfMissing(uploadDirPath, "bob_docs.pdf", com.cbg.travel.controller.FileServeController.generateRichPdfBytes("bob_docs.pdf"));
+            createDummyFileIfMissing(uploadDirPath, "passport_bob.pdf", com.cbg.travel.controller.FileServeController.generateRichPdfBytes("passport_bob.pdf"));
+            createDummyFileIfMissing(uploadDirPath, "visa_uk_bob.pdf", com.cbg.travel.controller.FileServeController.generateRichPdfBytes("visa_uk_bob.pdf"));
+            createDummyFileIfMissing(uploadDirPath, "london_hotel_receipt.png", com.cbg.travel.controller.FileServeController.generateRichReceiptImageBytes("london_hotel_receipt.png"));
+            createDummyFileIfMissing(uploadDirPath, "dinner_receipt.png", com.cbg.travel.controller.FileServeController.generateRichReceiptImageBytes("dinner_receipt.png"));
+            createDummyFileIfMissing(uploadDirPath, "uber_receipt.png", com.cbg.travel.controller.FileServeController.generateRichReceiptImageBytes("uber_receipt.png"));
         } catch (Exception e) {
             System.err.println("Could not ensure upload sample files: " + e.getMessage());
         }
@@ -372,73 +372,8 @@ public class DatabaseSeeder implements CommandLineRunner {
 
     private void createDummyFileIfMissing(java.nio.file.Path uploadDir, String filename, byte[] content) {
         java.nio.file.Path filePath = uploadDir.resolve(filename);
-        if (!java.nio.file.Files.exists(filePath)) {
-            try {
-                java.nio.file.Files.write(filePath, content);
-            } catch (Exception ignored) {}
-        }
-    }
-
-    private byte[] generateDummyPdfContent(String title) {
-        String pdf = "%PDF-1.4\n" +
-                "1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n" +
-                "2 0 obj<</Type/Pages/Count 1/Kids[3 0 R]>>endobj\n" +
-                "3 0 obj<</Type/Page/MediaBox[0 0 612 792]/Parent 2 0 R/Resources<</Font<</F1 4 0 R>>>>>/Contents 5 0 R>>endobj\n" +
-                "4 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>endobj\n" +
-                "5 0 obj<</Length 1400>>stream\n" +
-                "BT\n" +
-                "/F1 16 Tf 50 740 Td (CBG WORKFORCE LOGISTICS INC.) Tj\n" +
-                "0 -22 Td /F1 12 Tf (CORPORATE TRAVEL & IDENTIFICATION VAULT) Tj\n" +
-                "0 -20 Td /F1 10 Tf (----------------------------------------------------------------------------------------------------) Tj\n" +
-                "0 -25 Td /F1 12 Tf (DOCUMENT TYPE: " + title + ") Tj\n" +
-                "0 -25 Td /F1 11 Tf (1. TRAVELER PERSONAL INFORMATION) Tj\n" +
-                "0 -16 Td /F1 10 Tf (Full Legal Name:     Bob Employee) Tj\n" +
-                "0 -14 Td (Employee ID:         EMP-88219) Tj\n" +
-                "0 -14 Td (Department:          Sales & Field Operations) Tj\n" +
-                "0 -14 Td (Corporate Email:     employee@cbg.com) Tj\n" +
-                "0 -14 Td (Contact Phone:       +1-555-0124) Tj\n" +
-                "0 -25 Td /F1 11 Tf (2. PASSPORT & BORDER CLEARANCE DETAILS) Tj\n" +
-                "0 -16 Td /F1 10 Tf (Document Number:     P-984201948 / GBR-VISA-883912) Tj\n" +
-                "0 -14 Td (Issuing Authority:   Government Passport Office / CBG Security) Tj\n" +
-                "0 -14 Td (Date of Expiry:      2030-07-31 (VALID & ACTIVE)) Tj\n" +
-                "0 -14 Td (Security Status:     Verified for International Border Control Audit) Tj\n" +
-                "0 -25 Td /F1 11 Tf (3. CORPORATE AUTHORIZATION & POLICY) Tj\n" +
-                "0 -16 Td /F1 10 Tf (Travel Auth ID:        CBG-AUTH-2026-9941) Tj\n" +
-                "0 -14 Td (Approving Manager:   Alice Manager (Sales Director)) Tj\n" +
-                "0 -14 Td (Global Insurance:    Allianz Corporate Medical Shield #AG-992014) Tj\n" +
-                "0 -14 Td (SOS Emergency:       Active 24/7 Global Evacuation Protocol) Tj\n" +
-                "0 -35 Td /F1 10 Tf (----------------------------------------------------------------------------------------------------) Tj\n" +
-                "0 -18 Td /F1 9 Tf (CONFIDENTIAL - FOR AUTHORIZED WORKFORCE LOGISTICS USE ONLY) Tj\n" +
-                "0 -14 Td (Digital Verification Code: CBG-SEC-VERIFIED-OK-2026) Tj\n" +
-                "ET\n" +
-                "endstream\n" +
-                "endobj\n" +
-                "xref\n" +
-                "0 6\n" +
-                "0000000000 65535 f \n" +
-                "0000000009 00000 n \n" +
-                "0000000056 00000 n \n" +
-                "0000000111 00000 n \n" +
-                "0000000224 00000 n \n" +
-                "0000000293 00000 n \n" +
-                "trailer <</Size 6/Root 1 0 R>>\n" +
-                "startxref\n" +
-                "1750\n" +
-                "%%EOF\n";
-        return pdf.getBytes(java.nio.charset.StandardCharsets.UTF_8);
-    }
-
-    private byte[] generateDummyPngContent() {
-        return new byte[]{
-            (byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
-            0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
-            0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
-            0x08, 0x02, 0x00, 0x00, 0x00, (byte) 0x90, 0x77, 0x53,
-            (byte) 0xDE, 0x00, 0x00, 0x00, 0x0C, 0x49, 0x44, 0x41,
-            0x54, 0x08, (byte) 0xD7, 0x63, (byte) 0xF8, (byte) 0xCF, (byte) 0xC0, 0x00,
-            0x00, 0x03, 0x01, 0x01, 0x00, 0x18, (byte) 0xDD, (byte) 0x8D,
-            (byte) 0xB0, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E,
-            0x44, (byte) 0xAE, 0x42, 0x60, (byte) 0x82
-        };
+        try {
+            java.nio.file.Files.write(filePath, content);
+        } catch (Exception ignored) {}
     }
 }

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, X, Check, Sparkles } from 'lucide-react';
+import { Bell, X, Check, Sparkles, Menu } from 'lucide-react';
 import { useAuth, API_BASE } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
@@ -7,6 +7,7 @@ interface HeaderProps {
   activeTab: string;
   notifications: any[];
   loadNotifications: () => void;
+  onOpenMobileMenu?: () => void;
 }
 
 const TAB_LABELS: Record<string, { label: string; emoji: string }> = {
@@ -25,7 +26,7 @@ const TAB_LABELS: Record<string, { label: string; emoji: string }> = {
   users: { label: 'User Directory', emoji: '👥' },
 };
 
-export default function Header({ activeTab, notifications, loadNotifications }: HeaderProps) {
+export default function Header({ activeTab, notifications, loadNotifications, onOpenMobileMenu }: HeaderProps) {
   const { authFetch } = useAuth();
   const { themeData } = useTheme();
   const [showNotifPanel, setShowNotifPanel] = useState(false);
@@ -53,7 +54,7 @@ export default function Header({ activeTab, notifications, loadNotifications }: 
 
   return (
     <header
-      className="sticky top-0 z-40 h-16 flex items-center justify-between px-6"
+      className="sticky top-0 z-40 h-16 flex items-center justify-between px-4 md:px-6"
       style={{
         background: 'var(--header-bg)',
         borderBottom: '1px solid var(--border-subtle)',
@@ -61,11 +62,26 @@ export default function Header({ activeTab, notifications, loadNotifications }: 
         WebkitBackdropFilter: 'blur(32px) saturate(180%)',
       }}
     >
-      {/* Tab title */}
-      <div className="flex items-center gap-3 animate-fade-slide-in">
+      {/* Tab title & Mobile Menu Toggle */}
+      <div className="flex items-center gap-2.5 animate-fade-slide-in">
+        {onOpenMobileMenu && (
+          <button
+            onClick={onOpenMobileMenu}
+            className="md:hidden p-2 rounded-xl flex items-center justify-center cursor-pointer transition-all shrink-0"
+            style={{
+              background: 'var(--nav-hover-bg)',
+              border: '1px solid var(--border-subtle)',
+              color: 'var(--text-primary)',
+            }}
+            aria-label="Open Navigation Menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        )}
+
         <span className="text-xl">{tabInfo.emoji}</span>
         <h1
-          className="text-base font-bold capitalize tracking-tight"
+          className="text-sm md:text-base font-bold capitalize tracking-tight truncate max-w-[180px] sm:max-w-none"
           style={{ color: 'var(--text-primary)', fontFamily: 'Inter, sans-serif' }}
         >
           {tabInfo.label}

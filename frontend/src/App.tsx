@@ -26,6 +26,7 @@ function DashboardContent() {
   const [activeTab, setActiveTab] = useState('');
   const [notifications, setNotifications] = useState<any[]>([]);
   const [sosStatus, setSosStatus] = useState<string>('idle');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -89,6 +90,8 @@ function DashboardContent() {
         setActiveTab={setActiveTab}
         sosStatus={sosStatus}
         triggerSOS={triggerSOS}
+        isMobileOpen={isMobileMenuOpen}
+        onCloseMobile={() => setIsMobileMenuOpen(false)}
       />
 
       {/* Main content */}
@@ -107,6 +110,7 @@ function DashboardContent() {
           activeTab={activeTab}
           notifications={notifications}
           loadNotifications={loadNotifications}
+          onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
         />
 
         <main

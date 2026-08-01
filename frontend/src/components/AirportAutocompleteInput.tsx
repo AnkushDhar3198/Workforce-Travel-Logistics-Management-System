@@ -103,7 +103,6 @@ export default function AirportAutocompleteInput({
           placeholder={placeholder}
           value={searchTerm}
           onChange={handleInputChange}
-          onFocus={handleFocus}
           style={{
             width: '100%',
             background: 'var(--input)',

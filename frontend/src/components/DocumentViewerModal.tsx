@@ -207,7 +207,7 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
       `}</style>
 
       <div 
-        className="relative w-full max-w-4xl max-h-[92vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden text-left"
+        className="relative w-full max-w-4xl max-h-[92vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden text-left mx-1 sm:mx-0"
         style={{
           background: 'var(--card-bg)',
           border: '1px solid var(--card-border)',
@@ -218,56 +218,58 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
         
         {/* Modal Top Navigation Bar */}
         <div 
-          className="flex items-center justify-between px-6 py-4 border-b print:hidden"
+          className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-3.5 sm:px-6 py-3 sm:py-4 gap-3 border-b print:hidden"
           style={{ borderBottomColor: 'var(--border-subtle)', background: 'var(--nav-hover-bg)' }}
         >
-          <div className="flex items-center gap-3">
-            <span className="p-2 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-              {docType === 'PASSPORT' && <Globe className="w-5 h-5" />}
-              {docType === 'TICKET' && <Plane className="w-5 h-5" />}
-              {docType === 'VISA' && <FileCheck className="w-5 h-5" />}
-              {docType === 'INSURANCE' && <ShieldCheck className="w-5 h-5" />}
-              {docType === 'SHIPMENT_DOC' && <Box className="w-5 h-5" />}
+          <div className="flex items-center gap-2.5">
+            <span className="p-1.5 sm:p-2 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shrink-0">
+              {docType === 'PASSPORT' && <Globe className="w-4 h-4 sm:w-5 sm:h-5" />}
+              {docType === 'TICKET' && <Plane className="w-4 h-4 sm:w-5 sm:h-5" />}
+              {docType === 'VISA' && <FileCheck className="w-4 h-4 sm:w-5 sm:h-5" />}
+              {docType === 'INSURANCE' && <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />}
+              {docType === 'SHIPMENT_DOC' && <Box className="w-4 h-4 sm:w-5 sm:h-5" />}
             </span>
             <div>
-              <h3 className="text-base font-extrabold text-white flex items-center gap-2">
+              <h3 className="text-xs sm:text-base font-extrabold flex items-center gap-1.5" style={{ color: 'var(--text-primary)' }}>
                 <span>Official Document Preview</span>
-                <span className="text-xs px-2 py-0.5 rounded bg-slate-800 text-cyan-400 font-mono border border-slate-700 uppercase">
+                <span className="text-[10px] px-1.5 py-0.5 rounded font-mono uppercase" style={{ background: 'var(--nav-active-bg)', color: 'var(--accent-primary)', border: '1px solid var(--border-subtle)' }}>
                   {docType}
                 </span>
               </h3>
-              <p className="text-xs text-slate-400">Authenticated Workforce Travel & Security Credential</p>
+              <p className="text-[10px] sm:text-xs" style={{ color: 'var(--text-secondary)' }}>Authenticated Workforce Credential</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-end gap-2 w-full sm:w-auto">
             <button
               onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-200 text-xs font-bold hover:bg-slate-700 hover:text-white transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-bold transition-colors cursor-pointer"
+              style={{ background: 'var(--nav-hover-bg)', borderColor: 'var(--border-subtle)', color: 'var(--text-primary)' }}
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>Print Document</span>
+              <span className="text-[11px] sm:text-xs">Print</span>
             </button>
             <a
               href={getFileUrl(doc.fileUrl)}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 text-xs font-bold hover:bg-cyan-500/20 transition-colors"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 text-xs font-bold hover:bg-cyan-500/20 transition-colors"
             >
               <ExternalLink className="w-3.5 h-3.5" />
-              <span>Open Raw Stream</span>
+              <span className="text-[11px] sm:text-xs">Raw Stream</span>
             </a>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="p-1.5 rounded-lg border text-slate-400 hover:text-white transition-colors ml-auto sm:ml-0"
+              style={{ borderColor: 'var(--border-subtle)' }}
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
         </div>
 
         {/* Modal Main Content Canvas Body */}
-        <div className="p-6 md:p-8 overflow-y-auto bg-slate-950/40 flex justify-center items-center">
+        <div className="p-3 sm:p-6 md:p-8 overflow-y-auto flex justify-center items-center max-w-full">
           
           {/* 1. REALISTIC DYNAMIC PASSPORT DOCUMENT */}
           {docType === 'PASSPORT' && (
@@ -346,9 +348,9 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
                 </div>
               </div>
 
-              <div className="mt-8 pt-4 border-t-2 border-slate-800 font-mono text-[11px] text-amber-400 tracking-widest bg-slate-950/80 p-3 rounded-lg border border-slate-800 shadow-inner">
-                <p>P&lt;{issuingCountry.slice(0, 3)}PASSPORT&lt;&lt;{surname}&lt;&lt;{givenName}&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</p>
-                <p>{passportNo.padEnd(9, 'X')}8{issuingCountry.slice(0, 3)}3007315M3007315&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;04</p>
+              <div className="mt-6 sm:mt-8 pt-4 border-t-2 border-slate-800 font-mono text-[9px] sm:text-[11px] text-amber-400 tracking-widest bg-slate-950/80 p-2.5 sm:p-3 rounded-lg border border-slate-800 shadow-inner overflow-x-auto break-all max-w-full">
+                <p className="break-all">{`P<${issuingCountry.slice(0, 3)}PASSPORT<<${surname}<<${givenName}${'<'.repeat(16)}`}</p>
+                <p className="break-all">{`${passportNo.padEnd(9, 'X')}8${issuingCountry.slice(0, 3)}3007315M3007315${'<'.repeat(14)}04`}</p>
               </div>
             </div>
           )}
@@ -356,23 +358,23 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
           {/* 2. REALISTIC DYNAMIC FLIGHT / TRANSIT E-TICKET */}
           {docType === 'TICKET' && (
             <div id="printable-document" className="w-full max-w-3xl bg-gradient-to-r from-slate-900 via-slate-900 to-cyan-950 rounded-2xl border border-cyan-500/30 shadow-2xl overflow-hidden font-sans text-left">
-              <div className="bg-gradient-to-r from-cyan-600 via-cyan-500 to-blue-600 px-6 py-4 flex justify-between items-center text-slate-950">
-                <div className="flex items-center gap-3">
-                  <Plane className="w-7 h-7 text-slate-950" />
+              <div className="bg-gradient-to-r from-cyan-600 via-cyan-500 to-blue-600 px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-slate-950">
+                <div className="flex items-center gap-2.5 sm:gap-3">
+                  <Plane className="w-6 h-6 sm:w-7 sm:h-7 text-slate-950 shrink-0" />
                   <div>
-                    <h2 className="text-lg font-black tracking-wider uppercase">{carrier}</h2>
-                    <p className="text-[11px] font-bold opacity-90">BOARDING PASS & ELECTRONIC TICKET</p>
+                    <h2 className="text-base sm:text-lg font-black tracking-wider uppercase">{carrier}</h2>
+                    <p className="text-[10px] sm:text-[11px] font-bold opacity-90">BOARDING PASS & ELECTRONIC TICKET</p>
                   </div>
                 </div>
-                <div className="text-right font-mono font-black">
-                  <span className="text-[10px] block opacity-80 uppercase">CONFIRMATION PNR</span>
-                  <span className="text-lg bg-slate-950 text-cyan-400 px-3 py-1 rounded-md shadow border border-slate-800">
+                <div className="text-left sm:text-right font-mono font-black shrink-0">
+                  <span className="text-[9px] sm:text-[10px] block opacity-80 uppercase">CONFIRMATION PNR</span>
+                  <span className="text-sm sm:text-lg bg-slate-950 text-cyan-400 px-2.5 py-1 rounded-md shadow border border-slate-800">
                     {pnr}
                   </span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-12 p-6 gap-6 relative">
+              <div className="grid grid-cols-12 p-3.5 sm:p-6 gap-4 sm:gap-6 relative">
                 <div className="col-span-12 md:col-span-8 space-y-6">
                   {/* Route Airport Graphic */}
                   <div className="flex justify-between items-center p-4 rounded-xl bg-slate-950/70 border border-slate-800">

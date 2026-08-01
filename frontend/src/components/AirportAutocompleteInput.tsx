@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plane, Search, X, Check } from 'lucide-react';
+import { Plane, X, Check } from 'lucide-react';
 import { OFFICIAL_AIRPORTS, type Airport } from '../data/flightRegistry';
 
 interface AirportAutocompleteInputProps {
@@ -11,7 +11,7 @@ interface AirportAutocompleteInputProps {
 
 export default function AirportAutocompleteInput({
   label,
-  placeholder = 'e.g. BLR, DEL, ORD, London...',
+  placeholder = 'Type airport code or city (e.g. BLR, DEL, ORD, London...)',
   value,
   onChange
 }: AirportAutocompleteInputProps) {
@@ -47,7 +47,7 @@ export default function AirportAutocompleteInput({
   });
 
   const handleSelect = (airport: Airport) => {
-    const formatted = `${airport.code} - ${airport.name}, ${airport.city}`;
+    const formatted = `${airport.code} - ${airport.name} (${airport.country})`;
     setSearchTerm(formatted);
     onChange(formatted);
     setIsOpen(false);
@@ -59,12 +59,12 @@ export default function AirportAutocompleteInput({
     onChange(newVal);
     setIsOpen(true);
 
-    // Auto-match exact code typed (e.g. "BLR" or "blr")
+    // Auto-match exact 3-letter IATA code typed (e.g. "BLR", "DEL", "ORD")
     const exactCodeMatch = OFFICIAL_AIRPORTS.find(
       ap => ap.code.toLowerCase() === newVal.trim().toLowerCase()
     );
     if (exactCodeMatch) {
-      const formatted = `${exactCodeMatch.code} - ${exactCodeMatch.name}, ${exactCodeMatch.city}`;
+      const formatted = `${exactCodeMatch.code} - ${exactCodeMatch.name} (${exactCodeMatch.country})`;
       setSearchTerm(formatted);
       onChange(formatted);
     }
@@ -105,10 +105,10 @@ export default function AirportAutocompleteInput({
 
       {/* Floating Autocomplete Dropdown List */}
       {isOpen && (
-        <div className="absolute z-50 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-slate-900/95 border border-slate-800 rounded-xl shadow-2xl backdrop-blur-md divide-y divide-slate-850 animate-fade-in">
+        <div className="absolute z-50 left-0 right-0 mt-1 max-h-64 overflow-y-auto bg-slate-900/95 border border-slate-800 rounded-xl shadow-2xl backdrop-blur-md divide-y divide-slate-850 animate-fade-in">
           {filteredAirports.length > 0 ? (
             filteredAirports.map(ap => {
-              const fullFormatted = `${ap.code} - ${ap.name}, ${ap.city}`;
+              const fullFormatted = `${ap.code} - ${ap.name} (${ap.country})`;
               const isSelected = value === fullFormatted;
 
               return (
@@ -125,7 +125,7 @@ export default function AirportAutocompleteInput({
                     </span>
                     <div className="truncate">
                       <p className="text-xs font-bold text-white truncate">
-                        {ap.name}
+                        {ap.name} ({ap.country})
                       </p>
                       <p className="text-[10px] text-slate-400 truncate">
                         {ap.city}, {ap.country}
@@ -138,7 +138,7 @@ export default function AirportAutocompleteInput({
             })
           ) : (
             <div className="p-3 text-xs text-slate-400 text-center">
-              No matching airport found. Press Enter to use custom entry.
+              Custom entry "{searchTerm}". Press submit to proceed.
             </div>
           )}
         </div>

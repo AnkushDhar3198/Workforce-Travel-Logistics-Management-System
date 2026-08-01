@@ -47,8 +47,9 @@ export const OFFICIAL_AIRLINES: Airline[] = [
   { code: 'KL', name: 'KLM Royal Dutch Airlines', country: 'Netherlands', callsign: 'KLM' }
 ];
 
-// 2. Official Registry of Major Global & Regional Airports
+// 2. Official Registry of Major Global & Regional Airports (50+ World Airports)
 export const OFFICIAL_AIRPORTS: Airport[] = [
+  // India
   { code: 'BLR', name: 'Kempegowda International Airport', city: 'Bengaluru', country: 'India', timezone: 'IST' },
   { code: 'DEL', name: 'Indira Gandhi International Airport', city: 'New Delhi', country: 'India', timezone: 'IST' },
   { code: 'BOM', name: 'Chhatrapati Shivaji Maharaj International Airport', city: 'Mumbai', country: 'India', timezone: 'IST' },
@@ -57,19 +58,55 @@ export const OFFICIAL_AIRPORTS: Airport[] = [
   { code: 'HYD', name: 'Rajiv Gandhi International Airport', city: 'Hyderabad', country: 'India', timezone: 'IST' },
   { code: 'AMD', name: 'Sardar Vallabhbhai Patel International Airport', city: 'Ahmedabad', country: 'India', timezone: 'IST' },
   { code: 'COK', name: 'Cochin International Airport', city: 'Kochi', country: 'India', timezone: 'IST' },
+  { code: 'PNQ', name: 'Pune Airport', city: 'Pune', country: 'India', timezone: 'IST' },
+  { code: 'GOI', name: 'Manohar International Airport, Goa', city: 'Goa', country: 'India', timezone: 'IST' },
+  { code: 'IXC', name: 'Chandigarh International Airport', city: 'Chandigarh', country: 'India', timezone: 'IST' },
+  { code: 'ATQ', name: 'Sri Guru Ram Dass Jee International Airport', city: 'Amritsar', country: 'India', timezone: 'IST' },
+  { code: 'PAT', name: 'Jay Prakash Narayan Airport', city: 'Patna', country: 'India', timezone: 'IST' },
+  { code: 'TRV', name: 'Trivandrum International Airport', city: 'Thiruvananthapuram', country: 'India', timezone: 'IST' },
+  { code: 'JAI', name: 'Jaipur International Airport', city: 'Jaipur', country: 'India', timezone: 'IST' },
+  { code: 'LKO', name: 'Chaudhary Charan Singh International Airport', city: 'Lucknow', country: 'India', timezone: 'IST' },
+  { code: 'GHY', name: 'Lokpriya Gopinath Bordoloi International Airport', city: 'Guwahati', country: 'India', timezone: 'IST' },
+
+  // United States & Americas
   { code: 'ORD', name: "Chicago O'Hare International Airport", city: 'Chicago', country: 'United States', timezone: 'EST' },
   { code: 'JFK', name: 'John F. Kennedy International Airport', city: 'New York', country: 'United States', timezone: 'EST' },
   { code: 'SFO', name: 'San Francisco International Airport', city: 'San Francisco', country: 'United States', timezone: 'PST' },
+  { code: 'LAX', name: 'Los Angeles International Airport', city: 'Los Angeles', country: 'United States', timezone: 'PST' },
+  { code: 'IAD', name: 'Washington Dulles International Airport', city: 'Washington D.C.', country: 'United States', timezone: 'EST' },
+  { code: 'YYZ', name: 'Toronto Pearson International Airport', city: 'Toronto', country: 'Canada', timezone: 'EST' },
+  { code: 'YVR', name: 'Vancouver International Airport', city: 'Vancouver', country: 'Canada', timezone: 'PST' },
+  { code: 'MEX', name: 'Mexico City International Airport', city: 'Mexico City', country: 'Mexico', timezone: 'CST' },
+  { code: 'GRU', name: 'São Paulo/Guarulhos International Airport', city: 'São Paulo', country: 'Brazil', timezone: 'BRT' },
+
+  // Europe
   { code: 'LHR', name: 'London Heathrow Airport', city: 'London', country: 'United Kingdom', timezone: 'GMT' },
+  { code: 'LGW', name: 'London Gatwick Airport', city: 'London', country: 'United Kingdom', timezone: 'GMT' },
+  { code: 'MAN', name: 'Manchester Airport', city: 'Manchester', country: 'United Kingdom', timezone: 'GMT' },
   { code: 'CDG', name: 'Paris Charles de Gaulle Airport', city: 'Paris', country: 'France', timezone: 'CET' },
   { code: 'FRA', name: 'Frankfurt Airport', city: 'Frankfurt', country: 'Germany', timezone: 'CET' },
+  { code: 'MUC', name: 'Munich Airport', city: 'Munich', country: 'Germany', timezone: 'CET' },
+  { code: 'AMS', name: 'Amsterdam Airport Schiphol', city: 'Amsterdam', country: 'Netherlands', timezone: 'CET' },
+  { code: 'ZRH', name: 'Zurich Airport', city: 'Zurich', country: 'Switzerland', timezone: 'CET' },
+  { code: 'IST', name: 'Istanbul Airport', city: 'Istanbul', country: 'Turkey', timezone: 'TRT' },
+
+  // Middle East & Africa
   { code: 'DXB', name: 'Dubai International Airport', city: 'Dubai', country: 'United Arab Emirates', timezone: 'GST' },
+  { code: 'AUH', name: 'Zayed International Airport', city: 'Abu Dhabi', country: 'United Arab Emirates', timezone: 'GST' },
+  { code: 'DOH', name: 'Hamad International Airport', city: 'Doha', country: 'Qatar', timezone: 'AST' },
+  { code: 'CAI', name: 'Cairo International Airport', city: 'Cairo', country: 'Egypt', timezone: 'EEST' },
+  { code: 'JNB', name: 'O. R. Tambo International Airport', city: 'Johannesburg', country: 'South Africa', timezone: 'SAST' },
+
+  // Asia Pacific
   { code: 'SIN', name: 'Singapore Changi Airport', city: 'Singapore', country: 'Singapore', timezone: 'SGT' },
   { code: 'HND', name: 'Tokyo Haneda Airport', city: 'Tokyo', country: 'Japan', timezone: 'JST' },
+  { code: 'NRT', name: 'Tokyo Narita International Airport', city: 'Tokyo', country: 'Japan', timezone: 'JST' },
+  { code: 'HKG', name: 'Hong Kong International Airport', city: 'Hong Kong', country: 'Hong Kong', timezone: 'HKT' },
+  { code: 'KUL', name: 'Kuala Lumpur International Airport', city: 'Kuala Lumpur', country: 'Malaysia', timezone: 'MYT' },
+  { code: 'BKK', name: 'Suvarnabhumi Airport', city: 'Bangkok', country: 'Thailand', timezone: 'ICT' },
+  { code: 'ICN', name: 'Incheon International Airport', city: 'Seoul', country: 'South Korea', timezone: 'KST' },
   { code: 'SYD', name: 'Sydney Kingsford Smith Airport', city: 'Sydney', country: 'Australia', timezone: 'AEST' },
-  { code: 'AMS', name: 'Amsterdam Airport Schiphol', city: 'Amsterdam', country: 'Netherlands', timezone: 'CET' },
-  { code: 'DOH', name: 'Hamad International Airport', city: 'Doha', country: 'Qatar', timezone: 'AST' },
-  { code: 'HKG', name: 'Hong Kong International Airport', city: 'Hong Kong', country: 'Hong Kong', timezone: 'HKT' }
+  { code: 'MEL', name: 'Melbourne Airport', city: 'Melbourne', country: 'Australia', timezone: 'AEST' }
 ];
 
 // 3. Pre-Loaded Verified Real Schedules & Timings Database

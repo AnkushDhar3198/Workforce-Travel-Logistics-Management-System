@@ -112,7 +112,7 @@ export default function LoginScreen() {
           borderBottom: '1px solid var(--border-subtle)',
           backdropFilter: 'blur(24px) saturate(180%)',
           WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-          background: 'rgba(0, 0, 0, 0.2)',
+          background: 'var(--header-bg)',
           boxSizing: 'border-box',
           width: '100%',
         }}
@@ -192,7 +192,7 @@ export default function LoginScreen() {
               padding: '9px 18px',
               borderRadius: '100px',
               border: '1px solid var(--border-default)',
-              background: 'rgba(255, 255, 255, 0.06)',
+              background: 'var(--nav-hover-bg)',
               color: 'var(--text-primary)',
               fontFamily: 'Inter, sans-serif',
               fontWeight: 700,
@@ -202,7 +202,7 @@ export default function LoginScreen() {
               backdropFilter: 'blur(12px)',
             }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-active)'; (e.currentTarget as HTMLElement).style.background = 'var(--nav-active-bg)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-default)'; (e.currentTarget as HTMLElement).style.background = 'rgba(255, 255, 255, 0.06)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-default)'; (e.currentTarget as HTMLElement).style.background = 'var(--nav-hover-bg)'; }}
           >
             Log In
           </button>
@@ -332,7 +332,7 @@ export default function LoginScreen() {
                 padding: '14px 28px',
                 borderRadius: '100px',
                 border: '1px solid var(--border-default)',
-                background: 'rgba(255, 255, 255, 0.05)',
+                background: 'var(--nav-hover-bg)',
                 color: 'var(--text-primary)',
                 fontFamily: 'Inter, sans-serif',
                 fontWeight: 700,
@@ -342,7 +342,7 @@ export default function LoginScreen() {
                 transition: 'all 0.22s ease',
               }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-active)'; (e.currentTarget as HTMLElement).style.background = 'var(--nav-active-bg)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-default)'; (e.currentTarget as HTMLElement).style.background = 'rgba(255, 255, 255, 0.05)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-default)'; (e.currentTarget as HTMLElement).style.background = 'var(--nav-hover-bg)'; }}
             >
               Create Account
             </button>
@@ -364,7 +364,7 @@ export default function LoginScreen() {
           borderTop: '1px solid var(--border-subtle)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          background: 'rgba(0, 0, 0, 0.15)',
+          background: 'var(--header-bg)',
         }}
       >
         <div>Copyright © 2026 VoyaCore Enterprise Inc. All rights reserved.</div>

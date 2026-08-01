@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plane, ShieldAlert, Eye, EyeOff, ArrowRight, Globe, Sparkles, Zap } from 'lucide-react';
+import { Plane, ShieldAlert, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { useAuth, API_BASE } from '../context/AuthContext';
+import Canvas3DBackground from './Canvas3DBackground';
 
 const CREDENTIALS = [
   { label: 'Traveling Employee', email: 'employee@cbg.com', icon: '✈️', color: '#22d3ee' },
@@ -11,6 +12,52 @@ const CREDENTIALS = [
   { label: 'Logistics', email: 'logistics@cbg.com', icon: '📦', color: '#fb923c' },
   { label: 'Admin', email: 'admin@cbg.com', icon: '⚙️', color: '#94a3b8' },
 ];
+
+/** 3D tilt card that follows mouse */
+function TiltCard({ children, className = '', style = {} }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [tilt, setTilt] = useState({ rx: 0, ry: 0, gx: 50, gy: 50 });
+
+  const onMouseMove = (e: React.MouseEvent) => {
+    const rect = ref.current!.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;   // 0..1
+    const y = (e.clientY - rect.top) / rect.height;
+    const ry = (x - 0.5) * 18;   // max ±9deg
+    const rx = (0.5 - y) * 14;
+    setTilt({ rx, ry, gx: x * 100, gy: y * 100 });
+  };
+
+  const onMouseLeave = () => setTilt({ rx: 0, ry: 0, gx: 50, gy: 50 });
+
+  return (
+    <div
+      ref={ref}
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
+      className={className}
+      style={{
+        ...style,
+        transformStyle: 'preserve-3d',
+        transform: `perspective(900px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg) scale3d(1.01,1.01,1.01)`,
+        transition: 'transform 0.12s cubic-bezier(0.22,1,0.36,1)',
+      }}
+    >
+      {/* Specular highlight */}
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          inset: 0,
+          borderRadius: 'inherit',
+          background: `radial-gradient(circle at ${tilt.gx}% ${tilt.gy}%, rgba(255,255,255,0.08), transparent 60%)`,
+          pointerEvents: 'none',
+          zIndex: 1,
+        }}
+      />
+      {children}
+    </div>
+  );
+}
 
 export default function LoginScreen() {
   const { login } = useAuth();
@@ -23,7 +70,7 @@ export default function LoginScreen() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setMounted(true), 50);
+    const t = setTimeout(() => setMounted(true), 80);
     return () => clearTimeout(t);
   }, []);
 
@@ -58,246 +105,266 @@ export default function LoginScreen() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{ background: 'var(--bg-base)' }}>
-      {/* Animated background mesh */}
-      <div className="app-bg" aria-hidden>
-        <div className="mesh-orb mesh-orb-1" />
-        <div className="mesh-orb mesh-orb-2" />
-        <div className="mesh-orb mesh-orb-3" />
-      </div>
+    <div
+      style={{
+        width: '100vw',
+        height: '100vh',
+        overflow: 'hidden',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+      }}
+    >
+      {/* Full-screen 3D canvas */}
+      <Canvas3DBackground />
 
-      {/* Subtle grid overlay */}
+      {/* Content layer */}
       <div
-        aria-hidden
-        className="fixed inset-0 pointer-events-none z-0"
         style={{
-          backgroundImage: `linear-gradient(var(--border-subtle) 1px, transparent 1px), linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px)`,
-          backgroundSize: '64px 64px',
-          maskImage: 'radial-gradient(ellipse at center, black 40%, transparent 80%)'
+          position: 'relative',
+          zIndex: 10,
+          width: '100%',
+          height: '100%',
+          overflow: 'auto',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '24px',
         }}
-      />
-
-      {/* Main card */}
-      <div
-        className={`relative z-10 w-full max-w-md mx-4 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-        style={{ transitionTimingFunction: 'cubic-bezier(0.22,1,0.36,1)' }}
       >
         <div
-          className="rounded-3xl overflow-hidden"
           style={{
-            background: 'var(--bg-glass)',
-            border: '1px solid var(--border-default)',
-            backdropFilter: 'blur(40px) saturate(200%)',
-            WebkitBackdropFilter: 'blur(40px) saturate(200%)',
-            boxShadow: '0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px var(--border-subtle), inset 0 1px 0 rgba(255,255,255,0.05)',
+            width: '100%',
+            maxWidth: '420px',
+            opacity: mounted ? 1 : 0,
+            transform: mounted ? 'translateY(0)' : 'translateY(32px)',
+            transition: 'opacity 0.7s cubic-bezier(0.22,1,0.36,1), transform 0.7s cubic-bezier(0.22,1,0.36,1)',
           }}
         >
-          {/* Top glow bar */}
-          <div
+          <TiltCard
             style={{
-              height: '2px',
-              background: 'var(--btn-primary-bg)',
-              opacity: 0.8,
+              borderRadius: '24px',
+              overflow: 'visible',
+              position: 'relative',
             }}
-          />
-
-          <div className="p-8">
-            {/* Logo */}
+          >
             <div
-              className="flex flex-col items-center mb-8"
-              style={{ animationDelay: '0.1s' }}
+              style={{
+                borderRadius: '24px',
+                overflow: 'hidden',
+                background: 'var(--bg-glass)',
+                border: '1px solid var(--border-default)',
+                backdropFilter: 'blur(48px) saturate(200%)',
+                WebkitBackdropFilter: 'blur(48px) saturate(200%)',
+                boxShadow: '0 32px 80px rgba(0,0,0,0.4), 0 0 0 1px var(--border-subtle), inset 0 1px 0 rgba(255,255,255,0.06)',
+              }}
             >
-              <div
-                className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 animate-bounce-in"
-                style={{
-                  background: 'var(--btn-primary-bg)',
-                  boxShadow: '0 8px 32px var(--accent-glow-strong), 0 0 0 1px var(--border-default)',
-                }}
-              >
-                <Plane className="w-8 h-8" style={{ color: 'var(--btn-primary-text)' }} />
-              </div>
-              <h1
-                className="text-3xl font-black tracking-tight text-gradient"
-                style={{ fontFamily: 'Inter, sans-serif', animationDelay: '0.2s' }}
-              >
-                VoyaCore
-              </h1>
-              <p className="text-sm mt-1.5 text-center" style={{ color: 'var(--text-secondary)' }}>
-                Enterprise Workforce Travel & Logistics
-              </p>
-            </div>
+              {/* Gradient top bar */}
+              <div style={{ height: '2px', background: 'var(--btn-primary-bg)' }} />
 
-            {/* Error */}
-            {error && (
-              <div
-                className="mb-5 px-4 py-3 rounded-xl flex items-center gap-3 animate-fade-slide-up text-sm"
-                style={{
-                  background: 'rgba(239, 68, 68, 0.10)',
-                  border: '1px solid rgba(239, 68, 68, 0.25)',
-                  color: '#fca5a5',
-                }}
-              >
-                <ShieldAlert className="w-4 h-4 shrink-0 text-red-400" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            {/* Login form */}
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <label
-                  className="block text-xs font-semibold uppercase tracking-widest mb-2"
-                  style={{ color: 'var(--text-muted)' }}
-                >
-                  Corporate Email
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="name@company.com"
-                  className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
-                  style={{
-                    background: 'var(--input)',
-                    border: '1px solid var(--border-default)',
-                    color: 'var(--text-primary)',
-                    fontFamily: 'Inter, sans-serif',
-                  }}
-                />
-              </div>
-
-              <div>
-                <label
-                  className="block text-xs font-semibold uppercase tracking-widest mb-2"
-                  style={{ color: 'var(--text-muted)' }}
-                >
-                  Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    className="w-full px-4 py-3 pr-12 rounded-xl text-sm outline-none transition-all"
+              <div style={{ padding: '32px' }}>
+                {/* Logo */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '28px' }}>
+                  <div
                     style={{
-                      background: 'var(--input)',
-                      border: '1px solid var(--border-default)',
-                      color: 'var(--text-primary)',
-                      fontFamily: 'Inter, sans-serif',
+                      width: '64px', height: '64px',
+                      borderRadius: '18px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: 'var(--btn-primary-bg)',
+                      boxShadow: '0 8px 32px var(--accent-glow-strong)',
+                      marginBottom: '14px',
+                      animation: 'bounceIn 0.7s cubic-bezier(0.22,1,0.36,1) both',
                     }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(v => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg transition-colors cursor-pointer"
-                    style={{ color: 'var(--text-muted)' }}
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    <Plane style={{ width: 30, height: 30, color: 'var(--btn-primary-text)' }} />
+                  </div>
+                  <h1 style={{
+                    fontFamily: 'Inter, sans-serif',
+                    fontWeight: 900,
+                    fontSize: '2rem',
+                    letterSpacing: '-0.04em',
+                    margin: 0,
+                    background: 'var(--btn-primary-bg)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}>
+                    VoyaCore
+                  </h1>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '6px 0 0', textAlign: 'center' }}>
+                    Enterprise Workforce Travel & Logistics
+                  </p>
+                </div>
+
+                {/* Error */}
+                {error && (
+                  <div style={{
+                    marginBottom: '16px', padding: '12px 16px',
+                    borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px',
+                    background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.25)',
+                    color: '#fca5a5', fontSize: '0.8125rem',
+                    animation: 'fadeSlideUp 0.3s ease both',
+                  }}>
+                    <ShieldAlert style={{ width: 16, height: 16, flexShrink: 0 }} />
+                    {error}
+                  </div>
+                )}
+
+                {/* Form */}
+                <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '7px' }}>
+                      Corporate Email
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      placeholder="name@company.com"
+                      style={{
+                        width: '100%', padding: '12px 16px',
+                        borderRadius: '12px', outline: 'none', boxSizing: 'border-box',
+                        background: 'var(--input)', border: '1px solid var(--border-default)',
+                        color: 'var(--text-primary)', fontSize: '0.875rem',
+                        fontFamily: 'Inter, sans-serif',
+                        transition: 'border-color 0.2s, box-shadow 0.2s',
+                      }}
+                      onFocus={e => { e.target.style.borderColor = 'var(--border-active)'; e.target.style.boxShadow = '0 0 0 3px var(--accent-glow)'; }}
+                      onBlur={e => { e.target.style.borderColor = 'var(--border-default)'; e.target.style.boxShadow = 'none'; }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '7px' }}>
+                      Password
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        style={{
+                          width: '100%', padding: '12px 44px 12px 16px',
+                          borderRadius: '12px', outline: 'none', boxSizing: 'border-box',
+                          background: 'var(--input)', border: '1px solid var(--border-default)',
+                          color: 'var(--text-primary)', fontSize: '0.875rem',
+                          fontFamily: 'Inter, sans-serif',
+                          transition: 'border-color 0.2s, box-shadow 0.2s',
+                        }}
+                        onFocus={e => { e.target.style.borderColor = 'var(--border-active)'; e.target.style.boxShadow = '0 0 0 3px var(--accent-glow)'; }}
+                        onBlur={e => { e.target.style.borderColor = 'var(--border-default)'; e.target.style.boxShadow = 'none'; }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(v => !v)}
+                        style={{
+                          position: 'absolute', right: '12px', top: '50%',
+                          transform: 'translateY(-50%)', padding: '4px',
+                          background: 'none', border: 'none', cursor: 'pointer',
+                          color: 'var(--text-muted)',
+                        }}
+                      >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    style={{
+                      width: '100%', padding: '13px',
+                      borderRadius: '12px', border: 'none', cursor: 'pointer',
+                      background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)',
+                      fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.9rem',
+                      letterSpacing: '0.02em',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                      transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+                      boxShadow: '0 4px 20px var(--accent-glow)',
+                    }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 32px var(--accent-glow-strong)'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = ''; (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 20px var(--accent-glow)'; }}
+                    onMouseDown={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.97)'; }}
+                    onMouseUp={e => { (e.currentTarget as HTMLButtonElement).style.transform = ''; }}
+                  >
+                    {loading ? (
+                      <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ animation: 'spin-slow 0.8s linear infinite' }}><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3"/><path fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg> Authenticating...</>
+                    ) : (
+                      <><span>Sign In</span><ArrowRight size={16} /></>
+                    )}
                   </button>
+                </form>
+
+                {/* Divider */}
+                <div style={{ position: 'relative', margin: '20px 0' }}>
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}>
+                    <div style={{ width: '100%', height: '1px', background: 'var(--border-subtle)' }} />
+                  </div>
+                  <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
+                    <span style={{
+                      padding: '0 10px', fontSize: '10px', fontWeight: 700, letterSpacing: '0.12em',
+                      textTransform: 'uppercase', color: 'var(--text-muted)',
+                      background: 'var(--bg-glass)', backdropFilter: 'blur(8px)',
+                    }}>Quick Access</span>
+                  </div>
+                </div>
+
+                {/* Role cards grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                  {CREDENTIALS.map((cred, i) => (
+                    <button
+                      key={cred.email}
+                      onClick={() => { setEmail(cred.email); setLoadingRole(cred.email); handleLogin(undefined, cred.email); }}
+                      disabled={loading}
+                      style={{
+                        textAlign: 'left', padding: '10px 12px',
+                        borderRadius: '12px', cursor: 'pointer',
+                        background: 'var(--nav-hover-bg)',
+                        border: '1px solid var(--border-subtle)',
+                        fontFamily: 'Inter, sans-serif',
+                        animation: `fadeSlideUp 0.5s cubic-bezier(0.22,1,0.36,1) ${0.3 + i * 0.05}s both`,
+                        transition: 'border-color 0.2s, transform 0.2s, background 0.2s',
+                      }}
+                      onMouseEnter={e => {
+                        const el = e.currentTarget as HTMLElement;
+                        el.style.borderColor = cred.color + '60';
+                        el.style.background = cred.color + '0e';
+                        el.style.transform = 'translateY(-2px)';
+                      }}
+                      onMouseLeave={e => {
+                        const el = e.currentTarget as HTMLElement;
+                        el.style.borderColor = 'var(--border-subtle)';
+                        el.style.background = 'var(--nav-hover-bg)';
+                        el.style.transform = '';
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                        <span style={{ fontSize: '14px' }}>{cred.icon}</span>
+                        {loadingRole === cred.email && (
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" style={{ color: cred.color, animation: 'spin-slow 0.8s linear infinite' }}>
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3"/>
+                            <path fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                          </svg>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '11px', fontWeight: 700, color: cred.color, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {cred.label}
+                      </div>
+                      <div style={{ fontSize: '9.5px', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {cred.email}
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn-primary w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2"
-                style={{ fontSize: '0.9rem', letterSpacing: '0.025em' }}
-              >
-                {loading ? (
-                  <span className="flex items-center gap-2">
-                    <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                    </svg>
-                    Authenticating...
-                  </span>
-                ) : (
-                  <>
-                    <span>Sign In</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            </form>
-
-            {/* Divider */}
-            <div className="relative my-6">
-              <div
-                className="absolute inset-0 flex items-center"
-                aria-hidden
-              >
-                <div className="w-full h-px" style={{ background: 'var(--border-subtle)' }} />
-              </div>
-              <div className="relative flex justify-center">
-                <span
-                  className="px-3 text-xs font-semibold uppercase tracking-widest"
-                  style={{
-                    background: 'var(--bg-glass)',
-                    color: 'var(--text-muted)',
-                    backdropFilter: 'blur(8px)',
-                  }}
-                >
-                  Quick Access
-                </span>
-              </div>
             </div>
+          </TiltCard>
 
-            {/* Demo role cards */}
-            <div className="grid grid-cols-2 gap-2">
-              {CREDENTIALS.map((cred, i) => (
-                <button
-                  key={cred.email}
-                  onClick={() => {
-                    setEmail(cred.email);
-                    setLoadingRole(cred.email);
-                    handleLogin(undefined, cred.email);
-                  }}
-                  disabled={loading}
-                  className="animate-fade-slide-up text-left p-3 rounded-xl cursor-pointer transition-all group"
-                  style={{
-                    background: 'var(--nav-hover-bg)',
-                    border: '1px solid var(--border-subtle)',
-                    animationDelay: `${0.3 + i * 0.05}s`,
-                  }}
-                  onMouseEnter={e => {
-                    (e.currentTarget as HTMLElement).style.borderColor = cred.color + '40';
-                    (e.currentTarget as HTMLElement).style.background = cred.color + '08';
-                    (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)';
-                  }}
-                  onMouseLeave={e => {
-                    (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-subtle)';
-                    (e.currentTarget as HTMLElement).style.background = 'var(--nav-hover-bg)';
-                    (e.currentTarget as HTMLElement).style.transform = '';
-                  }}
-                >
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-base">{cred.icon}</span>
-                    {loadingRole === cred.email && (
-                      <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none" style={{ color: cred.color }}>
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                      </svg>
-                    )}
-                  </div>
-                  <div className="text-xs font-bold truncate" style={{ color: cred.color }}>
-                    {cred.label}
-                  </div>
-                  <div className="text-[10px] truncate" style={{ color: 'var(--text-muted)' }}>
-                    {cred.email}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
+          <p style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-muted)', marginTop: '16px' }}>
+            VoyaCore — Enterprise Travel Management Platform
+          </p>
         </div>
-
-        {/* Footer */}
-        <p
-          className="text-center text-xs mt-4"
-          style={{ color: 'var(--text-muted)' }}
-        >
-          VoyaCore — Enterprise Travel Management Platform
-        </p>
       </div>
     </div>
   );

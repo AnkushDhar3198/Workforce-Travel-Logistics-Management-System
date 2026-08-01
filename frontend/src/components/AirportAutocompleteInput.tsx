@@ -93,7 +93,7 @@ export default function AirportAutocompleteInput({
 
   return (
     <div ref={containerRef} className="relative w-full text-left">
-      <label className="block text-[11px] font-semibold text-slate-400 mb-1">{label}</label>
+      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '5px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>{label}</label>
       
       <div className="relative flex items-center">
         <Plane className="w-3.5 h-3.5 absolute left-3 text-cyan-400 pointer-events-none" />
@@ -104,7 +104,24 @@ export default function AirportAutocompleteInput({
           value={searchTerm}
           onChange={handleInputChange}
           onFocus={handleFocus}
-          className="w-full bg-slate-900 border border-slate-800 rounded-lg pl-9 pr-8 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all font-sans"
+          style={{
+            width: '100%',
+            background: 'var(--input)',
+            border: '1px solid var(--border-default)',
+            borderRadius: '12px',
+            paddingLeft: '36px',
+            paddingRight: '32px',
+            paddingTop: '10px',
+            paddingBottom: '10px',
+            fontSize: '12px',
+            color: 'var(--text-primary)',
+            fontFamily: 'Inter, sans-serif',
+            outline: 'none',
+            transition: 'border-color 0.2s, box-shadow 0.2s',
+            boxSizing: 'border-box',
+          }}
+          onFocus={(e) => { handleFocus(); e.target.style.borderColor = 'var(--border-active)'; e.target.style.boxShadow = '0 0 0 3px var(--accent-glow)'; }}
+          onBlur={(e) => { e.target.style.borderColor = 'var(--border-default)'; e.target.style.boxShadow = 'none'; }}
         />
 
         {searchTerm && (
@@ -118,15 +135,21 @@ export default function AirportAutocompleteInput({
         )}
       </div>
 
-      {/* Floating Autocomplete Dropdown List */}
       {isOpen && (
-        <div className="absolute z-50 left-0 right-0 mt-1 max-h-72 overflow-y-auto bg-slate-900/98 border border-slate-700 rounded-xl shadow-2xl backdrop-blur-md divide-y divide-slate-800 animate-fade-in">
-          <div className="p-2 bg-slate-950/80 sticky top-0 border-b border-slate-800 flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-            <span className="flex items-center gap-1.5 text-cyan-400">
-              <Globe className="w-3 h-3" />
-              <span>44,000+ Global IATA Directory ({filteredAirports.length} Shown)</span>
+        <div className="suggestion-list dropdown-enter" style={{ maxHeight: '280px' }}>
+          <div style={{
+            padding: '8px 12px',
+            background: 'var(--bg-surface)',
+            borderBottom: '1px solid var(--border-subtle)',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em',
+            position: 'sticky', top: 0,
+          }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--accent-primary)' }}>
+              <Globe size={10} />
+              <span>44,000+ Global IATA Directory ({filteredAirports.length} shown)</span>
             </span>
-            <span className="text-slate-500 font-mono">Worldwide</span>
+            <span style={{ color: 'var(--text-muted)', fontFamily: 'JetBrains Mono, monospace' }}>Worldwide</span>
           </div>
 
           {filteredAirports.length > 0 ? (
@@ -138,24 +161,27 @@ export default function AirportAutocompleteInput({
                 <div
                   key={ap.code}
                   onClick={() => handleSelect(ap)}
-                  className={`p-2.5 flex items-center justify-between cursor-pointer transition-colors hover:bg-cyan-500/15 ${
-                    isSelected ? 'bg-cyan-500/20 border-l-4 border-cyan-400' : ''
-                  }`}
+                  className={`suggestion-item ${isSelected ? 'active' : ''}`}
+                  style={isSelected ? { borderLeft: '3px solid var(--accent-primary)', paddingLeft: '11px' } : {}}
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="font-mono font-black text-cyan-400 text-xs px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/20 shrink-0">
-                      {ap.code}
-                    </span>
-                    <div className="truncate">
-                      <p className="text-xs font-bold text-white truncate">
-                        {ap.name} ({ap.country})
-                      </p>
-                      <p className="text-[10px] text-slate-400 truncate">
-                        {ap.city}, {ap.country}
-                      </p>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                      <span style={{
+                        fontFamily: 'JetBrains Mono, monospace', fontWeight: 700, fontSize: '11px',
+                        color: 'var(--accent-primary)', padding: '2px 6px', borderRadius: '6px',
+                        background: 'var(--nav-active-bg)', border: '1px solid var(--border-default)', flexShrink: 0,
+                      }}>{ap.code}</span>
+                      <div style={{ minWidth: 0, overflow: 'hidden' }}>
+                        <p style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>
+                          {ap.name} ({ap.country})
+                        </p>
+                        <p style={{ fontSize: '10px', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>
+                          {ap.city}, {ap.country}
+                        </p>
+                      </div>
                     </div>
+                    {isSelected && <Check size={14} style={{ color: 'var(--accent-primary)', flexShrink: 0 }} />}
                   </div>
-                  {isSelected && <Check className="w-4 h-4 text-cyan-400 shrink-0" />}
                 </div>
               );
             })
@@ -163,17 +189,16 @@ export default function AirportAutocompleteInput({
             customGeneratedAirport && (
               <div
                 onClick={() => handleSelect(customGeneratedAirport)}
-                className="p-3 bg-cyan-500/10 hover:bg-cyan-500/20 cursor-pointer border-l-4 border-cyan-400 flex items-center justify-between transition-colors"
+                className="suggestion-item"
+                style={{ borderLeft: '3px solid var(--accent-primary)', paddingLeft: '11px' }}
               >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <Sparkles className="w-4 h-4 text-cyan-400 shrink-0" />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <Sparkles size={14} style={{ color: 'var(--accent-primary)', flexShrink: 0 }} />
                   <div>
-                    <p className="text-xs font-bold text-white">
-                      Use Custom Airport: {customGeneratedAirport.code} - {customGeneratedAirport.name} ({customGeneratedAirport.country})
+                    <p style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                      {customGeneratedAirport.code} — {customGeneratedAirport.name} ({customGeneratedAirport.country})
                     </p>
-                    <p className="text-[10px] text-slate-400">
-                      Click to apply custom IATA airport mapping
-                    </p>
+                    <p style={{ fontSize: '10px', color: 'var(--text-muted)', margin: 0 }}>Click to apply custom IATA mapping</p>
                   </div>
                 </div>
               </div>

@@ -4,6 +4,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import LoginScreen from './components/LoginScreen';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
+import Canvas3DBackground from './components/Canvas3DBackground';
 
 // Import Tab Views
 import ItineraryTab from './tabs/employee/ItineraryTab';
@@ -54,32 +55,35 @@ function DashboardContent() {
   }, []);
 
   const triggerSOS = async () => {
-    if (!window.confirm('Are you sure you want to trigger an emergency SOS panic alert? Security risk officers will be notified immediately.')) return;
+    if (!window.confirm('Trigger emergency SOS? Security will be notified immediately.')) return;
     setSosStatus('sending');
     try {
-      const location = `GPS Coords: ${(13.75 + Math.random() * 2).toFixed(4)}, ${(100.5 + Math.random() * 2).toFixed(4)} (Mock Geolocation)`;
+      const location = `GPS: ${(13.75 + Math.random() * 2).toFixed(4)}, ${(100.5 + Math.random() * 2).toFixed(4)} (Mock)`;
       const res = await authFetch(`${API_BASE}/alerts/sos?location=${encodeURIComponent(location)}`, { method: 'POST' });
       if (res.ok) {
         setSosStatus('triggered');
         loadNotifications();
-        alert('SOS active. Security commands dispatched.');
-      } else {
-        setSosStatus('error');
-      }
+        alert('SOS active. Security dispatched.');
+      } else setSosStatus('error');
     } catch {
       setSosStatus('error');
     }
   };
 
   return (
-    <div className="flex min-h-screen relative overflow-hidden" style={{ background: 'var(--bg-base)' }}>
-      {/* Animated background */}
-      <div className="app-bg" aria-hidden>
-        <div className="mesh-orb mesh-orb-1" />
-        <div className="mesh-orb mesh-orb-2" />
-        <div className="mesh-orb mesh-orb-3" />
-      </div>
+    <div
+      style={{
+        width: '100vw',
+        height: '100vh',
+        overflow: 'hidden',
+        display: 'flex',
+        position: 'relative',
+      }}
+    >
+      {/* Full-screen animated 3D canvas background */}
+      <Canvas3DBackground />
 
+      {/* Sidebar */}
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -87,9 +91,17 @@ function DashboardContent() {
         triggerSOS={triggerSOS}
       />
 
+      {/* Main content */}
       <div
-        className="flex-1 flex flex-col min-w-0 relative z-10 overflow-hidden"
-        style={{ background: 'transparent' }}
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          minWidth: 0,
+          position: 'relative',
+          zIndex: 10,
+          overflow: 'hidden',
+        }}
       >
         <Header
           activeTab={activeTab}
@@ -98,10 +110,13 @@ function DashboardContent() {
         />
 
         <main
-          className="flex-1 overflow-y-auto p-6"
-          style={{ scrollBehavior: 'smooth' }}
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '24px',
+          }}
         >
-          <div key={activeTab} className="animate-fade-slide-up h-full">
+          <div key={activeTab} className="animate-fade-slide-up">
             {activeTab === 'itinerary' && <ItineraryTab />}
             {activeTab === 'requisition' && <RequisitionTab />}
             {activeTab === 'expenses-employee' && <ExpensesEmployeeTab />}

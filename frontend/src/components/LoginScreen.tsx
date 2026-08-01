@@ -1,8 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Plane, ShieldAlert, Eye, EyeOff, ArrowRight, X, ChevronDown, Sparkles,
-  Globe, Shield, Truck, DollarSign, Edit3, MapPin, FileCheck, CheckCircle2,
-  AlertTriangle, Radio, BarChart3, Users, Building, Lock
+  Shield, Truck, DollarSign, CheckCircle2, BarChart3, Lock, Menu
 } from 'lucide-react';
 import { useAuth, API_BASE } from '../context/AuthContext';
 import { useTheme, THEMES, type ThemeId } from '../context/ThemeContext';
@@ -36,18 +35,21 @@ export default function LoginScreen() {
   // Mega-Menu & Navbar Modal State
   const [activeDropdown, setActiveDropdown] = useState<'solutions' | 'autonomy' | null>(null);
   const [featureModal, setFeatureModal] = useState<'duty' | 'logistics' | null>(null);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const dropdownTimerRef = useRef<any>(null);
 
   const openLogin = () => {
     setAuthMode('login');
     setError('');
     setIsAuthModalOpen(true);
+    setIsMobileNavOpen(false);
   };
 
   const openSignUp = () => {
     setAuthMode('signup');
     setError('');
     setIsAuthModalOpen(true);
+    setIsMobileNavOpen(false);
   };
 
   const handleMouseEnterDropdown = (menu: 'solutions' | 'autonomy') => {
@@ -103,6 +105,7 @@ export default function LoginScreen() {
   const handleDirectDemoLogin = (userEmail: string) => {
     setEmail(userEmail);
     setLoadingRole(userEmail);
+    setIsMobileNavOpen(false);
     handleAuthSubmit(undefined, userEmail);
   };
 
@@ -130,8 +133,8 @@ export default function LoginScreen() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '14px 32px',
-          paddingTop: 'calc(14px + env(safe-area-inset-top, 0px))',
+          padding: '12px 20px',
+          paddingTop: 'calc(12px + env(safe-area-inset-top, 0px))',
           borderBottom: '1px solid var(--border-subtle)',
           backdropFilter: 'blur(24px) saturate(180%)',
           WebkitBackdropFilter: 'blur(24px) saturate(180%)',
@@ -142,12 +145,12 @@ export default function LoginScreen() {
       >
         {/* Left: Brand Logo & Title */}
         <div
-          style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
-          onClick={() => { setIsAuthModalOpen(false); setFeatureModal(null); }}
+          style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
+          onClick={() => { setIsAuthModalOpen(false); setFeatureModal(null); setIsMobileNavOpen(false); }}
         >
           <div
             style={{
-              width: '36px', height: '36px',
+              width: '34px', height: '34px',
               borderRadius: '10px',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: 'var(--btn-primary-bg)',
@@ -155,20 +158,20 @@ export default function LoginScreen() {
               flexShrink: 0,
             }}
           >
-            <Plane size={20} style={{ color: 'var(--btn-primary-text)' }} />
+            <Plane size={18} style={{ color: 'var(--btn-primary-text)' }} />
           </div>
           <div>
-            <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: '1.15rem', color: 'var(--text-primary)', letterSpacing: '-0.03em', display: 'block', lineHeight: 1.1 }}>
+            <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: '1.05rem', color: 'var(--text-primary)', letterSpacing: '-0.03em', display: 'block', lineHeight: 1.1 }}>
               VOYACORE
             </span>
-            <span style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent-primary)', display: 'block' }}>
+            <span style={{ fontSize: '8.5px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent-primary)', display: 'block' }}>
               TRAVEL & LOGISTICS
             </span>
           </div>
         </div>
 
         {/* Center: Desktop Nav Items with Interactive Mega Menus */}
-        <nav className="hidden lg:flex" style={{ alignItems: 'center', gap: '28px', position: 'relative' }}>
+        <nav className="hidden lg:flex" style={{ alignItems: 'center', gap: '24px', position: 'relative' }}>
           
           {/* 1. SOLUTIONS MEGA-MENU TRIGGER */}
           <div
@@ -188,8 +191,8 @@ export default function LoginScreen() {
                   position: 'absolute',
                   top: '100%',
                   left: '-20px',
-                  width: '540px',
-                  padding: '20px',
+                  width: '520px',
+                  padding: '18px',
                   borderRadius: '20px',
                   background: 'var(--card-bg)',
                   border: '1px solid var(--card-border)',
@@ -198,7 +201,7 @@ export default function LoginScreen() {
                   WebkitBackdropFilter: 'blur(28px) saturate(180%)',
                   display: 'grid',
                   gridTemplateColumns: '1fr 1fr',
-                  gap: '14px',
+                  gap: '12px',
                   zIndex: 50,
                   animation: 'fadeSlideUp 0.2s ease both',
                 }}
@@ -206,68 +209,60 @@ export default function LoginScreen() {
                 <div
                   onClick={() => handleDirectDemoLogin('employee@cbg.com')}
                   style={{ padding: '12px', borderRadius: '14px', background: 'var(--nav-hover-bg)', border: '1px solid var(--border-subtle)', cursor: 'pointer', transition: 'all 0.2s' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-active)'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-subtle)'; }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                    <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(34,211,238,0.15)', color: '#22d3ee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Plane size={15} />
+                    <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: 'rgba(34,211,238,0.15)', color: '#22d3ee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Plane size={14} />
                     </div>
                     <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-primary)' }}>Workforce Mobility</span>
                   </div>
-                  <p style={{ fontSize: '10.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.35 }}>
-                    Real-time flight booking, airport autocomplete & digital PNR tickets.
+                  <p style={{ fontSize: '10px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.35 }}>
+                    Flight booking & PNR digital boarding passes.
                   </p>
                 </div>
 
                 <div
                   onClick={() => handleDirectDemoLogin('manager@cbg.com')}
                   style={{ padding: '12px', borderRadius: '14px', background: 'var(--nav-hover-bg)', border: '1px solid var(--border-subtle)', cursor: 'pointer', transition: 'all 0.2s' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-active)'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-subtle)'; }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                    <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(167,139,250,0.15)', color: '#a78bfa', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <CheckCircle2 size={15} />
+                    <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: 'rgba(167,139,250,0.15)', color: '#a78bfa', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <CheckCircle2 size={14} />
                     </div>
                     <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-primary)' }}>Manager Approvals</span>
                   </div>
-                  <p style={{ fontSize: '10.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.35 }}>
-                    Multi-tier budget authorization & automated compliance routing.
+                  <p style={{ fontSize: '10px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.35 }}>
+                    Budget authorization & compliance routing.
                   </p>
                 </div>
 
                 <div
                   onClick={() => handleDirectDemoLogin('finance@cbg.com')}
                   style={{ padding: '12px', borderRadius: '14px', background: 'var(--nav-hover-bg)', border: '1px solid var(--border-subtle)', cursor: 'pointer', transition: 'all 0.2s' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-active)'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-subtle)'; }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                    <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <DollarSign size={15} />
+                    <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <DollarSign size={14} />
                     </div>
                     <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-primary)' }}>Expense Auditing</span>
                   </div>
-                  <p style={{ fontSize: '10.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.35 }}>
-                    OCR receipt parsing, per-diem rules & automated reimbursement.
+                  <p style={{ fontSize: '10px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.35 }}>
+                    OCR receipt parsing & per-diem rules.
                   </p>
                 </div>
 
                 <div
                   onClick={() => handleDirectDemoLogin('logistics@cbg.com')}
                   style={{ padding: '12px', borderRadius: '14px', background: 'var(--nav-hover-bg)', border: '1px solid var(--border-subtle)', cursor: 'pointer', transition: 'all 0.2s' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-active)'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-subtle)'; }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                    <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(251,146,60,0.15)', color: '#fb923c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Truck size={15} />
+                    <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: 'rgba(251,146,60,0.15)', color: '#fb923c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Truck size={14} />
                     </div>
-                    <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-primary)' }}>Supply Cargo Logistics</span>
+                    <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-primary)' }}>Cargo Logistics</span>
                   </div>
-                  <p style={{ fontSize: '10.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.35 }}>
-                    Air freight manifests, customs clearance & bill of lading.
+                  <p style={{ fontSize: '10px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.35 }}>
+                    Air freight manifests & customs clearance.
                   </p>
                 </div>
               </div>
@@ -292,8 +287,8 @@ export default function LoginScreen() {
                   position: 'absolute',
                   top: '100%',
                   left: '-20px',
-                  width: '540px',
-                  padding: '20px',
+                  width: '520px',
+                  padding: '18px',
                   borderRadius: '20px',
                   background: 'var(--card-bg)',
                   border: '1px solid var(--card-border)',
@@ -302,7 +297,7 @@ export default function LoginScreen() {
                   WebkitBackdropFilter: 'blur(28px) saturate(180%)',
                   display: 'grid',
                   gridTemplateColumns: '1fr 1fr',
-                  gap: '14px',
+                  gap: '12px',
                   zIndex: 50,
                   animation: 'fadeSlideUp 0.2s ease both',
                 }}
@@ -310,16 +305,14 @@ export default function LoginScreen() {
                 <div
                   onClick={() => handleDirectDemoLogin('travelmanager@cbg.com')}
                   style={{ padding: '12px', borderRadius: '14px', background: 'var(--nav-hover-bg)', border: '1px solid var(--border-subtle)', cursor: 'pointer', transition: 'all 0.2s' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-active)'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-subtle)'; }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                    <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(52,211,153,0.15)', color: '#34d399', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Sparkles size={15} />
+                    <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: 'rgba(52,211,153,0.15)', color: '#34d399', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Sparkles size={14} />
                     </div>
                     <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-primary)' }}>Level 5 AI Engine</span>
                   </div>
-                  <p style={{ fontSize: '10.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.35 }}>
+                  <p style={{ fontSize: '10px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.35 }}>
                     Autonomous rebooking & smart policy enforcement.
                   </p>
                 </div>
@@ -327,51 +320,45 @@ export default function LoginScreen() {
                 <div
                   onClick={() => handleDirectDemoLogin('security@cbg.com')}
                   style={{ padding: '12px', borderRadius: '14px', background: 'var(--nav-hover-bg)', border: '1px solid var(--border-subtle)', cursor: 'pointer', transition: 'all 0.2s' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-active)'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-subtle)'; }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                    <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(248,113,113,0.15)', color: '#f87171', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Shield size={15} />
+                    <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: 'rgba(248,113,113,0.15)', color: '#f87171', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Shield size={14} />
                     </div>
                     <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-primary)' }}>Duty of Care GPS</span>
                   </div>
-                  <p style={{ fontSize: '10.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.35 }}>
-                    Global traveler location heatmap & 24/7 emergency alert system.
+                  <p style={{ fontSize: '10px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.35 }}>
+                    Traveler heatmap & 24/7 emergency dispatch.
                   </p>
                 </div>
 
                 <div
                   onClick={() => handleDirectDemoLogin('admin@cbg.com')}
                   style={{ padding: '12px', borderRadius: '14px', background: 'var(--nav-hover-bg)', border: '1px solid var(--border-subtle)', cursor: 'pointer', transition: 'all 0.2s' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-active)'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-subtle)'; }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                    <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(148,163,184,0.15)', color: '#94a3b8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Lock size={15} />
+                    <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: 'rgba(148,163,184,0.15)', color: '#94a3b8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Lock size={14} />
                     </div>
-                    <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-primary)' }}>Audit Logs & Governance</span>
+                    <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-primary)' }}>Audit & Governance</span>
                   </div>
-                  <p style={{ fontSize: '10.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.35 }}>
-                    Immutable security event tracking & corporate RBAC.
+                  <p style={{ fontSize: '10px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.35 }}>
+                    Security event logs & corporate RBAC.
                   </p>
                 </div>
 
                 <div
                   onClick={() => handleDirectDemoLogin('finance@cbg.com')}
                   style={{ padding: '12px', borderRadius: '14px', background: 'var(--nav-hover-bg)', border: '1px solid var(--border-subtle)', cursor: 'pointer', transition: 'all 0.2s' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-active)'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-subtle)'; }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                    <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(59,130,246,0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <BarChart3 size={15} />
+                    <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: 'rgba(59,130,246,0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <BarChart3 size={14} />
                     </div>
-                    <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-primary)' }}>Spend & ROI Analytics</span>
+                    <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-primary)' }}>Spend Analytics</span>
                   </div>
-                  <p style={{ fontSize: '10.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.35 }}>
-                    Executive budget dashboards & carrier discount analytics.
+                  <p style={{ fontSize: '10px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.35 }}>
+                    Executive budget & discount analytics.
                   </p>
                 </div>
               </div>
@@ -382,8 +369,6 @@ export default function LoginScreen() {
           <div
             onClick={() => setFeatureModal('duty')}
             style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 700, color: 'var(--text-secondary)', transition: 'color 0.2s' }}
-            onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent-primary)')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
           >
             <span>Duty of Care</span>
           </div>
@@ -392,30 +377,28 @@ export default function LoginScreen() {
           <div
             onClick={() => setFeatureModal('logistics')}
             style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 700, color: 'var(--text-secondary)', transition: 'color 0.2s' }}
-            onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent-primary)')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
           >
             <span>Logistics Manifest</span>
           </div>
         </nav>
 
         {/* Right Side: Theme Selector + LOG IN & SIGN UP OPTIONS */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {/* Theme Picker */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginRight: '6px' }}>
+          <div className="hidden sm:flex" style={{ alignItems: 'center', gap: '3px', marginRight: '4px' }}>
             {THEMES.map(t => (
               <button
                 key={t.id}
                 onClick={() => setTheme(t.id as ThemeId)}
                 title={t.name}
                 style={{
-                  padding: '5px 8px',
+                  padding: '4px 7px',
                   borderRadius: '100px',
                   border: '1px solid',
                   borderColor: theme === t.id ? 'var(--border-active)' : 'transparent',
                   background: theme === t.id ? 'var(--nav-active-bg)' : 'transparent',
                   color: theme === t.id ? 'var(--accent-primary)' : 'var(--text-muted)',
-                  fontSize: '12px',
+                  fontSize: '11px',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                 }}
@@ -429,20 +412,19 @@ export default function LoginScreen() {
           <button
             onClick={openLogin}
             style={{
-              padding: '9px 18px',
+              padding: '8px 15px',
               borderRadius: '100px',
               border: '1px solid var(--border-default)',
               background: 'var(--nav-hover-bg)',
               color: 'var(--text-primary)',
               fontFamily: 'Inter, sans-serif',
               fontWeight: 700,
-              fontSize: '13px',
+              fontSize: '12px',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
               backdropFilter: 'blur(12px)',
+              whiteSpace: 'nowrap',
             }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-active)'; (e.currentTarget as HTMLElement).style.background = 'var(--nav-active-bg)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-default)'; (e.currentTarget as HTMLElement).style.background = 'var(--nav-hover-bg)'; }}
           >
             Log In
           </button>
@@ -451,25 +433,135 @@ export default function LoginScreen() {
           <button
             onClick={openSignUp}
             style={{
-              padding: '9px 20px',
+              padding: '8px 16px',
               borderRadius: '100px',
               border: 'none',
               background: 'var(--btn-primary-bg)',
               color: 'var(--btn-primary-text)',
               fontFamily: 'Inter, sans-serif',
               fontWeight: 800,
-              fontSize: '13px',
+              fontSize: '12px',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
               boxShadow: '0 4px 16px var(--accent-glow)',
+              whiteSpace: 'nowrap',
             }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px var(--accent-glow-strong)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 16px var(--accent-glow)'; }}
           >
             Sign Up
           </button>
+
+          {/* Mobile Hamburger Toggle (Visible on Mobile Screens) */}
+          <button
+            onClick={() => setIsMobileNavOpen(v => !v)}
+            className="flex lg:hidden"
+            style={{
+              padding: '8px',
+              borderRadius: '10px',
+              border: '1px solid var(--border-default)',
+              background: 'var(--nav-hover-bg)',
+              color: 'var(--text-primary)',
+              cursor: 'pointer',
+            }}
+          >
+            {isMobileNavOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
         </div>
       </header>
+
+      {/* MOBILE NAVIGATION DRAWER (Slide down on Smartphones) */}
+      {isMobileNavOpen && (
+        <div
+          className="lg:hidden"
+          style={{
+            position: 'fixed',
+            top: '56px',
+            insetX: 0,
+            zIndex: 35,
+            padding: '20px',
+            background: 'var(--card-bg)',
+            borderBottom: '1px solid var(--card-border)',
+            backdropFilter: 'blur(32px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(32px) saturate(180%)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+            boxShadow: '0 12px 32px rgba(0,0,0,0.4)',
+            animation: 'fadeSlideDown 0.25s ease both',
+          }}
+        >
+          {/* Mobile Theme Selector */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '12px', borderBottom: '1px solid var(--border-subtle)' }}>
+            <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)' }}>Select Theme</span>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              {THEMES.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => setTheme(t.id as ThemeId)}
+                  style={{
+                    padding: '6px 10px', borderRadius: '100px', border: '1px solid',
+                    borderColor: theme === t.id ? 'var(--border-active)' : 'transparent',
+                    background: theme === t.id ? 'var(--nav-active-bg)' : 'transparent',
+                    fontSize: '12px', cursor: 'pointer',
+                  }}
+                >
+                  {t.emoji}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Quick Nav Solutions */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)' }}>Enterprise Solutions</span>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+              <button
+                onClick={() => handleDirectDemoLogin('employee@cbg.com')}
+                style={{ padding: '10px', borderRadius: '12px', background: 'var(--nav-hover-bg)', border: '1px solid var(--border-subtle)', textAlign: 'left', cursor: 'pointer' }}
+              >
+                <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-primary)' }}>✈️ Mobility</div>
+                <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Flight Bookings</div>
+              </button>
+              <button
+                onClick={() => handleDirectDemoLogin('manager@cbg.com')}
+                style={{ padding: '10px', borderRadius: '12px', background: 'var(--nav-hover-bg)', border: '1px solid var(--border-subtle)', textAlign: 'left', cursor: 'pointer' }}
+              >
+                <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-primary)' }}>📋 Approvals</div>
+                <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Manager Portal</div>
+              </button>
+              <button
+                onClick={() => handleDirectDemoLogin('finance@cbg.com')}
+                style={{ padding: '10px', borderRadius: '12px', background: 'var(--nav-hover-bg)', border: '1px solid var(--border-subtle)', textAlign: 'left', cursor: 'pointer' }}
+              >
+                <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-primary)' }}>💰 Expenses</div>
+                <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Audit & OCR</div>
+              </button>
+              <button
+                onClick={() => handleDirectDemoLogin('logistics@cbg.com')}
+                style={{ padding: '10px', borderRadius: '12px', background: 'var(--nav-hover-bg)', border: '1px solid var(--border-subtle)', textAlign: 'left', cursor: 'pointer' }}
+              >
+                <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-primary)' }}>📦 Cargo</div>
+                <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Air Logistics</div>
+              </button>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
+            <button
+              onClick={() => { setIsMobileNavOpen(false); setFeatureModal('duty'); }}
+              style={{ flex: 1, padding: '10px', borderRadius: '12px', background: 'var(--nav-hover-bg)', border: '1px solid var(--border-default)', fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer' }}
+            >
+              🛡️ Duty of Care
+            </button>
+            <button
+              onClick={() => { setIsMobileNavOpen(false); setFeatureModal('logistics'); }}
+              style={{ flex: 1, padding: '10px', borderRadius: '12px', background: 'var(--nav-hover-bg)', border: '1px solid var(--border-default)', fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer' }}
+            >
+              📦 Cargo Manifest
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* HERO SECTION — TCS / Enterprise Autonomy Style */}
       <main
@@ -481,34 +573,35 @@ export default function LoginScreen() {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '24px 20px',
+          padding: '24px 16px',
           boxSizing: 'border-box',
           overflowY: 'auto',
           textAlign: 'center',
         }}
       >
-        <div style={{ maxWidth: '820px', margin: 'auto 0' }}>
+        <div style={{ maxWidth: '820px', width: '100%', margin: 'auto 0' }}>
           {/* Level 5 Autonomy Badge */}
           <div
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '6px 16px',
+              gap: '6px',
+              padding: '6px 14px',
               borderRadius: '100px',
               background: 'var(--nav-active-bg)',
               border: '1px solid var(--nav-active-border)',
               color: 'var(--accent-primary)',
-              fontSize: '11px',
+              fontSize: '10px',
               fontWeight: 800,
-              letterSpacing: '0.12em',
+              letterSpacing: '0.1em',
               textTransform: 'uppercase',
-              marginBottom: '20px',
+              marginBottom: '18px',
+              maxWidth: '90vw',
               animation: 'fadeSlideDown 0.6s ease both',
             }}
           >
-            <Sparkles size={14} />
-            <span>LEVEL 5 HUMAN + AI SERVICE AUTONOMY MODEL</span>
+            <Sparkles size={13} />
+            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>LEVEL 5 HUMAN + AI AUTONOMY MODEL</span>
           </div>
 
           {/* Main Hero Headline */}
@@ -516,11 +609,12 @@ export default function LoginScreen() {
             style={{
               fontFamily: 'Inter, sans-serif',
               fontWeight: 900,
-              fontSize: 'clamp(2rem, 5.5vw, 3.6rem)',
+              fontSize: 'clamp(1.75rem, 5.5vw, 3.4rem)',
               letterSpacing: '-0.04em',
               color: 'var(--text-primary)',
               margin: '0 0 16px',
               lineHeight: 1.12,
+              wordBreak: 'break-word',
             }}
           >
             Next-Gen Workforce Travel & Logistics Management
@@ -529,60 +623,59 @@ export default function LoginScreen() {
           {/* Subtitle */}
           <p
             style={{
-              fontSize: 'clamp(0.95rem, 2vw, 1.15rem)',
+              fontSize: 'clamp(0.9rem, 2vw, 1.15rem)',
               color: 'var(--text-secondary)',
-              margin: '0 auto 32px',
+              margin: '0 auto 28px',
               maxWidth: '680px',
-              lineHeight: 1.55,
+              lineHeight: 1.5,
             }}
           >
             Unified enterprise platform for real-time travel itineraries, border control clearance, automated expense auditing, custom logistics manifests, and duty-of-care security.
           </p>
 
           {/* Action CTAs */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '14px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', width: '100%' }}>
             <button
               onClick={openLogin}
               style={{
-                padding: '14px 32px',
+                padding: '13px 28px',
                 borderRadius: '100px',
                 border: 'none',
                 background: 'var(--btn-primary-bg)',
                 color: 'var(--btn-primary-text)',
                 fontFamily: 'Inter, sans-serif',
                 fontWeight: 800,
-                fontSize: '1rem',
+                fontSize: '0.95rem',
                 cursor: 'pointer',
                 boxShadow: '0 8px 32px var(--accent-glow-strong)',
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: 'center',
                 gap: '8px',
                 transition: 'all 0.22s ease',
+                minWidth: '200px',
               }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; }}
             >
               <span>Sign In to Portal</span>
-              <ArrowRight size={18} />
+              <ArrowRight size={17} />
             </button>
 
             <button
               onClick={openSignUp}
               style={{
-                padding: '14px 28px',
+                padding: '13px 26px',
                 borderRadius: '100px',
                 border: '1px solid var(--border-default)',
                 background: 'var(--nav-hover-bg)',
                 color: 'var(--text-primary)',
                 fontFamily: 'Inter, sans-serif',
                 fontWeight: 700,
-                fontSize: '1rem',
+                fontSize: '0.95rem',
                 cursor: 'pointer',
                 backdropFilter: 'blur(16px)',
                 transition: 'all 0.22s ease',
+                minWidth: '180px',
               }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-active)'; (e.currentTarget as HTMLElement).style.background = 'var(--nav-active-bg)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-default)'; (e.currentTarget as HTMLElement).style.background = 'var(--nav-hover-bg)'; }}
             >
               Create Account
             </button>
@@ -595,10 +688,12 @@ export default function LoginScreen() {
         style={{
           position: 'relative',
           zIndex: 20,
-          padding: '12px 32px',
+          padding: '12px 20px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '8px',
           fontSize: '11px',
           color: 'var(--text-muted)',
           borderTop: '1px solid var(--border-subtle)',
@@ -607,11 +702,11 @@ export default function LoginScreen() {
           background: 'var(--header-bg)',
         }}
       >
-        <div>Copyright © 2026 VoyaCore Enterprise Inc. All rights reserved.</div>
-        <div style={{ display: 'flex', gap: '16px' }}>
+        <div>Copyright © 2026 VoyaCore Enterprise Inc.</div>
+        <div style={{ display: 'flex', gap: '14px' }}>
           <span>Privacy Policy</span>
-          <span>Terms of Service</span>
-          <span>Security Compliance</span>
+          <span>Terms</span>
+          <span>Security</span>
         </div>
       </footer>
 
@@ -625,27 +720,27 @@ export default function LoginScreen() {
           }}
           onClick={(e) => { if (e.target === e.currentTarget) setFeatureModal(null); }}
         >
-          <div style={{ width: '100%', maxWidth: '520px', borderRadius: '24px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', padding: '24px', backdropFilter: 'blur(32px)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <div style={{ width: 'calc(100vw - 32px)', maxWidth: '520px', borderRadius: '24px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', padding: '20px', backdropFilter: 'blur(32px)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(248,113,113,0.15)', color: '#f87171', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Shield size={20} />
+                <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(248,113,113,0.15)', color: '#f87171', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Shield size={18} />
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)' }}>Duty of Care & Security</h3>
-                  <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Global Real-Time Risk Engine</span>
+                  <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>Duty of Care & Security</h3>
+                  <span style={{ fontSize: '10.5px', color: 'var(--text-secondary)' }}>Global Real-Time Risk Engine</span>
                 </div>
               </div>
-              <button onClick={() => setFeatureModal(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><X size={20} /></button>
+              <button onClick={() => setFeatureModal(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><X size={18} /></button>
             </div>
-            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '20px' }}>
+            <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '18px' }}>
               Protects corporate travelers with real-time GPS heatmaps, automated travel warning alerts, and instant 24/7 SOS dispatch with emergency responder coordination.
             </p>
             <button
               onClick={() => { setFeatureModal(null); handleDirectDemoLogin('security@cbg.com'); }}
-              style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer' }}
+              style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)', fontWeight: 800, fontSize: '0.88rem', cursor: 'pointer' }}
             >
-              Open Security Officer Command Center →
+              Open Security Command Center →
             </button>
           </div>
         </div>
@@ -661,27 +756,27 @@ export default function LoginScreen() {
           }}
           onClick={(e) => { if (e.target === e.currentTarget) setFeatureModal(null); }}
         >
-          <div style={{ width: '100%', maxWidth: '520px', borderRadius: '24px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', padding: '24px', backdropFilter: 'blur(32px)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <div style={{ width: 'calc(100vw - 32px)', maxWidth: '520px', borderRadius: '24px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', padding: '20px', backdropFilter: 'blur(32px)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(251,146,60,0.15)', color: '#fb923c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Truck size={20} />
+                <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(251,146,60,0.15)', color: '#fb923c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Truck size={18} />
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)' }}>Supply Cargo Logistics</h3>
-                  <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Air Cargo & Customs Manifests</span>
+                  <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>Supply Cargo Logistics</h3>
+                  <span style={{ fontSize: '10.5px', color: 'var(--text-secondary)' }}>Air Cargo & Customs Manifests</span>
                 </div>
               </div>
-              <button onClick={() => setFeatureModal(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><X size={20} /></button>
+              <button onClick={() => setFeatureModal(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><X size={18} /></button>
             </div>
-            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '20px' }}>
+            <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '18px' }}>
               Tracks international cargo manifests, custom clearance documents, bills of lading, and automated freight handler pipeline statuses in real-time.
             </p>
             <button
               onClick={() => { setFeatureModal(null); handleDirectDemoLogin('logistics@cbg.com'); }}
-              style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer' }}
+              style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)', fontWeight: 800, fontSize: '0.88rem', cursor: 'pointer' }}
             >
-              Open Logistics Coordinator Pipeline →
+              Open Logistics Pipeline →
             </button>
           </div>
         </div>
@@ -707,26 +802,27 @@ export default function LoginScreen() {
         >
           <div
             style={{
-              width: '100%',
+              width: 'calc(100vw - 24px)',
               maxWidth: '440px',
+              maxHeight: '88vh',
               borderRadius: '24px',
               background: 'var(--card-bg)',
               border: '1px solid var(--card-border)',
               boxShadow: '0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px var(--border-subtle)',
               backdropFilter: 'blur(32px) saturate(180%)',
               WebkitBackdropFilter: 'blur(32px) saturate(180%)',
-              overflow: 'hidden',
+              overflowY: 'auto',
               position: 'relative',
               animation: 'popIn 0.3s cubic-bezier(0.22,1,0.36,1) both',
             }}
           >
             {/* Top Bar */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px 12px', borderBottom: '1px solid var(--border-subtle)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px 12px', borderBottom: '1px solid var(--border-subtle)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'var(--btn-primary-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Plane size={15} style={{ color: 'var(--btn-primary-text)' }} />
+                <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: 'var(--btn-primary-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Plane size={14} style={{ color: 'var(--btn-primary-text)' }} />
                 </div>
-                <span style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)' }}>
+                <span style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-primary)' }}>
                   {authMode === 'login' ? 'Log In to VoyaCore' : 'Create VoyaCore Account'}
                 </span>
               </div>
@@ -734,22 +830,21 @@ export default function LoginScreen() {
                 onClick={() => setIsAuthModalOpen(false)}
                 style={{ padding: '6px', borderRadius: '8px', border: 'none', background: 'var(--nav-hover-bg)', color: 'var(--text-muted)', cursor: 'pointer' }}
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
             {/* Modal Body */}
-            <div style={{ padding: '20px 24px 24px' }}>
+            <div style={{ padding: '18px 20px 20px' }}>
               {/* Tab Toggle: Log In / Sign Up */}
-              <div style={{ display: 'flex', borderRadius: '12px', background: 'var(--nav-hover-bg)', padding: '3px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', borderRadius: '12px', background: 'var(--nav-hover-bg)', padding: '3px', marginBottom: '14px' }}>
                 <button
                   onClick={() => setAuthMode('login')}
                   style={{
-                    flex: 1, padding: '8px', borderRadius: '10px', border: 'none',
+                    flex: 1, padding: '7px', borderRadius: '10px', border: 'none',
                     background: authMode === 'login' ? 'var(--card-bg)' : 'transparent',
                     color: authMode === 'login' ? 'var(--accent-primary)' : 'var(--text-muted)',
                     fontWeight: 700, fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s ease',
-                    boxShadow: authMode === 'login' ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
                   }}
                 >
                   Log In
@@ -757,11 +852,10 @@ export default function LoginScreen() {
                 <button
                   onClick={() => setAuthMode('signup')}
                   style={{
-                    flex: 1, padding: '8px', borderRadius: '10px', border: 'none',
+                    flex: 1, padding: '7px', borderRadius: '10px', border: 'none',
                     background: authMode === 'signup' ? 'var(--card-bg)' : 'transparent',
                     color: authMode === 'signup' ? 'var(--accent-primary)' : 'var(--text-muted)',
                     fontWeight: 700, fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s ease',
-                    boxShadow: authMode === 'signup' ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
                   }}
                 >
                   Sign Up
@@ -771,18 +865,18 @@ export default function LoginScreen() {
               {/* Error Message */}
               {error && (
                 <div style={{
-                  marginBottom: '14px', padding: '10px 14px',
+                  marginBottom: '12px', padding: '10px 12px',
                   borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px',
                   background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)',
-                  color: '#fca5a5', fontSize: '0.8rem', fontWeight: 600,
+                  color: '#fca5a5', fontSize: '0.78rem', fontWeight: 600,
                 }}>
-                  <ShieldAlert size={15} />
+                  <ShieldAlert size={14} />
                   <span>{error}</span>
                 </div>
               )}
 
               {/* Form Inputs */}
-              <form onSubmit={handleAuthSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <form onSubmit={handleAuthSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {authMode === 'signup' && (
                   <div>
                     <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '4px' }}>
@@ -794,8 +888,8 @@ export default function LoginScreen() {
                       onChange={e => setName(e.target.value)}
                       placeholder="e.g. Alex Morgan"
                       style={{
-                        width: '100%', padding: '11px 14px', borderRadius: '12px', outline: 'none', boxSizing: 'border-box',
-                        background: 'var(--input)', border: '1px solid var(--border-default)', color: 'var(--text-primary)', fontSize: '14px',
+                        width: '100%', padding: '10px 12px', borderRadius: '12px', outline: 'none', boxSizing: 'border-box',
+                        background: 'var(--input)', border: '1px solid var(--border-default)', color: 'var(--text-primary)', fontSize: '16px',
                       }}
                     />
                   </div>
@@ -811,8 +905,8 @@ export default function LoginScreen() {
                     onChange={e => setEmail(e.target.value)}
                     placeholder="name@company.com"
                     style={{
-                      width: '100%', padding: '11px 14px', borderRadius: '12px', outline: 'none', boxSizing: 'border-box',
-                      background: 'var(--input)', border: '1px solid var(--border-default)', color: 'var(--text-primary)', fontSize: '14px',
+                      width: '100%', padding: '10px 12px', borderRadius: '12px', outline: 'none', boxSizing: 'border-box',
+                      background: 'var(--input)', border: '1px solid var(--border-default)', color: 'var(--text-primary)', fontSize: '16px',
                     }}
                   />
                 </div>
@@ -828,16 +922,16 @@ export default function LoginScreen() {
                       onChange={e => setPassword(e.target.value)}
                       placeholder="••••••••"
                       style={{
-                        width: '100%', padding: '11px 40px 11px 14px', borderRadius: '12px', outline: 'none', boxSizing: 'border-box',
-                        background: 'var(--input)', border: '1px solid var(--border-default)', color: 'var(--text-primary)', fontSize: '14px',
+                        width: '100%', padding: '10px 38px 10px 12px', borderRadius: '12px', outline: 'none', boxSizing: 'border-box',
+                        background: 'var(--input)', border: '1px solid var(--border-default)', color: 'var(--text-primary)', fontSize: '16px',
                       }}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(v => !v)}
-                      style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+                      style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
                     >
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                     </button>
                   </div>
                 </div>
@@ -846,9 +940,9 @@ export default function LoginScreen() {
                   type="submit"
                   disabled={loading}
                   style={{
-                    width: '100%', padding: '12px', borderRadius: '12px', border: 'none', cursor: 'pointer',
-                    background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)', fontWeight: 800, fontSize: '0.9rem',
-                    boxShadow: '0 4px 16px var(--accent-glow)', marginTop: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+                    width: '100%', padding: '11px', borderRadius: '12px', border: 'none', cursor: 'pointer',
+                    background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)', fontWeight: 800, fontSize: '0.88rem',
+                    boxShadow: '0 4px 16px var(--accent-glow)', marginTop: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
                   }}
                 >
                   {loading ? 'Authenticating...' : authMode === 'login' ? 'Sign In to Portal' : 'Create Account'}
@@ -856,21 +950,21 @@ export default function LoginScreen() {
               </form>
 
               {/* Quick Demo Credentials */}
-              <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--border-subtle)' }}>
+              <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)' }}>
                 <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '8px', textAlign: 'center' }}>
                   Quick Demo Access (1-Click Login)
                 </div>
 
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', justifyContent: 'center' }}>
                   {CREDENTIALS.map(cred => (
                     <button
                       key={cred.email}
                       onClick={() => { setEmail(cred.email); setLoadingRole(cred.email); handleAuthSubmit(undefined, cred.email); }}
                       disabled={loading}
                       style={{
-                        padding: '6px 10px', borderRadius: '100px', cursor: 'pointer',
+                        padding: '5px 9px', borderRadius: '100px', cursor: 'pointer',
                         background: 'var(--nav-hover-bg)', border: '1px solid var(--border-subtle)',
-                        fontSize: '11px', fontWeight: 700, color: cred.color, display: 'flex', alignItems: 'center', gap: '4px'
+                        fontSize: '10.5px', fontWeight: 700, color: cred.color, display: 'flex', alignItems: 'center', gap: '3px'
                       }}
                     >
                       <span>{cred.icon}</span>

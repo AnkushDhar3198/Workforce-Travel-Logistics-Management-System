@@ -43,12 +43,23 @@ const ROLE_LABELS: Record<string, string> = {
 export default function Sidebar({ activeTab, setActiveTab, sosStatus, triggerSOS }: SidebarProps) {
   const { user, logout } = useAuth();
   const { theme, setTheme, themes } = useTheme();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setCollapsed(true);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   if (!user) return null;
 
   const visibleItems = NAV_ITEMS.filter(item => item.roles.includes(user.role));
   const initials = user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+
 
   return (
     <aside

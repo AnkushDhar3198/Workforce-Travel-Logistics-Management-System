@@ -153,11 +153,11 @@ export default function LoginScreen() {
               style={{
                 borderRadius: '24px',
                 overflow: 'hidden',
-                background: 'var(--bg-glass)',
+                background: 'rgba(15, 10, 30, 0.35)',
                 border: '1px solid var(--border-default)',
-                backdropFilter: 'blur(48px) saturate(200%)',
-                WebkitBackdropFilter: 'blur(48px) saturate(200%)',
-                boxShadow: '0 32px 80px rgba(0,0,0,0.4), 0 0 0 1px var(--border-subtle), inset 0 1px 0 rgba(255,255,255,0.06)',
+                backdropFilter: 'blur(20px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                boxShadow: '0 32px 80px rgba(0,0,0,0.3), 0 0 0 1px var(--border-subtle), inset 0 1px 0 rgba(255,255,255,0.1)',
               }}
             >
               {/* Gradient top bar */}

@@ -30,20 +30,31 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
   const flightNo = details.flightNo || 'DL-104';
   const travelDate = doc.expiryDate || details.travelDate || '2026-08-03';
 
+  // Dynamic Route Variations for Fallbacks if not user-specified
+  const SAMPLE_ROUTES = [
+    { dep: 'ORD', depCity: "CHICAGO O'HARE", arr: 'LHR', arrCity: 'LONDON HEATHROW', depTime: '10:00 AM EST', arrTime: '10:45 PM GMT', dur: '7h 45m NON-STOP' },
+    { dep: 'DEL', depCity: 'NEW DELHI (DEL)', arr: 'LHR', arrCity: 'LONDON HEATHROW', depTime: '02:15 AM IST', arrTime: '07:30 AM GMT', dur: '9h 45m NON-STOP' },
+    { dep: 'BOM', depCity: 'MUMBAI (BOM)', arr: 'DXB', arrCity: 'DUBAI INTL', depTime: '04:30 PM IST', arrTime: '06:15 PM GST', dur: '3h 15m NON-STOP' },
+    { dep: 'JFK', depCity: 'NEW YORK (JFK)', arr: 'CDG', arrCity: 'PARIS CHARLES DE GAULLE', depTime: '06:40 PM EST', arrTime: '07:55 AM CET', dur: '7h 15m NON-STOP' },
+    { dep: 'SFO', depCity: 'SAN FRANCISCO (SFO)', arr: 'HND', arrCity: 'TOKYO HANEDA', depTime: '11:20 AM PST', arrTime: '03:10 PM JST', dur: '11h 50m NON-STOP' },
+    { dep: 'BLR', depCity: 'BENGALURU (BLR)', arr: 'SIN', arrCity: 'SINGAPORE CHANGI', depTime: '11:05 PM IST', arrTime: '06:10 AM SGT', dur: '4h 35m NON-STOP' }
+  ];
+
+  const pnrHash = (pnr + flightNo).split('').reduce((acc: number, c: string) => acc + c.charCodeAt(0), 0);
+  const selectedFallback = SAMPLE_ROUTES[pnrHash % SAMPLE_ROUTES.length];
+
   // Departure & Arrival Airports / Cities
-  const rawDep = details.depAirport || details.departureCity || 'ORD - Chicago';
-  const rawArr = details.arrAirport || details.arrivalCity || 'LHR - London';
+  const rawDep = details.depAirport || details.departureCity || `${selectedFallback.dep} - ${selectedFallback.depCity}`;
+  const rawArr = details.arrAirport || details.arrivalCity || `${selectedFallback.arr} - ${selectedFallback.arrCity}`;
 
   const depParts = rawDep.split('-');
-  const depCode = (depParts[0] || 'ORD').trim().toUpperCase().slice(0, 4);
-  const depCityName = (depParts[1] || depParts[0] || "CHICAGO O'HARE").trim().toUpperCase();
+  const depCode = (depParts[0] || selectedFallback.dep).trim().toUpperCase().slice(0, 4);
+  const depCityName = (depParts[1] || depParts[0] || selectedFallback.depCity).trim().toUpperCase();
 
   const arrParts = rawArr.split('-');
-  const arrCode = (arrParts[0] || 'LHR').trim().toUpperCase().slice(0, 4);
-  const arrCityName = (arrParts[1] || arrParts[0] || 'LONDON HEATHROW').trim().toUpperCase();
+  const arrCode = (arrParts[0] || selectedFallback.arr).trim().toUpperCase().slice(0, 4);
+  const arrCityName = (arrParts[1] || arrParts[0] || selectedFallback.arrCity).trim().toUpperCase();
 
-  // Smart hash to derive distinct seats, gates, and times per PNR if not manually set
-  const pnrHash = (pnr + flightNo).split('').reduce((acc: number, c: string) => acc + c.charCodeAt(0), 0);
   const seats = ['14A', '08B', '22F', '11C', '04D', '19E', '12A', '07K'];
   const seatNo = details.seatNo || seats[pnrHash % seats.length];
 
@@ -51,9 +62,9 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
   const gateNo = details.gateNo || gates[pnrHash % gates.length];
 
   const boardingTime = details.boardingTime || `${8 + (pnrHash % 4)}:${(pnrHash % 2 === 0 ? '15' : '45')} AM`;
-  const depTime = details.depTime || `${9 + (pnrHash % 4)}:00 AM EST`;
-  const arrTime = details.arrTime || `${7 + (pnrHash % 4)}:45 PM GMT`;
-  const duration = `${6 + (pnrHash % 5)}h ${(pnrHash % 3 === 0 ? '45m' : '20m')} NON-STOP`;
+  const depTime = details.depTime || selectedFallback.depTime;
+  const arrTime = details.arrTime || selectedFallback.arrTime;
+  const duration = selectedFallback.dur;
 
   // 2. PASSPORT DYNAMICS
   const passportNo = doc.docNumber || details.passportNo || 'P-984201948';

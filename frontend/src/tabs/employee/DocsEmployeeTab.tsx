@@ -402,6 +402,28 @@ export default function DocsEmployeeTab() {
                         />
                       </div>
                     </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-400 mb-1">Departure Airport / City</label>
+                        <Input 
+                          type="text" 
+                          placeholder="e.g. DEL - New Delhi"
+                          value={departureCity}
+                          onChange={(e) => setDepartureCity(e.target.value)}
+                          className="bg-slate-900 border-slate-800 text-white text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-400 mb-1">Arrival Airport / City</label>
+                        <Input 
+                          type="text" 
+                          placeholder="e.g. LHR - London"
+                          value={arrivalCity}
+                          onChange={(e) => setArrivalCity(e.target.value)}
+                          className="bg-slate-900 border-slate-800 text-white text-xs"
+                        />
+                      </div>
+                    </div>
                     <div>
                       <label className="block text-[11px] font-semibold text-slate-400 mb-1">Travel Date / Valid Until</label>
                       <Input 

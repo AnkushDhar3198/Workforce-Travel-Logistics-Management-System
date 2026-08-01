@@ -64,8 +64,7 @@ export default function LoginScreen() {
     <div
       style={{
         width: '100vw',
-        height: '100vh',
-        height: '100dvh', // dynamic viewport height for mobile browsers (iOS Safari)
+        height: '100dvh', // dynamic viewport height for mobile browsers
         position: 'fixed',
         inset: 0,
         display: 'flex',

@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Trash2, BadgeAlert, Upload, ShieldCheck, Plane, FileCheck, Globe, CreditCard, Box } from 'lucide-react';
 import { useAuth, API_BASE, getFileUrl } from '../../context/AuthContext';
-import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
-import { Input } from '../../components/ui/input';
-import { Button } from '../../components/ui/button';
-import { Badge } from '../../components/ui/badge';
 
 import DocumentViewerModal from '../../components/DocumentViewerModal';
 import AirportAutocompleteInput from '../../components/AirportAutocompleteInput';
@@ -218,85 +214,73 @@ export default function DocsEmployeeTab() {
   }).length;
 
   return (
-    <div className="space-y-6 text-left animate-fade-in-up">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }} className="animate-fade-in-up">
       {/* 1. Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-6 mb-2">
+      <div className="v-page-header" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h2 className="text-2xl font-black text-white flex items-center gap-2">
-            <FileText className="w-7 h-7 text-cyan-400" />
-            <span>Travel Documents Vault</span>
+          <h2 className="v-page-title">
+            <FileText size={24} style={{ color: 'var(--accent-primary)' }} />
+            Travel Documents Vault
           </h2>
-          <p className="text-sm text-slate-400">Manage passports, business visas, flight tickets, corporate insurance, and customs manifests with dynamic document validation.</p>
+          <p className="v-page-subtitle">Manage passports, business visas, flight tickets, corporate insurance, and customs manifests.</p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Badge variant="outline" className="px-3 py-1.5 bg-slate-900/85 border-slate-800 text-slate-350 flex items-center gap-1.5 shadow-sm">
-            <span>Total Vault Items: {totalDocsCount}</span>
-          </Badge>
+        <span className="v-badge v-badge-accent">Total Vault Items: {totalDocsCount}</span>
+      </div>
+
+      {/* 2. Top Stats — Apple-style cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
+        <div className="v-stat">
+          <div className="v-stat-icon"><FileCheck size={22} /></div>
+          <div>
+            <p className="v-stat-label">Valid Vault Items</p>
+            <p className="v-stat-value">{activeDocsCount} Active</p>
+            <p className="v-stat-desc">Ready for border control security</p>
+          </div>
+        </div>
+
+        <div className="v-stat">
+          <div className="v-stat-icon" style={{ background: 'rgba(239,68,68,0.1)', color: '#f87171', borderColor: 'rgba(239,68,68,0.2)' }}>
+            <BadgeAlert size={22} />
+          </div>
+          <div>
+            <p className="v-stat-label">Expiring / Expired</p>
+            <p className="v-stat-value">{expiringSoonCount} Flagged</p>
+            <p className="v-stat-desc">Renewal warnings active</p>
+          </div>
+        </div>
+
+        <div className="v-stat">
+          <div className="v-stat-icon" style={{ background: 'rgba(99,102,241,0.1)', color: 'var(--accent-secondary)', borderColor: 'rgba(99,102,241,0.2)' }}>
+            <ShieldCheck size={22} />
+          </div>
+          <div>
+            <p className="v-stat-label">Storage Encryption</p>
+            <p className="v-stat-value">AES-256</p>
+            <p className="v-stat-desc" style={{ color: 'var(--accent-primary)' }}>Corporate compliance vault</p>
+          </div>
         </div>
       </div>
 
-      {/* 2. Top Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="hover-elevate bg-slate-900/40 border border-slate-850">
-          <CardContent className="p-5 flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-cyan-500/10 text-cyan-400">
-              <FileCheck className="w-6 h-6" />
+      {/* 3. Main Content Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }} className="lg-grid-12">
+        {/* Upload Form Card */}
+        <div style={{ gridColumn: 'span 5' }}>
+          <div className="v-card">
+            <div className="v-card-header">
+              <h3 className="v-card-title">
+                <Upload size={15} style={{ color: 'var(--accent-primary)' }} />
+                Upload Document
+              </h3>
             </div>
-            <div>
-              <p className="text-xs text-slate-450 font-bold uppercase tracking-wider">Valid Vault Items</p>
-              <h4 className="text-lg font-black text-white mt-0.5">{activeDocsCount} Active</h4>
-              <p className="text-[10px] text-slate-500">Ready for border control security</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover-elevate bg-slate-900/40 border border-slate-850">
-          <CardContent className="p-5 flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-red-500/10 text-red-405">
-              <BadgeAlert className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-xs text-slate-455 font-bold uppercase tracking-wider">Expiring / Expired</p>
-              <h4 className="text-lg font-black text-white mt-0.5">{expiringSoonCount} Flagged</h4>
-              <p className="text-[10px] text-slate-500">Renewal warnings active</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover-elevate bg-slate-900/40 border border-slate-850">
-          <CardContent className="p-5 flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-indigo-500/10 text-indigo-400">
-              <ShieldCheck className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-xs text-slate-450 font-bold uppercase tracking-wider">Storage Encryption</p>
-              <h4 className="text-lg font-black text-white mt-0.5">AES-256</h4>
-              <p className="text-[10px] text-cyan-405">Corporate compliance vault</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* 3. 12-Column Grid */}
-      <div className="grid grid-cols-12 gap-8">
-        {/* Upload Form - span 5 */}
-        <div className="col-span-12 lg:col-span-5">
-          <Card className="hover-glow bg-slate-900/40 border border-slate-855 h-fit">
-            <CardHeader className="border-b border-slate-850 pb-3 mb-4">
-              <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-350 flex items-center gap-2">
-                <Upload className="w-4 h-4 text-cyan-400" />
-                <span>Upload Document</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleUploadSubmit} className="space-y-4">
+            <div className="v-card-body">
+              <form onSubmit={handleUploadSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {/* Document Type Selection */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 mb-2">Select Document Type</label>
+                  <label className="v-label">Select Document Type</label>
                   <select 
                     value={docType}
                     onChange={(e) => handleDocTypeChange(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500"
+                    className="v-select"
                   >
                     {DOCUMENT_TYPES.map(t => (
                       <option key={t.id} value={t.id}>{t.label}</option>
@@ -306,27 +290,27 @@ export default function DocsEmployeeTab() {
 
                 {/* Dynamic Input Fields Based on Document Type */}
                 {docType === 'PASSPORT' && (
-                  <div className="space-y-3 p-3.5 bg-slate-950/40 rounded-xl border border-slate-850 animate-fade-in">
-                    <div className="text-[11px] font-bold text-cyan-400 flex items-center gap-1.5">
-                      <Globe className="w-3.5 h-3.5" />
+                  <div className="v-section dropdown-enter" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div className="v-section-header">
+                      <Globe size={14} />
                       <span>Passport Details</span>
                     </div>
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Passport Number</label>
-                      <Input 
+                      <label className="v-label">Passport Number</label>
+                      <input 
                         type="text" 
                         placeholder="e.g. P-984201948"
                         value={passportNo}
                         onChange={(e) => setPassportNo(e.target.value)}
-                        className="bg-slate-900 border-slate-800 text-white text-xs"
+                        className="v-input"
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Issuing Country</label>
+                      <label className="v-label">Issuing Country</label>
                       <select 
                         value={issuingCountry}
                         onChange={(e) => setIssuingCountry(e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none"
+                        className="v-select"
                       >
                         <option value="United States">United States</option>
                         <option value="United Kingdom">United Kingdom</option>
@@ -338,49 +322,49 @@ export default function DocsEmployeeTab() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Passport Expiry Date *</label>
-                      <Input 
+                      <label className="v-label">Passport Expiry Date *</label>
+                      <input 
                         type="date" required
                         value={expiryDate}
                         onChange={(e) => setExpiryDate(e.target.value)}
-                        className="bg-slate-900 border-slate-800 text-white text-xs"
+                        className="v-input"
                       />
                     </div>
                   </div>
                 )}
 
                 {docType === 'VISA' && (
-                  <div className="space-y-3 p-3.5 bg-slate-950/40 rounded-xl border border-slate-850 animate-fade-in">
-                    <div className="text-[11px] font-bold text-cyan-400 flex items-center gap-1.5">
-                      <FileCheck className="w-3.5 h-3.5" />
+                  <div className="v-section dropdown-enter" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div className="v-section-header">
+                      <FileCheck size={14} />
                       <span>Business Visa Credentials</span>
                     </div>
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Visa / Permit Number</label>
-                      <Input 
+                      <label className="v-label">Visa / Permit Number</label>
+                      <input 
                         type="text" 
                         placeholder="e.g. GBR-VISA-883912"
                         value={visaNumber}
                         onChange={(e) => setVisaNumber(e.target.value)}
-                        className="bg-slate-900 border-slate-800 text-white text-xs"
+                        className="v-input"
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Destination Country / Region</label>
-                      <Input 
+                      <label className="v-label">Destination Country / Region</label>
+                      <input 
                         type="text" 
                         placeholder="e.g. United Kingdom / Schengen Zone"
                         value={destinationCountry}
                         onChange={(e) => setDestinationCountry(e.target.value)}
-                        className="bg-slate-900 border-slate-800 text-white text-xs"
+                        className="v-input"
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Entry Permit Type</label>
+                      <label className="v-label">Entry Permit Type</label>
                       <select 
                         value={entryType}
                         onChange={(e) => setEntryType(e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none"
+                        className="v-select"
                       >
                         <option value="Multiple Entry">Multiple Entry (Corporate)</option>
                         <option value="Single Entry">Single Entry</option>
@@ -388,32 +372,30 @@ export default function DocsEmployeeTab() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Visa Validity Expiry *</label>
-                      <Input 
+                      <label className="v-label">Visa Validity Expiry *</label>
+                      <input 
                         type="date" required
                         value={expiryDate}
                         onChange={(e) => setExpiryDate(e.target.value)}
-                        className="bg-slate-900 border-slate-800 text-white text-xs"
+                        className="v-input"
                       />
                     </div>
                   </div>
                 )}
 
                 {docType === 'TICKET' && (
-                  <div className="space-y-3 p-3.5 bg-slate-950/40 rounded-xl border border-slate-850 animate-fade-in">
-                    <div className="text-[11px] font-bold text-cyan-400 flex items-center justify-between">
-                      <span className="flex items-center gap-1.5">
-                        <Plane className="w-3.5 h-3.5" />
+                  <div className="v-section dropdown-enter" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div className="v-section-header" style={{ justifyContent: 'space-between' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Plane size={14} />
                         <span>Ticket & Itinerary Validation</span>
                       </span>
-                      <span className="text-[9px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono border border-emerald-500/20">
-                        IATA Accredited
-                      </span>
+                      <span className="v-badge v-badge-success" style={{ fontSize: '8px' }}>IATA Accredited</span>
                     </div>
 
                     {/* Pre-loaded Real Flight Schedule Quick Picker */}
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Quick Select Verified Flight Schedule</label>
+                      <label className="v-label">Quick Select Verified Flight Schedule</label>
                       <select 
                         onChange={(e) => {
                           const sched = VERIFIED_FLIGHT_SCHEDULES.find(s => s.flightNo === e.target.value);
@@ -425,7 +407,7 @@ export default function DocsEmployeeTab() {
                             if (!pnr) setPnr(`PNR-${sched.airlineCode}9842A`);
                           }
                         }}
-                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none"
+                        className="v-select"
                       >
                         <option value="">-- Choose verified flight schedule (Optional) --</option>
                         {VERIFIED_FLIGHT_SCHEDULES.map(s => (
@@ -437,23 +419,23 @@ export default function DocsEmployeeTab() {
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">PNR / Booking Reference (5-12 Alphanumeric)</label>
-                      <Input 
+                      <label className="v-label">PNR / Booking Reference (5-12 Alphanumeric)</label>
+                      <input 
                         type="text" 
                         placeholder="e.g. PNR-DL9842A or VSX23PJ7384"
                         value={pnr}
                         onChange={(e) => setPnr(e.target.value)}
-                        className="bg-slate-900 border-slate-800 text-white text-xs font-mono"
+                        className="v-input v-input-mono"
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                       <div>
-                        <label className="block text-[11px] font-semibold text-slate-400 mb-1">Carrier Airline</label>
+                        <label className="v-label">Carrier Airline</label>
                         <select 
                           value={carrier}
                           onChange={(e) => setCarrier(e.target.value)}
-                          className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none"
+                          className="v-select"
                         >
                           {OFFICIAL_AIRLINES.map(a => (
                             <option key={a.code} value={a.name}>{a.name} ({a.code})</option>
@@ -461,18 +443,18 @@ export default function DocsEmployeeTab() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-[11px] font-semibold text-slate-400 mb-1">Flight Number</label>
-                        <Input 
+                        <label className="v-label">Flight Number</label>
+                        <input 
                           type="text" 
                           placeholder="e.g. DL-104 or 6E-9842"
                           value={flightNo}
                           onChange={(e) => setFlightNo(e.target.value)}
-                          className="bg-slate-900 border-slate-800 text-white text-xs font-mono"
+                          className="v-input v-input-mono"
                         />
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                       <AirportAutocompleteInput
                         label="Departure Airport / City"
                         placeholder="e.g. BLR, DEL, ORD, London..."
@@ -488,49 +470,49 @@ export default function DocsEmployeeTab() {
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Travel Date / Valid Until</label>
-                      <Input 
+                      <label className="v-label">Travel Date / Valid Until</label>
+                      <input 
                         type="date"
                         value={expiryDate}
                         onChange={(e) => setExpiryDate(e.target.value)}
-                        className="bg-slate-900 border-slate-800 text-white text-xs"
+                        className="v-input"
                       />
                     </div>
                   </div>
                 )}
 
                 {docType === 'INSURANCE' && (
-                  <div className="space-y-3 p-3.5 bg-slate-950/40 rounded-xl border border-slate-850 animate-fade-in">
-                    <div className="text-[11px] font-bold text-cyan-400 flex items-center gap-1.5">
-                      <ShieldCheck className="w-3.5 h-3.5" />
+                  <div className="v-section dropdown-enter" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div className="v-section-header">
+                      <ShieldCheck size={14} />
                       <span>Corporate Health Insurance</span>
                     </div>
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Policy Number</label>
-                      <Input 
+                      <label className="v-label">Policy Number</label>
+                      <input 
                         type="text" 
                         placeholder="e.g. AGS-992014"
                         value={policyNumber}
                         onChange={(e) => setPolicyNumber(e.target.value)}
-                        className="bg-slate-900 border-slate-800 text-white text-xs"
+                        className="v-input"
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Insurance Provider</label>
-                      <Input 
+                      <label className="v-label">Insurance Provider</label>
+                      <input 
                         type="text" 
                         placeholder="e.g. Allianz Global Corporate Shield"
                         value={provider}
                         onChange={(e) => setProvider(e.target.value)}
-                        className="bg-slate-900 border-slate-800 text-white text-xs"
+                        className="v-input"
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Coverage Plan Type</label>
+                      <label className="v-label">Coverage Plan Type</label>
                       <select 
                         value={coverageType}
                         onChange={(e) => setCoverageType(e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none"
+                        className="v-select"
                       >
                         <option value="Comprehensive Medical & Evacuation">Comprehensive Medical & Evacuation ($1M)</option>
                         <option value="Standard Corporate Shield">Standard Corporate Shield ($500K)</option>
@@ -538,40 +520,40 @@ export default function DocsEmployeeTab() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Policy Expiry Date *</label>
-                      <Input 
+                      <label className="v-label">Policy Expiry Date *</label>
+                      <input 
                         type="date" required
                         value={expiryDate}
                         onChange={(e) => setExpiryDate(e.target.value)}
-                        className="bg-slate-900 border-slate-800 text-white text-xs"
+                        className="v-input"
                       />
                     </div>
                   </div>
                 )}
 
                 {docType === 'SHIPMENT_DOC' && (
-                  <div className="space-y-3 p-3.5 bg-slate-950/40 rounded-xl border border-slate-850 animate-fade-in">
-                    <div className="text-[11px] font-bold text-cyan-400 flex items-center gap-1.5">
-                      <Box className="w-3.5 h-3.5" />
+                  <div className="v-section dropdown-enter" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div className="v-section-header">
+                      <Box size={14} />
                       <span>Logistics & Customs Manifest</span>
                     </div>
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Tracking / Waybill Number</label>
-                      <Input 
+                      <label className="v-label">Tracking / Waybill Number</label>
+                      <input 
                         type="text" 
                         placeholder="e.g. FX-9842019"
                         value={waybillNumber}
                         onChange={(e) => setWaybillNumber(e.target.value)}
-                        className="bg-slate-900 border-slate-800 text-white text-xs"
+                        className="v-input"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                       <div>
-                        <label className="block text-[11px] font-semibold text-slate-400 mb-1">Carrier</label>
+                        <label className="v-label">Carrier</label>
                         <select 
                           value={logisticsCarrier}
                           onChange={(e) => setLogisticsCarrier(e.target.value)}
-                          className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-2 text-xs text-white focus:outline-none"
+                          className="v-select"
                         >
                           <option value="FedEx Logistics">FedEx Logistics</option>
                           <option value="DHL Express">DHL Express</option>
@@ -579,23 +561,23 @@ export default function DocsEmployeeTab() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-[11px] font-semibold text-slate-400 mb-1">Customs Carnet No.</label>
-                        <Input 
+                        <label className="v-label">Customs Carnet No.</label>
+                        <input 
                           type="text" 
                           placeholder="e.g. ATA-Carnet-GB-8832"
                           value={carnetNumber}
                           onChange={(e) => setCarnetNumber(e.target.value)}
-                          className="bg-slate-900 border-slate-800 text-white text-xs"
+                          className="v-input"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Manifest Valid Until</label>
-                      <Input 
+                      <label className="v-label">Manifest Valid Until</label>
+                      <input 
                         type="date"
                         value={expiryDate}
                         onChange={(e) => setExpiryDate(e.target.value)}
-                        className="bg-slate-900 border-slate-800 text-white text-xs"
+                        className="v-input"
                       />
                     </div>
                   </div>
@@ -603,46 +585,45 @@ export default function DocsEmployeeTab() {
 
                 {/* File Attachment Upload Selector */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 mb-1.5">Attach Document PDF / Image Copy (Optional)</label>
+                  <label className="v-label">Attach Document PDF / Image Copy (Optional)</label>
                   <input 
                     type="file"
                     accept=".pdf,.png,.jpg,.jpeg"
                     onChange={handleFileUpload}
-                    className="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-cyan-600/10 file:text-cyan-400 hover:file:bg-cyan-600/20 file:cursor-pointer"
+                    className="v-file-input"
                   />
-                  {uploadingFile && <p className="text-[10px] text-cyan-400 mt-1 animate-pulse font-semibold">Uploading document attachment to vault...</p>}
-                  {fileName && <p className="text-[10px] text-slate-400 mt-1">Attached: <span className="text-white font-bold">{fileName}</span></p>}
+                  {uploadingFile && <p style={{ fontSize: '10px', color: 'var(--accent-primary)', marginTop: '6px', fontWeight: 600 }} className="animate-pulse">Uploading document attachment to vault...</p>}
+                  {fileName && <p style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '6px' }}>Attached: <strong style={{ color: 'var(--text-primary)' }}>{fileName}</strong></p>}
                 </div>
 
-                <Button 
+                <button 
                   type="submit"
                   disabled={submitting}
-                  className="w-full text-xs font-bold btn-hover-scale mt-2"
+                  className="v-btn"
+                  style={{ marginTop: '4px' }}
                 >
                   {submitting ? 'Saving Document...' : 'Save Document to Vault'}
-                </Button>
+                </button>
               </form>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
-        {/* Docs List - span 7 */}
-        <div className="col-span-12 lg:col-span-7 space-y-6">
-          <Card className="bg-slate-900/40 border border-slate-850">
-            <CardHeader className="border-b border-slate-850 pb-3 mb-4">
-              <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-350">
-                Saved Travel Documents Vault
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+        {/* Docs List Card */}
+        <div style={{ gridColumn: 'span 7' }}>
+          <div className="v-card" style={{ marginBottom: '16px' }}>
+            <div className="v-card-header">
+              <h3 className="v-card-title">Saved Travel Documents Vault</h3>
+            </div>
+            <div className="v-card-body">
               {docs.length === 0 ? (
-                <div className="text-center py-16 text-slate-550 space-y-3">
-                  <FileText className="w-12 h-12 mx-auto text-slate-650" />
-                  <h4 className="text-sm font-bold text-white">Vault is currently empty</h4>
-                  <p className="text-xs text-slate-450 max-w-xs mx-auto">Upload digital copies of your passport, visas, or flight tickets to keep them accessible during security audit routing.</p>
+                <div className="v-empty">
+                  <FileText className="v-empty-icon" />
+                  <h4 className="v-empty-title">Vault is currently empty</h4>
+                  <p className="v-empty-text">Upload digital copies of your passport, visas, or flight tickets to keep them accessible during security audit routing.</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '14px' }}>
                   {docs.map(doc => {
                     const expiry = doc.expiryDate ? new Date(doc.expiryDate) : null;
                     const daysLeft = expiry ? Math.floor((expiry.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 999;
@@ -655,106 +636,103 @@ export default function DocsEmployeeTab() {
                     }
 
                     return (
-                      <div 
-                        key={doc.id} 
-                        className={`p-4 rounded-xl border flex flex-col justify-between space-y-4 hover:border-cyan-500/35 transition-all bg-slate-900/60`}
-                      >
-                        <div className="space-y-3">
-                          <div className="flex justify-between items-start gap-2">
-                            <span className="font-extrabold text-cyan-400 text-xs uppercase tracking-wider bg-slate-950 px-2.5 py-1 rounded border border-slate-850 flex items-center gap-1.5">
-                              {doc.type === 'PASSPORT' && <Globe className="w-3 h-3 text-cyan-400" />}
-                              {doc.type === 'VISA' && <FileCheck className="w-3 h-3 text-cyan-400" />}
-                              {doc.type === 'TICKET' && <Plane className="w-3 h-3 text-cyan-400" />}
-                              {doc.type === 'INSURANCE' && <ShieldCheck className="w-3 h-3 text-cyan-400" />}
-                              {doc.type === 'SHIPMENT_DOC' && <Box className="w-3 h-3 text-cyan-400" />}
-                              <span>{doc.type}</span>
+                      <div key={doc.id} className="v-doc-card">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                            <span className="v-badge v-badge-accent">
+                              {doc.type === 'PASSPORT' && <Globe size={10} />}
+                              {doc.type === 'VISA' && <FileCheck size={10} />}
+                              {doc.type === 'TICKET' && <Plane size={10} />}
+                              {doc.type === 'INSURANCE' && <ShieldCheck size={10} />}
+                              {doc.type === 'SHIPMENT_DOC' && <Box size={10} />}
+                              {doc.type}
                             </span>
                             {isExpired ? (
-                              <Badge variant="destructive" className="text-[8px] uppercase">Expired</Badge>
+                              <span className="v-badge v-badge-danger">Expired</span>
                             ) : isExpiringSoon ? (
-                              <Badge variant="destructive" className="animate-pulse text-[8px] uppercase flex items-center gap-1">
-                                <BadgeAlert className="w-2.5 h-2.5" />
-                                <span>Expiring ({daysLeft}d)</span>
-                              </Badge>
+                              <span className="v-badge v-badge-warning" style={{ animation: 'pulse-ring 2s infinite' }}>
+                                <BadgeAlert size={9} />
+                                Expiring ({daysLeft}d)
+                              </span>
                             ) : (
-                              <Badge variant="success" className="text-[8px] uppercase">Valid</Badge>
+                              <span className="v-badge v-badge-success">Valid</span>
                             )}
                           </div>
 
                           {/* Specific Document Details */}
-                          <div className="p-2.5 bg-slate-950/60 rounded-lg border border-slate-850/80 space-y-1 text-xs">
+                          <div className="v-section" style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             {doc.docNumber && (
-                              <div className="font-bold text-white flex justify-between">
-                                <span className="text-slate-450 font-normal">Ref Number:</span>
-                                <span className="font-mono text-cyan-300">{doc.docNumber}</span>
+                              <div className="v-detail-row">
+                                <span className="v-detail-label">Ref Number:</span>
+                                <span className="v-detail-value-mono">{doc.docNumber}</span>
                               </div>
                             )}
                             {doc.issuingAuthority && (
-                              <div className="text-slate-300 flex justify-between">
-                                <span className="text-slate-450">Authority / Country:</span>
-                                <span className="font-semibold text-slate-200">{doc.issuingAuthority}</span>
+                              <div className="v-detail-row">
+                                <span className="v-detail-label">Authority / Country:</span>
+                                <span className="v-detail-value">{doc.issuingAuthority}</span>
                               </div>
                             )}
                             {details.entryType && (
-                              <div className="text-slate-300 flex justify-between">
-                                <span className="text-slate-450">Permit Type:</span>
-                                <span className="text-slate-200">{details.entryType}</span>
+                              <div className="v-detail-row">
+                                <span className="v-detail-label">Permit Type:</span>
+                                <span className="v-detail-value">{details.entryType}</span>
                               </div>
                             )}
                             {details.pnr && (
-                              <div className="text-slate-300 flex justify-between">
-                                <span className="text-slate-450">PNR / Flight:</span>
-                                <span className="text-slate-200">{details.pnr} ({details.flightNo || ''})</span>
+                              <div className="v-detail-row">
+                                <span className="v-detail-label">PNR / Flight:</span>
+                                <span className="v-detail-value">{details.pnr} ({details.flightNo || ''})</span>
                               </div>
                             )}
                             {details.provider && (
-                              <div className="text-slate-300 flex justify-between">
-                                <span className="text-slate-450">Provider:</span>
-                                <span className="text-slate-200">{details.provider}</span>
+                              <div className="v-detail-row">
+                                <span className="v-detail-label">Provider:</span>
+                                <span className="v-detail-value">{details.provider}</span>
                               </div>
                             )}
                             {doc.expiryDate && (
-                              <div className="text-slate-450 flex justify-between pt-1 border-t border-slate-900 text-[11px]">
-                                <span>Expiration Date:</span>
-                                <span className="font-bold text-slate-200">{doc.expiryDate}</span>
-                              </div>
+                              <>
+                                <hr className="v-divider" style={{ margin: '4px 0' }} />
+                                <div className="v-detail-row">
+                                  <span className="v-detail-label">Expiration Date:</span>
+                                  <span className="v-detail-value">{doc.expiryDate}</span>
+                                </div>
+                              </>
                             )}
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2 pt-2 border-t border-slate-850">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '10px', borderTop: '1px solid var(--border-subtle)' }}>
                           <button 
                             onClick={() => openViewer(doc)}
-                            className="flex-1 inline-flex items-center justify-center h-8 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-3 text-xs font-bold text-cyan-400 hover:bg-cyan-500/20 transition-colors cursor-pointer"
+                            className="v-btn-ghost"
+                            style={{ flex: 1, fontSize: '11px' }}
                           >
                             View Document PDF
                           </button>
-                          <Button 
+                          <button 
                             onClick={() => deleteDoc(doc.id)} 
-                            variant="destructive" 
-                            size="sm" 
-                            className="h-8 w-8 p-0 shrink-0 btn-hover-scale"
+                            className="v-btn-danger"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </Button>
+                            <Trash2 size={14} />
+                          </button>
                         </div>
                       </div>
                     );
                   })}
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card className="bg-slate-900/20 border border-slate-850">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs uppercase font-extrabold text-slate-350">Border Control & Vault Protocol</CardTitle>
-            </CardHeader>
-            <CardContent className="text-xs text-slate-400 space-y-2">
-              <p>• Passport validity must exceed 6 months from the date of entry for international clearance.</p>
-              <p>• Multi-entry business visas require active corporate authorization letters linked to travel request IDs.</p>
-            </CardContent>
-          </Card>
+          <div className="v-info-card">
+            <h4 className="v-info-title">Border Control & Vault Protocol</h4>
+            <p className="v-info-text">
+              • Passport validity must exceed 6 months from the date of entry for international clearance.<br />
+              • Multi-entry business visas require active corporate authorization letters linked to travel request IDs.
+            </p>
+          </div>
         </div>
       </div>
 

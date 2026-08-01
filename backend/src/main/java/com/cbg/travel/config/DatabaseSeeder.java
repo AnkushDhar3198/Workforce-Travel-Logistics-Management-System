@@ -385,8 +385,32 @@ public class DatabaseSeeder implements CommandLineRunner {
                 "2 0 obj<</Type/Pages/Count 1/Kids[3 0 R]>>endobj\n" +
                 "3 0 obj<</Type/Page/MediaBox[0 0 612 792]/Parent 2 0 R/Resources<</Font<</F1 4 0 R>>>>>/Contents 5 0 R>>endobj\n" +
                 "4 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>endobj\n" +
-                "5 0 obj<</Length " + (title.length() + 45) + ">>stream\n" +
-                "BT /F1 18 Tf 50 700 Td (" + title + ") Tj ET\n" +
+                "5 0 obj<</Length 1400>>stream\n" +
+                "BT\n" +
+                "/F1 16 Tf 50 740 Td (CBG WORKFORCE LOGISTICS INC.) Tj\n" +
+                "0 -22 Td /F1 12 Tf (CORPORATE TRAVEL & IDENTIFICATION VAULT) Tj\n" +
+                "0 -20 Td /F1 10 Tf (----------------------------------------------------------------------------------------------------) Tj\n" +
+                "0 -25 Td /F1 12 Tf (DOCUMENT TYPE: " + title + ") Tj\n" +
+                "0 -25 Td /F1 11 Tf (1. TRAVELER PERSONAL INFORMATION) Tj\n" +
+                "0 -16 Td /F1 10 Tf (Full Legal Name:     Bob Employee) Tj\n" +
+                "0 -14 Td (Employee ID:         EMP-88219) Tj\n" +
+                "0 -14 Td (Department:          Sales & Field Operations) Tj\n" +
+                "0 -14 Td (Corporate Email:     employee@cbg.com) Tj\n" +
+                "0 -14 Td (Contact Phone:       +1-555-0124) Tj\n" +
+                "0 -25 Td /F1 11 Tf (2. PASSPORT & BORDER CLEARANCE DETAILS) Tj\n" +
+                "0 -16 Td /F1 10 Tf (Document Number:     P-984201948 / GBR-VISA-883912) Tj\n" +
+                "0 -14 Td (Issuing Authority:   Government Passport Office / CBG Security) Tj\n" +
+                "0 -14 Td (Date of Expiry:      2030-07-31 (VALID & ACTIVE)) Tj\n" +
+                "0 -14 Td (Security Status:     Verified for International Border Control Audit) Tj\n" +
+                "0 -25 Td /F1 11 Tf (3. CORPORATE AUTHORIZATION & POLICY) Tj\n" +
+                "0 -16 Td /F1 10 Tf (Travel Auth ID:        CBG-AUTH-2026-9941) Tj\n" +
+                "0 -14 Td (Approving Manager:   Alice Manager (Sales Director)) Tj\n" +
+                "0 -14 Td (Global Insurance:    Allianz Corporate Medical Shield #AG-992014) Tj\n" +
+                "0 -14 Td (SOS Emergency:       Active 24/7 Global Evacuation Protocol) Tj\n" +
+                "0 -35 Td /F1 10 Tf (----------------------------------------------------------------------------------------------------) Tj\n" +
+                "0 -18 Td /F1 9 Tf (CONFIDENTIAL - FOR AUTHORIZED WORKFORCE LOGISTICS USE ONLY) Tj\n" +
+                "0 -14 Td (Digital Verification Code: CBG-SEC-VERIFIED-OK-2026) Tj\n" +
+                "ET\n" +
                 "endstream\n" +
                 "endobj\n" +
                 "xref\n" +
@@ -399,7 +423,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                 "0000000293 00000 n \n" +
                 "trailer <</Size 6/Root 1 0 R>>\n" +
                 "startxref\n" +
-                "400\n" +
+                "1750\n" +
                 "%%EOF\n";
         return pdf.getBytes(java.nio.charset.StandardCharsets.UTF_8);
     }

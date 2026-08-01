@@ -29,6 +29,9 @@ public class DatabaseSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        // Always ensure sample upload files exist on disk (for ephemeral container restarts)
+        ensureSampleFilesExist();
+
         if (userRepository.count() > 0) {
             System.out.println("Database already seeded. Skipping seeder.");
             return;

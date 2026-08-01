@@ -56,24 +56,29 @@ export const useTheme = () => {
   return ctx;
 };
 
+/** Apply data-theme attribute immediately to <html> — no async batching */
+function applyThemeToDom(t: ThemeId) {
+  document.documentElement.setAttribute('data-theme', t);
+}
+
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setThemeState] = useState<ThemeId>(
-    () => (localStorage.getItem('voyacore_theme') as ThemeId) || 'midnight'
-  );
+  const [theme, setThemeState] = useState<ThemeId>(() => {
+    const saved = localStorage.getItem('voyacore_theme') as ThemeId | null;
+    return saved || 'midnight';
+  });
+
+  // Apply saved theme on first mount
+  useEffect(() => {
+    applyThemeToDom(theme);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const setTheme = (t: ThemeId) => {
-    setThemeState(t);
+    // Apply to DOM immediately — don't wait for React render cycle
+    applyThemeToDom(t);
     localStorage.setItem('voyacore_theme', t);
+    setThemeState(t);
   };
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
-
-  // Set on initial mount
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, []);
 
   const themeData = THEMES.find(t => t.id === theme) || THEMES[0];
 

@@ -8,8 +8,13 @@
    CSS CUSTOM PROPERTIES — THEME TOKENS
    ==================================================== */
 
-/* MIDNIGHT — Default dark enterprise theme */
-:root,
+/* Global fallback — only safe non-theme values here */
+:root {
+  --radius: 0.875rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* MIDNIGHT — Deep enterprise dark */
 [data-theme="midnight"] {
   --bg-base: #03050d;
   --bg-elevated: #080d1a;
@@ -50,7 +55,6 @@
   --card-border: rgba(99, 179, 237, 0.12);
   --card-shadow: 0 8px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(34, 211, 238, 0.06);
 
-  /* ShadCN vars */
   --background: #03050d;
   --foreground: #f0f6ff;
   --card: #0d1526;

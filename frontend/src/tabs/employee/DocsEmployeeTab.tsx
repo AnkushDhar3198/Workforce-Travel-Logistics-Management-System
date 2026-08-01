@@ -7,6 +7,13 @@ import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 
 import DocumentViewerModal from '../../components/DocumentViewerModal';
+import { 
+  validatePNR, 
+  validateAirline, 
+  OFFICIAL_AIRLINES, 
+  OFFICIAL_AIRPORTS, 
+  VERIFIED_FLIGHT_SCHEDULES 
+} from '../../data/flightRegistry';
 
 const DOCUMENT_TYPES = [
   { id: 'PASSPORT', label: 'Passport & Border Clearance', icon: Globe },
@@ -125,9 +132,36 @@ export default function DocsEmployeeTab() {
       authority = destinationCountry;
       detailsObj = { visaNumber: docNum, destinationCountry, entryType };
     } else if (docType === 'TICKET') {
-      docNum = pnr || 'PNR-DL9842';
-      authority = carrier;
-      detailsObj = { pnr: docNum, carrier, flightNo: flightNo || 'DL-104', depAirport: departureCity, arrAirport: arrivalCity };
+      docNum = (pnr || 'PNR-DL9842A').trim();
+      authority = (carrier || 'Delta Air Lines').trim();
+
+      // 1. Strict PNR Validation Check
+      const pnrCheck = validatePNR(docNum);
+      if (!pnrCheck.isValid) {
+        alert(pnrCheck.message);
+        setSubmitting(false);
+        return;
+      }
+
+      // 2. Strict Accredited Airline Validation Check
+      const airlineCheck = validateAirline(authority);
+      if (!airlineCheck.isValid) {
+        alert(airlineCheck.message);
+        setSubmitting(false);
+        return;
+      }
+
+      if (airlineCheck.matchedAirline) {
+        authority = airlineCheck.matchedAirline.name;
+      }
+
+      detailsObj = { 
+        pnr: docNum, 
+        carrier: authority, 
+        flightNo: flightNo || 'DL-104', 
+        depAirport: departureCity, 
+        arrAirport: arrivalCity 
+      };
     } else if (docType === 'INSURANCE') {
       docNum = policyNumber || 'AGS-992014';
       authority = provider;
@@ -366,64 +400,108 @@ export default function DocsEmployeeTab() {
 
                 {docType === 'TICKET' && (
                   <div className="space-y-3 p-3.5 bg-slate-950/40 rounded-xl border border-slate-850 animate-fade-in">
-                    <div className="text-[11px] font-bold text-cyan-400 flex items-center gap-1.5">
-                      <Plane className="w-3.5 h-3.5" />
-                      <span>Ticket & Itinerary Reference</span>
+                    <div className="text-[11px] font-bold text-cyan-400 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <Plane className="w-3.5 h-3.5" />
+                        <span>Ticket & Itinerary Validation</span>
+                      </span>
+                      <span className="text-[9px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono border border-emerald-500/20">
+                        IATA Accredited
+                      </span>
                     </div>
+
+                    {/* Pre-loaded Real Flight Schedule Quick Picker */}
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">PNR / Booking Reference</label>
+                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Quick Select Verified Flight Schedule</label>
+                      <select 
+                        onChange={(e) => {
+                          const sched = VERIFIED_FLIGHT_SCHEDULES.find(s => s.flightNo === e.target.value);
+                          if (sched) {
+                            setCarrier(sched.airlineName);
+                            setFlightNo(sched.flightNo);
+                            setDepartureCity(`${sched.depCode} - ${sched.depName}`);
+                            setArrivalCity(`${sched.arrCode} - ${sched.arrName}`);
+                            if (!pnr) setPnr(`PNR-${sched.airlineCode}9842A`);
+                          }
+                        }}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none"
+                      >
+                        <option value="">-- Choose verified flight schedule (Optional) --</option>
+                        {VERIFIED_FLIGHT_SCHEDULES.map(s => (
+                          <option key={s.flightNo} value={s.flightNo}>
+                            {s.airlineName} ({s.flightNo}) : {s.depCode} ✈ {s.arrCode} ({s.duration})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">PNR / Booking Reference (5-12 Alphanumeric)</label>
                       <Input 
                         type="text" 
-                        placeholder="e.g. PNR-DL9842"
+                        placeholder="e.g. PNR-DL9842A or VSX23PJ7384"
                         value={pnr}
                         onChange={(e) => setPnr(e.target.value)}
-                        className="bg-slate-900 border-slate-800 text-white text-xs"
+                        className="bg-slate-900 border-slate-800 text-white text-xs font-mono"
                       />
                     </div>
+
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[11px] font-semibold text-slate-400 mb-1">Carrier / Transport</label>
-                        <Input 
-                          type="text" 
-                          placeholder="e.g. Delta Air Lines"
+                        <label className="block text-[11px] font-semibold text-slate-400 mb-1">Carrier Airline</label>
+                        <select 
                           value={carrier}
                           onChange={(e) => setCarrier(e.target.value)}
-                          className="bg-slate-900 border-slate-800 text-white text-xs"
-                        />
+                          className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none"
+                        >
+                          {OFFICIAL_AIRLINES.map(a => (
+                            <option key={a.code} value={a.name}>{a.name} ({a.code})</option>
+                          ))}
+                        </select>
                       </div>
                       <div>
-                        <label className="block text-[11px] font-semibold text-slate-400 mb-1">Flight / Train No.</label>
+                        <label className="block text-[11px] font-semibold text-slate-400 mb-1">Flight Number</label>
                         <Input 
                           type="text" 
-                          placeholder="e.g. DL-104"
+                          placeholder="e.g. DL-104 or 6E-9842"
                           value={flightNo}
                           onChange={(e) => setFlightNo(e.target.value)}
-                          className="bg-slate-900 border-slate-800 text-white text-xs"
+                          className="bg-slate-900 border-slate-800 text-white text-xs font-mono"
                         />
                       </div>
                     </div>
+
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[11px] font-semibold text-slate-400 mb-1">Departure Airport / City</label>
-                        <Input 
-                          type="text" 
-                          placeholder="e.g. DEL - New Delhi"
+                        <label className="block text-[11px] font-semibold text-slate-400 mb-1">Departure Airport</label>
+                        <select 
                           value={departureCity}
                           onChange={(e) => setDepartureCity(e.target.value)}
-                          className="bg-slate-900 border-slate-800 text-white text-xs"
-                        />
+                          className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none"
+                        >
+                          {OFFICIAL_AIRPORTS.map(ap => (
+                            <option key={ap.code} value={`${ap.code} - ${ap.name}`}>
+                              {ap.code} - {ap.city} ({ap.country})
+                            </option>
+                          ))}
+                        </select>
                       </div>
                       <div>
-                        <label className="block text-[11px] font-semibold text-slate-400 mb-1">Arrival Airport / City</label>
-                        <Input 
-                          type="text" 
-                          placeholder="e.g. LHR - London"
+                        <label className="block text-[11px] font-semibold text-slate-400 mb-1">Arrival Airport</label>
+                        <select 
                           value={arrivalCity}
                           onChange={(e) => setArrivalCity(e.target.value)}
-                          className="bg-slate-900 border-slate-800 text-white text-xs"
-                        />
+                          className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none"
+                        >
+                          {OFFICIAL_AIRPORTS.map(ap => (
+                            <option key={ap.code} value={`${ap.code} - ${ap.name}`}>
+                              {ap.code} - {ap.city} ({ap.country})
+                            </option>
+                          ))}
+                        </select>
                       </div>
                     </div>
+
                     <div>
                       <label className="block text-[11px] font-semibold text-slate-400 mb-1">Travel Date / Valid Until</label>
                       <Input 

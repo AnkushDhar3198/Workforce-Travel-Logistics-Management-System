@@ -21,15 +21,102 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
   }
 
   const handlePrint = () => {
-    window.print();
+    const printElement = document.getElementById('printable-document');
+    if (!printElement) {
+      window.print();
+      return;
+    }
+
+    const printWindow = window.open('', '_blank', 'width=900,height=950');
+    if (!printWindow) {
+      window.print();
+      return;
+    }
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Print Official ${docType} - ${doc.docNumber || 'Credential'}</title>
+          <script src="https://cdn.tailwindcss.com"></script>
+          <style>
+            @media print {
+              body {
+                background: white !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+              }
+              .print-container {
+                width: 100% !important;
+                max-width: 800px !important;
+                margin: 0 auto !important;
+                padding: 10px !important;
+                box-shadow: none !important;
+              }
+            }
+            body {
+              background-color: #020617;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              min-height: 100vh;
+              padding: 20px;
+              color: white;
+            }
+            .print-container {
+              width: 100%;
+              max-width: 800px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="print-container">
+            ${printElement.outerHTML}
+          </div>
+          <script>
+            setTimeout(() => {
+              window.print();
+              window.close();
+            }, 700);
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
+    <div id="printable-wrapper" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
+      {/* Print Specific CSS Fallback */}
+      <style>{`
+        @media print {
+          body * {
+            visibility: hidden !important;
+          }
+          #printable-document, #printable-document * {
+            visibility: visible !important;
+          }
+          #printable-document {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 15px !important;
+            box-shadow: none !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+        }
+      `}</style>
+
       <div className="relative w-full max-w-4xl max-h-[92vh] bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden text-left">
         
         {/* Modal Top Navigation Bar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/60">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/60 print:hidden">
           <div className="flex items-center gap-3">
             <span className="p-2 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
               {docType === 'PASSPORT' && <Globe className="w-5 h-5" />}
@@ -52,10 +139,10 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-200 text-xs font-bold hover:bg-slate-700 hover:text-white transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-200 text-xs font-bold hover:bg-slate-700 hover:text-white transition-colors cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>Print</span>
+              <span>Print Document</span>
             </button>
             <a
               href={getFileUrl(doc.fileUrl)}
@@ -80,7 +167,7 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
           
           {/* 1. REALISTIC PASSPORT DOCUMENT */}
           {docType === 'PASSPORT' && (
-            <div className="w-full max-w-2xl bg-[#0f172a] rounded-2xl border-2 border-[#1e293b] p-6 md:p-8 shadow-2xl text-slate-100 relative overflow-hidden font-sans">
+            <div id="printable-document" className="w-full max-w-2xl bg-[#0f172a] rounded-2xl border-2 border-[#1e293b] p-6 md:p-8 shadow-2xl text-slate-100 relative overflow-hidden font-sans">
               {/* Gold Foil Header Seal */}
               <div className="absolute top-0 right-0 w-36 h-36 bg-gradient-to-bl from-amber-500/10 to-transparent rounded-bl-full pointer-events-none" />
               
@@ -169,7 +256,7 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
 
           {/* 2. REALISTIC FLIGHT / TRANSIT E-TICKET & BOARDING PASS */}
           {docType === 'TICKET' && (
-            <div className="w-full max-w-3xl bg-gradient-to-r from-slate-900 via-slate-900 to-cyan-950 rounded-2xl border border-cyan-500/30 shadow-2xl overflow-hidden font-sans text-left">
+            <div id="printable-document" className="w-full max-w-3xl bg-gradient-to-r from-slate-900 via-slate-900 to-cyan-950 rounded-2xl border border-cyan-500/30 shadow-2xl overflow-hidden font-sans text-left">
               {/* Ticket Top Airline Banner */}
               <div className="bg-gradient-to-r from-cyan-600 via-cyan-500 to-blue-600 px-6 py-4 flex justify-between items-center text-slate-950">
                 <div className="flex items-center gap-3">
@@ -189,7 +276,7 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
 
               {/* Boarding Pass Body & Perforated Stub Grid */}
               <div className="grid grid-cols-12 p-6 gap-6 relative">
-                {/* Main Flight Info (9 Cols) */}
+                {/* Main Flight Info (8 Cols) */}
                 <div className="col-span-12 md:col-span-8 space-y-6">
                   {/* Route Airport Graphic */}
                   <div className="flex justify-between items-center p-4 rounded-xl bg-slate-950/70 border border-slate-800">
@@ -278,7 +365,7 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
                     </div>
                   </div>
 
-                  {/* Simulated QR & PDF417 Barcode */}
+                  {/* Simulated QR Code Barcode */}
                   <div className="bg-white p-3 rounded-xl flex flex-col items-center justify-center space-y-1 shadow">
                     <QrCode className="w-16 h-16 text-slate-950" />
                     <span className="text-[9px] font-mono text-slate-700 font-bold">CBG-TKT-DL9842A</span>
@@ -290,7 +377,7 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
 
           {/* 3. REALISTIC BUSINESS VISA STICKER */}
           {docType === 'VISA' && (
-            <div className="w-full max-w-2xl bg-[#fffbeb] rounded-2xl border-4 border-amber-600 p-6 md:p-8 shadow-2xl text-slate-900 relative overflow-hidden font-serif">
+            <div id="printable-document" className="w-full max-w-2xl bg-[#fffbeb] rounded-2xl border-4 border-amber-600 p-6 md:p-8 shadow-2xl text-slate-900 relative overflow-hidden font-serif">
               {/* Intricate Security Background & Crest Header */}
               <div className="flex justify-between items-start border-b-2 border-amber-800 pb-4 mb-4">
                 <div className="flex items-center gap-3">
@@ -352,7 +439,7 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
 
           {/* 4. REALISTIC CORPORATE HEALTH INSURANCE CARD */}
           {docType === 'INSURANCE' && (
-            <div className="w-full max-w-xl bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 rounded-2xl border-2 border-indigo-500/40 p-6 md:p-8 shadow-2xl text-white relative overflow-hidden font-sans text-left">
+            <div id="printable-document" className="w-full max-w-xl bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 rounded-2xl border-2 border-indigo-500/40 p-6 md:p-8 shadow-2xl text-white relative overflow-hidden font-sans text-left">
               {/* Holographic metallic shield background accent */}
               <div className="absolute top-0 right-0 w-44 h-44 bg-gradient-to-bl from-cyan-400/15 via-indigo-500/10 to-transparent rounded-full pointer-events-none" />
 
@@ -410,7 +497,7 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
 
           {/* 5. REALISTIC CUSTOMS MANIFEST & ATA CARNET */}
           {docType === 'SHIPMENT_DOC' && (
-            <div className="w-full max-w-2xl bg-slate-900 rounded-2xl border-2 border-slate-700 p-6 md:p-8 shadow-2xl text-slate-100 text-left font-sans">
+            <div id="printable-document" className="w-full max-w-2xl bg-slate-900 rounded-2xl border-2 border-slate-700 p-6 md:p-8 shadow-2xl text-slate-100 text-left font-sans">
               <div className="flex justify-between items-start border-b-2 border-slate-700 pb-4 mb-4">
                 <div className="flex items-center gap-3">
                   <Box className="w-8 h-8 text-cyan-400" />

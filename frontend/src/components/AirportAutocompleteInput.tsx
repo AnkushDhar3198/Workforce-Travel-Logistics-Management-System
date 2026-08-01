@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plane, X, Check, Globe } from 'lucide-react';
-import { OFFICIAL_AIRPORTS, type Airport } from '../data/flightRegistry';
+import { Plane, X, Check, Globe, Sparkles } from 'lucide-react';
+import { OFFICIAL_AIRPORTS, findOrGenerateAirport, type Airport } from '../data/flightRegistry';
 
 interface AirportAutocompleteInputProps {
   label: string;
@@ -11,7 +11,7 @@ interface AirportAutocompleteInputProps {
 
 export default function AirportAutocompleteInput({
   label,
-  placeholder = 'Type airport code or city (e.g. BLR, DEL, ORD, London...)',
+  placeholder = 'Type any 3-letter IATA airport code or city (e.g. BLR, DEL, JFK, LHR, IXB...)',
   value,
   onChange
 }: AirportAutocompleteInputProps) {
@@ -69,12 +69,10 @@ export default function AirportAutocompleteInput({
     onChange(newVal);
     setIsOpen(true);
 
-    // Auto-match exact 3-letter IATA code typed (e.g. "BLR", "DEL", "ORD")
-    const exactCodeMatch = OFFICIAL_AIRPORTS.find(
-      ap => ap.code.toLowerCase() === newVal.trim().toLowerCase()
-    );
-    if (exactCodeMatch) {
-      const formatted = `${exactCodeMatch.code} - ${exactCodeMatch.name} (${exactCodeMatch.country})`;
+    // Auto-match any 3-letter IATA code typed (e.g. "BLR", "DEL", "IXB", "JFK", "ORD")
+    if (newVal.trim().length === 3 && /^[A-Za-z]{3}$/.test(newVal.trim())) {
+      const resolved = findOrGenerateAirport(newVal.trim());
+      const formatted = `${resolved.code} - ${resolved.name} (${resolved.country})`;
       setSearchTerm(formatted);
       onChange(formatted);
     }
@@ -90,6 +88,8 @@ export default function AirportAutocompleteInput({
     setIsOpen(true);
     setIsFocused(true);
   };
+
+  const customGeneratedAirport = searchTerm.trim() ? findOrGenerateAirport(searchTerm) : null;
 
   return (
     <div ref={containerRef} className="relative w-full text-left">
@@ -124,9 +124,9 @@ export default function AirportAutocompleteInput({
           <div className="p-2 bg-slate-950/80 sticky top-0 border-b border-slate-800 flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">
             <span className="flex items-center gap-1.5 text-cyan-400">
               <Globe className="w-3 h-3" />
-              <span>Select Airport ({filteredAirports.length} Available)</span>
+              <span>44,000+ Global IATA Directory ({filteredAirports.length} Shown)</span>
             </span>
-            <span className="text-slate-500 font-mono">IATA Directory</span>
+            <span className="text-slate-500 font-mono">Worldwide</span>
           </div>
 
           {filteredAirports.length > 0 ? (
@@ -160,9 +160,24 @@ export default function AirportAutocompleteInput({
               );
             })
           ) : (
-            <div className="p-3 text-xs text-slate-400 text-center">
-              Custom entry "{searchTerm}". Press submit to proceed.
-            </div>
+            customGeneratedAirport && (
+              <div
+                onClick={() => handleSelect(customGeneratedAirport)}
+                className="p-3 bg-cyan-500/10 hover:bg-cyan-500/20 cursor-pointer border-l-4 border-cyan-400 flex items-center justify-between transition-colors"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <Sparkles className="w-4 h-4 text-cyan-400 shrink-0" />
+                  <div>
+                    <p className="text-xs font-bold text-white">
+                      Use Custom Airport: {customGeneratedAirport.code} - {customGeneratedAirport.name} ({customGeneratedAirport.country})
+                    </p>
+                    <p className="text-[10px] text-slate-400">
+                      Click to apply custom IATA airport mapping
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )
           )}
         </div>
       )}

@@ -92,103 +92,9 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
   const carnetNo = details.carnetNumber || details.carnetNo || 'ATA-Carnet-GB-8832';
   const shipmentExpiry = doc.expiryDate || '2026-12-31';
 
-  // Isolated Print Handler using dynamic iframe
+  // Native Direct Window Print Handler
   const handlePrint = () => {
-    const printElement = document.getElementById('printable-document');
-    if (!printElement) return;
-
-    // Inherit all active stylesheets from document head
-    const headStyles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
-      .map(s => s.outerHTML)
-      .join('\n');
-
-    const oldIframe = document.getElementById('doc-print-iframe');
-    if (oldIframe) {
-      oldIframe.remove();
-    }
-
-    const iframe = document.createElement('iframe');
-    iframe.id = 'doc-print-iframe';
-    iframe.style.position = 'fixed';
-    iframe.style.right = '0';
-    iframe.style.bottom = '0';
-    iframe.style.width = '0px';
-    iframe.style.height = '0px';
-    iframe.style.border = 'none';
-    document.body.appendChild(iframe);
-
-    const docContent = iframe.contentWindow?.document;
-    if (!docContent) return;
-
-    docContent.open();
-    docContent.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Official ${docType} - ${doc.docNumber || 'Credential'}</title>
-          ${headStyles}
-          <style>
-            @page {
-              size: portrait;
-              margin: 8mm;
-            }
-            * {
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
-              color-adjust: exact !important;
-            }
-            body {
-              background-color: #ffffff !important;
-              color: #0f172a !important;
-              margin: 0 !important;
-              padding: 12px !important;
-              display: flex !important;
-              justify-content: center !important;
-              align-items: flex-start !important;
-              min-height: 100vh !important;
-              font-family: Inter, system-ui, -apple-system, sans-serif !important;
-            }
-            .print-wrapper {
-              width: 100% !important;
-              max-width: 760px !important;
-              margin: 0 auto !important;
-              background-color: #ffffff !important;
-            }
-            #printable-document {
-              width: 100% !important;
-              max-width: 100% !important;
-              box-shadow: none !important;
-            }
-            /* Clean print styling for paper & PDF export */
-            .bg-\\[\\#0f172a\\], .bg-slate-900, .bg-slate-950, .bg-slate-900\\/40 {
-              background-color: #f8fafc !important;
-              color: #0f172a !important;
-              border-color: #cbd5e1 !important;
-            }
-            .text-white {
-              color: #0f172a !important;
-            }
-            .text-slate-400, .text-slate-350, .text-slate-500, .text-slate-300 {
-              color: #334155 !important;
-            }
-            .border-slate-800, .border-\\[\\#1e293b\\], .border-slate-850 {
-              border-color: #cbd5e1 !important;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="print-wrapper">
-            ${printElement.outerHTML}
-          </div>
-        </body>
-      </html>
-    `);
-    docContent.close();
-
-    setTimeout(() => {
-      iframe.contentWindow?.focus();
-      iframe.contentWindow?.print();
-    }, 350);
+    window.print();
   };
 
   return (
@@ -199,21 +105,41 @@ export default function DocumentViewerModal({ isOpen, onClose, doc }: DocumentVi
     >
       <style>{`
         @media print {
-          body > *:not(#printable-wrapper) {
+          @page {
+            size: portrait;
+            margin: 8mm;
+          }
+          body > * {
             display: none !important;
           }
           #printable-wrapper {
-            position: absolute !important;
+            display: flex !important;
+            position: fixed !important;
             inset: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
             background: #ffffff !important;
-            padding: 0 !important;
-            z-index: 9999 !important;
+            margin: 0 !important;
+            padding: 10px !important;
+            justify-content: center !important;
+            align-items: flex-start !important;
+            z-index: 999999 !important;
+            overflow: visible !important;
+          }
+          .print\\:hidden {
+            display: none !important;
           }
           #printable-document {
+            display: block !important;
             width: 100% !important;
-            max-width: 100% !important;
-            margin: 0 !important;
+            max-width: 680px !important;
+            margin: 0 auto !important;
             box-shadow: none !important;
+            border-radius: 16px !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          #printable-document * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }

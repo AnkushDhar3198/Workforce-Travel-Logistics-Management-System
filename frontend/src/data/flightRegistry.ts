@@ -49,6 +49,14 @@ export const OFFICIAL_AIRLINES: Airline[] = [
 
 // 2. Official Registry of Major Global & Regional Airports
 export const OFFICIAL_AIRPORTS: Airport[] = [
+  { code: 'BLR', name: 'Kempegowda International Airport', city: 'Bengaluru', country: 'India', timezone: 'IST' },
+  { code: 'DEL', name: 'Indira Gandhi International Airport', city: 'New Delhi', country: 'India', timezone: 'IST' },
+  { code: 'BOM', name: 'Chhatrapati Shivaji Maharaj International Airport', city: 'Mumbai', country: 'India', timezone: 'IST' },
+  { code: 'MAA', name: 'Chennai International Airport', city: 'Chennai', country: 'India', timezone: 'IST' },
+  { code: 'CCU', name: 'Netaji Subhash Chandra Bose International Airport', city: 'Kolkata', country: 'India', timezone: 'IST' },
+  { code: 'HYD', name: 'Rajiv Gandhi International Airport', city: 'Hyderabad', country: 'India', timezone: 'IST' },
+  { code: 'AMD', name: 'Sardar Vallabhbhai Patel International Airport', city: 'Ahmedabad', country: 'India', timezone: 'IST' },
+  { code: 'COK', name: 'Cochin International Airport', city: 'Kochi', country: 'India', timezone: 'IST' },
   { code: 'ORD', name: "Chicago O'Hare International Airport", city: 'Chicago', country: 'United States', timezone: 'EST' },
   { code: 'JFK', name: 'John F. Kennedy International Airport', city: 'New York', country: 'United States', timezone: 'EST' },
   { code: 'SFO', name: 'San Francisco International Airport', city: 'San Francisco', country: 'United States', timezone: 'PST' },
@@ -58,12 +66,10 @@ export const OFFICIAL_AIRPORTS: Airport[] = [
   { code: 'DXB', name: 'Dubai International Airport', city: 'Dubai', country: 'United Arab Emirates', timezone: 'GST' },
   { code: 'SIN', name: 'Singapore Changi Airport', city: 'Singapore', country: 'Singapore', timezone: 'SGT' },
   { code: 'HND', name: 'Tokyo Haneda Airport', city: 'Tokyo', country: 'Japan', timezone: 'JST' },
-  { code: 'DEL', name: 'Indira Gandhi International Airport', city: 'New Delhi', country: 'India', timezone: 'IST' },
-  { code: 'BOM', name: 'Chhatrapati Shivaji Maharaj International Airport', city: 'Mumbai', country: 'India', timezone: 'IST' },
-  { code: 'BLR', name: 'Kempegowda International Airport', city: 'Bengaluru', country: 'India', timezone: 'IST' },
   { code: 'SYD', name: 'Sydney Kingsford Smith Airport', city: 'Sydney', country: 'Australia', timezone: 'AEST' },
   { code: 'AMS', name: 'Amsterdam Airport Schiphol', city: 'Amsterdam', country: 'Netherlands', timezone: 'CET' },
-  { code: 'DOH', name: 'Hamad International Airport', city: 'Doha', country: 'Qatar', timezone: 'AST' }
+  { code: 'DOH', name: 'Hamad International Airport', city: 'Doha', country: 'Qatar', timezone: 'AST' },
+  { code: 'HKG', name: 'Hong Kong International Airport', city: 'Hong Kong', country: 'Hong Kong', timezone: 'HKT' }
 ];
 
 // 3. Pre-Loaded Verified Real Schedules & Timings Database

@@ -7,6 +7,7 @@ import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 
 import DocumentViewerModal from '../../components/DocumentViewerModal';
+import AirportAutocompleteInput from '../../components/AirportAutocompleteInput';
 import { 
   validatePNR, 
   validateAirline, 
@@ -472,34 +473,18 @@ export default function DocsEmployeeTab() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[11px] font-semibold text-slate-400 mb-1">Departure Airport</label>
-                        <select 
-                          value={departureCity}
-                          onChange={(e) => setDepartureCity(e.target.value)}
-                          className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none"
-                        >
-                          {OFFICIAL_AIRPORTS.map(ap => (
-                            <option key={ap.code} value={`${ap.code} - ${ap.name}`}>
-                              {ap.code} - {ap.city} ({ap.country})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-[11px] font-semibold text-slate-400 mb-1">Arrival Airport</label>
-                        <select 
-                          value={arrivalCity}
-                          onChange={(e) => setArrivalCity(e.target.value)}
-                          className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none"
-                        >
-                          {OFFICIAL_AIRPORTS.map(ap => (
-                            <option key={ap.code} value={`${ap.code} - ${ap.name}`}>
-                              {ap.code} - {ap.city} ({ap.country})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                      <AirportAutocompleteInput
+                        label="Departure Airport / City"
+                        placeholder="e.g. BLR, DEL, ORD, London..."
+                        value={departureCity}
+                        onChange={(val) => setDepartureCity(val)}
+                      />
+                      <AirportAutocompleteInput
+                        label="Arrival Airport / City"
+                        placeholder="e.g. LHR, DXB, BOM, Paris..."
+                        value={arrivalCity}
+                        onChange={(val) => setArrivalCity(val)}
+                      />
                     </div>
 
                     <div>

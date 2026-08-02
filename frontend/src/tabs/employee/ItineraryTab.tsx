@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/ca
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Alert, AlertTitle, AlertDescription } from '../../components/ui/alert';
-import { fetchLiveSatelliteWeather } from '../../utils/liveWeather';
+import { fetchLiveSatelliteWeather, resolveWeatherIconUrl, conditionTypeToEmoji } from '../../utils/liveWeather';
 
 interface ItineraryTabProps {
   onNavigateToRequisition?: () => void;
@@ -497,49 +497,98 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
               </button>
             </div>
 
-            {/* Main Weather Details Row */}
-            <div className="flex items-center gap-3.5 pt-0.5 min-h-[56px]">
+            {/* Main Weather Details — Google Maps Platform Weather API */}
+            <div className="flex items-start gap-3 pt-0.5 min-h-[60px]">
               {weatherLoading ? (
-                /* Loading skeleton — shown while fetching for new destination */
                 <div className="flex items-center gap-3 w-full animate-pulse">
-                  <div className="w-12 h-12 rounded-xl bg-sky-500/10 shrink-0" />
+                  <div className="w-14 h-14 rounded-xl bg-sky-500/10 shrink-0" />
                   <div className="flex-1 space-y-2">
                     <div className="h-4 bg-sky-500/10 rounded w-2/3" />
                     <div className="h-3 bg-slate-700/40 rounded w-1/2" />
                     <div className="h-3 bg-slate-700/30 rounded w-3/4" />
+                    <div className="h-2.5 bg-slate-700/20 rounded w-1/3" />
                   </div>
                 </div>
               ) : (
                 <>
-                  <div className="p-2.5 rounded-xl bg-sky-500/10 text-sky-400 text-3xl shrink-0 flex items-center justify-center">
-                    {weather?.icon === '01d' || weather?.icon === '01n' ? '☀️' :
-                     weather?.icon?.startsWith('02') ? '⛅' :
-                     weather?.icon?.startsWith('03') || weather?.icon?.startsWith('04') ? '☁️' :
-                     weather?.icon?.startsWith('09') || weather?.icon?.startsWith('10') ? '🌧️' :
-                     weather?.icon?.startsWith('13') ? '❄️' :
-                     weather?.icon?.startsWith('50') ? '🌫️' : '🌤️'}
+                  {/* Weather Icon — use Google's official iconBaseUri image if available, else emoji */}
+                  <div className="p-1.5 rounded-xl bg-sky-500/10 shrink-0 flex items-center justify-center w-14 h-14">
+                    {resolveWeatherIconUrl(weather?.iconBaseUri) ? (
+                      <img
+                        src={resolveWeatherIconUrl(weather?.iconBaseUri)!}
+                        alt={weather?.description || 'weather'}
+                        className="w-10 h-10 object-contain"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <span className="text-3xl leading-none">
+                        {conditionTypeToEmoji(weather?.conditionType || weather?.icon, weather?.isDaytime !== false)}
+                      </span>
+                    )}
                   </div>
 
                   <div className="min-w-0 flex-1">
+                    {/* Temperature & Condition */}
                     <h4 className="text-base sm:text-lg font-black text-white leading-tight">
                       {weather
-                        ? `${weather.temperature ?? weather.temp}°C — ${weather.description ?? 'Partly cloudy'}`
+                        ? `${weather.temperature ?? weather.temp}°C — ${weather.description ?? 'Partly Cloudy'}`
                         : 'Fetching weather…'}
                     </h4>
+
+                    {/* Location */}
                     <p className="text-xs font-bold text-slate-200 mt-0.5">
                       📍 {selectedReq?.destination || weather?.city || 'Manali'}
+                      {weather?.isDaytime !== undefined && (
+                        <span className="ml-1.5 text-[10px] font-semibold text-slate-400">
+                          {weather.isDaytime ? '☀ Day' : '🌙 Night'}
+                        </span>
+                      )}
+                      {weather?.timezone && (
+                        <span className="ml-1.5 text-[10px] font-semibold text-slate-500">
+                          {weather.timezone}
+                        </span>
+                      )}
                     </p>
+
                     {weather && (
                       <>
+                        {/* Row 1: Feels Like, Humidity, Dew Point */}
                         <p className="text-[10.5px] font-semibold text-slate-400 mt-0.5">
-                          Feels {weather.feelsLike ?? '—'}°C • Humidity {weather.humidity}% • Wind {weather.windSpeed} km/h
-                          {weather.uvIndex != null ? ` • UV ${weather.uvIndex}` : ''}
+                          Feels {weather.feelsLike ?? '—'}°C
+                          {weather.dewPoint != null && ` • Dew ${weather.dewPoint}°C`}
+                          {` • Humidity ${weather.humidity}%`}
                         </p>
-                        <p className="text-[10px] font-medium text-sky-500/80 mt-0.5">
+
+                        {/* Row 2: Wind */}
+                        <p className="text-[10.5px] font-semibold text-slate-400 mt-0.5">
+                          💨 Wind {weather.windSpeed ?? '—'} km/h
+                          {weather.windCardinal && ` ${weather.windCardinal}`}
+                          {weather.windDegrees != null && ` (${weather.windDegrees}°)`}
+                          {weather.windGust != null && weather.windGust > 0 && ` • Gusts ${weather.windGust} km/h`}
+                          {weather.visibility != null && ` • Vis ${weather.visibility} km`}
+                        </p>
+
+                        {/* Row 3: UV Index + Precipitation Nowcast */}
+                        <p className="text-[10.5px] font-semibold text-slate-400 mt-0.5">
+                          {weather.uvIndex != null && `☀ UV ${weather.uvIndex}`}
+                          {weather.minuteForecast && (
+                            <span className={`ml-2 ${weather.minuteForecast.hasPrecipitationNext60Min ? 'text-blue-400' : 'text-slate-500'}`}>
+                              {weather.minuteForecast.hasPrecipitationNext60Min
+                                ? `🌧 Rain likely next 60 min (${weather.minuteForecast.maxPrecipLikelihood}%)`
+                                : '🌂 No precipitation next 60 min'}
+                            </span>
+                          )}
+                        </p>
+
+                        {/* Provider */}
+                        <p className="text-[10px] font-medium text-sky-500/70 mt-0.5">
                           {weather.provider || 'Google Maps Platform Weather API'}
                         </p>
                       </>
                     )}
+
                     {weatherNotice && (
                       <p className="text-[10px] font-bold text-cyan-300 animate-fade-in mt-1">
                         ✨ {weatherNotice}

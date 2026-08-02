@@ -6,6 +6,7 @@ import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
 import { Alert, AlertTitle, AlertDescription } from '../../components/ui/alert';
 import { Badge } from '../../components/ui/badge';
+import DatePicker from '../../components/DatePicker';
 
 export default function RequisitionTab() {
   const { user, authFetch } = useAuth();
@@ -162,24 +163,20 @@ export default function RequisitionTab() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-450 uppercase tracking-wider mb-2">Departure Date</label>
-                    <Input 
-                      type="date" required
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      className="bg-slate-950 border-slate-800 text-white focus:border-cyan-500 text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-450 uppercase tracking-wider mb-2">Return Date</label>
-                    <Input 
-                      type="date" required
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="bg-slate-950 border-slate-800 text-white focus:border-cyan-500 text-xs"
-                    />
-                  </div>
+                  <DatePicker
+                    label="Departure Date"
+                    value={startDate}
+                    onChange={(val) => setStartDate(val)}
+                    placeholder="Select departure..."
+                    required
+                  />
+                  <DatePicker
+                    label="Return Date"
+                    value={endDate}
+                    onChange={(val) => setEndDate(val)}
+                    placeholder="Select return..."
+                    required
+                  />
                 </div>
 
                 <div>

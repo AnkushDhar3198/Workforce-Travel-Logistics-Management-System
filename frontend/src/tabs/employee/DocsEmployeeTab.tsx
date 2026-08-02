@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Trash2, BadgeAlert, Upload, ShieldCheck, Plane, FileCheck, Globe, CreditCard, Box } from 'lucide-react';
 import { useAuth, API_BASE, getFileUrl } from '../../context/AuthContext';
-
 import DocumentViewerModal from '../../components/DocumentViewerModal';
 import AirportAutocompleteInput from '../../components/AirportAutocompleteInput';
+import DatePicker from '../../components/DatePicker';
 import { 
   validatePNR, 
   validateAirline, 
@@ -316,23 +316,18 @@ export default function DocsEmployeeTab() {
                       </select>
                     </div>
                     <div>
-                      <label className="v-label">Passport Expiry Date *</label>
-                      <input 
-                        type="date" required
+                      <DatePicker
+                        label="Passport Expiry Date *"
                         value={expiryDate}
-                        onChange={(e) => setExpiryDate(e.target.value)}
-                        className="v-input"
+                        onChange={(val) => setExpiryDate(val)}
+                        required
                       />
                     </div>
                   </div>
                 )}
 
                 {docType === 'VISA' && (
-                  <div className="v-section dropdown-enter" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div className="v-section-header">
-                      <FileCheck size={14} />
-                      <span>Business Visa Credentials</span>
-                    </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-800/80 pt-4">
                     <div>
                       <label className="v-label">Visa / Permit Number</label>
                       <input 
@@ -366,12 +361,11 @@ export default function DocsEmployeeTab() {
                       </select>
                     </div>
                     <div>
-                      <label className="v-label">Visa Validity Expiry *</label>
-                      <input 
-                        type="date" required
+                      <DatePicker
+                        label="Visa Validity Expiry *"
                         value={expiryDate}
-                        onChange={(e) => setExpiryDate(e.target.value)}
-                        className="v-input"
+                        onChange={(val) => setExpiryDate(val)}
+                        required
                       />
                     </div>
                   </div>

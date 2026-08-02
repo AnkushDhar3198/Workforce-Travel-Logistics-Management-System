@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/ca
 import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
+import DatePicker from '../../components/DatePicker';
 
 const SHIPMENT_STATUSES = ['PREPARING', 'DISPATCHED', 'IN_TRANSIT', 'CUSTOMS_HOLD', 'DELIVERED'];
 
@@ -186,8 +187,12 @@ export default function LogisticsTab() {
               </select>
             </div>
             <div>
-              <label className="block text-slate-450 mb-1.5 font-bold">Expected Arrival</label>
-              <Input type="date" required value={expectedDelivery} onChange={e => setExpectedDelivery(e.target.value)} className="bg-slate-950 border-slate-800 text-white text-xs h-9" />
+              <DatePicker
+                label="Expected Arrival"
+                value={expectedDelivery}
+                onChange={val => setExpectedDelivery(val)}
+                required
+              />
             </div>
             <div className="md:col-span-2">
               <label className="block text-slate-455 mb-1.5 font-bold">Customs ATA Carnet Declarations</label>

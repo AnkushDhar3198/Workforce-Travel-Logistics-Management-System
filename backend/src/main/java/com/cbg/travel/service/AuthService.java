@@ -32,7 +32,10 @@ public class AuthService {
             throw new IllegalArgumentException("An account with this email already exists.");
         }
 
+        String initialEmpCode = String.format("EMP-%05d", (userRepository.count() + 1) * 100 + (long)(Math.random() * 99));
+
         User user = User.builder()
+                .employeeCode(initialEmpCode)
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .email(request.getEmail())
@@ -64,7 +67,7 @@ public class AuthService {
 
         User savedUser = userRepository.save(user);
 
-        // Auto-generate employee code: EMP-<zero-padded ID>
+        // Update employee code with exact sequential ID
         savedUser.setEmployeeCode("EMP-" + String.format("%05d", savedUser.getId()));
         savedUser = userRepository.save(savedUser);
 

@@ -280,7 +280,8 @@ export default function LoginScreen() {
       });
       if (!regRes.ok) {
         const errData = await regRes.json().catch(() => null);
-        const errMsg = errData?.message || errData?.errors?.map((e: any) => e.defaultMessage).join(', ') || 'Registration failed.';
+        const fieldErrors = errData?.errors?.map((e: any) => e.defaultMessage).join(', ');
+        const errMsg = fieldErrors || errData?.message || 'Registration failed. Please check your inputs.';
         throw new Error(errMsg);
       }
       const data = await regRes.json();

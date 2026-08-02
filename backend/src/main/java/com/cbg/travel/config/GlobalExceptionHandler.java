@@ -55,11 +55,24 @@ public class GlobalExceptionHandler {
                 .body(buildErrorBody(HttpStatus.CONFLICT, ex.getMessage()));
     }
 
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(org.springframework.dao.DataIntegrityViolationException ex) {
+        log.warn("Database constraint violation: {}", ex.getMessage());
+        String msg = "Data validation failure or duplicate entry. Please check your inputs.";
+        if (ex.getMessage() != null && ex.getMessage().contains("users_email_key")) {
+            msg = "An account with this email already exists.";
+        } else if (ex.getCause() != null && ex.getCause().getMessage() != null) {
+            msg = ex.getCause().getMessage();
+        }
+        return ResponseEntity.badRequest().body(buildErrorBody(HttpStatus.BAD_REQUEST, msg));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
         log.error("Unhandled exception", ex);
+        String msg = ex.getMessage() != null ? ex.getMessage() : "An internal error occurred. Please try again later.";
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(buildErrorBody(HttpStatus.INTERNAL_SERVER_ERROR, "An internal error occurred. Please try again later."));
+                .body(buildErrorBody(HttpStatus.INTERNAL_SERVER_ERROR, msg));
     }
 
     private Map<String, Object> buildErrorBody(HttpStatus status, String message) {

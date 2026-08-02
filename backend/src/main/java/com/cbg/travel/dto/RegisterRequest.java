@@ -51,7 +51,7 @@ public class RegisterRequest {
 
     // --- Contact & Address (Step 3) ---
     @NotBlank(message = "Phone number is required")
-    @Pattern(regexp = "^\\+?[0-9\\-\\s]{7,20}$", message = "Invalid phone number format")
+    @Pattern(regexp = "^\\+?[0-9\\-\\s()]{7,25}$", message = "Invalid phone number format")
     private String phone;
 
     @NotBlank(message = "Address is required")

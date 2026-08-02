@@ -298,42 +298,51 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [], c
   };
 
   return (
-    <div className="relative w-full rounded-3xl overflow-hidden bg-slate-950/80 border border-white/10 ring-1 ring-white/5 shadow-2xl flex flex-col select-none backdrop-blur-xl">
+    <div className="relative w-full rounded-3xl overflow-hidden bg-slate-950/90 border border-white/20 ring-1 ring-white/10 shadow-2xl flex flex-col select-none backdrop-blur-2xl">
       {/* ── Apple Floating Control Bar Overlay ─────────────────────── */}
       <div className="absolute top-3 left-3 right-3 z-30 flex items-center justify-between pointer-events-none">
         {/* Left Floating Info Pill */}
-        <div className="pointer-events-auto flex items-center gap-2 bg-slate-900/70 border border-white/10 backdrop-blur-xl px-3 py-1.5 rounded-full shadow-lg">
-          <Globe className="w-3.5 h-3.5 text-sky-400 animate-spin-slow" />
-          <span className="text-[10.5px] font-extrabold text-white">Live GPS World Catalog</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span className="text-[9.5px] font-medium text-slate-400 hidden sm:inline">• {displayRequests.length} Locations</span>
+        <div className="pointer-events-auto flex items-center gap-2 border border-white/20 backdrop-blur-2xl px-3 py-1.5 rounded-full shadow-2xl" style={{ background: 'rgba(15, 23, 42, 0.9)' }}>
+          <Globe className="w-3.5 h-3.5 text-sky-400 animate-spin-slow shrink-0" />
+          <span className="text-[11px] font-black tracking-wide shrink-0" style={{ color: '#ffffff' }}>Live GPS World Catalog</span>
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+          <span className="text-[10px] font-bold hidden sm:inline shrink-0" style={{ color: '#38bdf8' }}>• {displayRequests.length} Locations</span>
         </div>
 
         {/* Right Floating Controls */}
         <div className="pointer-events-auto flex items-center gap-2">
           {/* Layer Selector Frosted Pill */}
-          <div className="flex items-center bg-slate-900/70 border border-white/10 backdrop-blur-xl p-0.5 rounded-full shadow-lg">
+          <div className="flex items-center border border-white/20 backdrop-blur-2xl p-0.5 rounded-full shadow-2xl" style={{ background: 'rgba(15, 23, 42, 0.9)' }}>
             <button
               onClick={() => setActiveLayer('dark')}
-              className={`px-2.5 py-1 rounded-full text-[9.5px] font-black transition-all ${
-                activeLayer === 'dark' ? 'bg-sky-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
-              }`}
+              className="px-2.5 py-1 rounded-full text-[9.5px] font-black transition-all cursor-pointer"
+              style={{
+                background: activeLayer === 'dark' ? '#0ea5e9' : 'transparent',
+                color: activeLayer === 'dark' ? '#0284c7' : '#ffffff',
+                boxShadow: activeLayer === 'dark' ? '0 2px 8px rgba(14,165,233,0.4)' : 'none',
+              }}
             >
               Dark
             </button>
             <button
               onClick={() => setActiveLayer('satellite')}
-              className={`px-2.5 py-1 rounded-md text-[9.5px] font-black transition-all ${
-                activeLayer === 'satellite' ? 'bg-sky-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
-              }`}
+              className="px-2.5 py-1 rounded-full text-[9.5px] font-black transition-all cursor-pointer"
+              style={{
+                background: activeLayer === 'satellite' ? '#0ea5e9' : 'transparent',
+                color: activeLayer === 'satellite' ? '#0284c7' : '#ffffff',
+                boxShadow: activeLayer === 'satellite' ? '0 2px 8px rgba(14,165,233,0.4)' : 'none',
+              }}
             >
               Satellite
             </button>
             <button
               onClick={() => setActiveLayer('street')}
-              className={`px-2.5 py-1 rounded-full text-[9.5px] font-black transition-all ${
-                activeLayer === 'street' ? 'bg-sky-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
-              }`}
+              className="px-2.5 py-1 rounded-full text-[9.5px] font-black transition-all cursor-pointer"
+              style={{
+                background: activeLayer === 'street' ? '#0ea5e9' : 'transparent',
+                color: activeLayer === 'street' ? '#0284c7' : '#ffffff',
+                boxShadow: activeLayer === 'street' ? '0 2px 8px rgba(14,165,233,0.4)' : 'none',
+              }}
             >
               Street
             </button>
@@ -342,35 +351,39 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [], c
           {/* Toggle Roster Button */}
           <button
             onClick={() => setShowRosterOverlay(!showRosterOverlay)}
-            className={`px-3 py-1.5 rounded-full text-[10px] font-extrabold flex items-center gap-1.5 transition-all shadow-lg border backdrop-blur-xl ${
-              showRosterOverlay
-                ? 'bg-sky-500 text-slate-950 border-sky-400'
-                : 'bg-slate-900/70 border-white/10 text-slate-300 hover:text-white'
-            }`}
+            className="px-3 py-1.5 rounded-full text-[10px] font-extrabold flex items-center gap-1.5 transition-all shadow-xl border backdrop-blur-2xl cursor-pointer"
+            style={{
+              background: showRosterOverlay ? '#0ea5e9' : 'rgba(15, 23, 42, 0.9)',
+              color: '#ffffff',
+              borderColor: showRosterOverlay ? '#38bdf8' : 'rgba(255, 255, 255, 0.2)',
+            }}
           >
             <List size={12} />
             <span>Roster ({displayRequests.length})</span>
           </button>
 
           {/* Zoom Controls */}
-          <div className="flex items-center bg-slate-900/70 border border-white/10 backdrop-blur-xl p-0.5 rounded-full shadow-lg">
+          <div className="flex items-center border border-white/20 backdrop-blur-2xl p-0.5 rounded-full shadow-2xl" style={{ background: 'rgba(15, 23, 42, 0.9)' }}>
             <button
               onClick={() => mapInstanceRef.current?.zoomIn()}
-              className="p-1.5 text-slate-300 hover:text-white rounded-full transition"
+              className="p-1.5 rounded-full transition cursor-pointer"
+              style={{ color: '#ffffff' }}
               title="Zoom In"
             >
               <ZoomIn size={12} />
             </button>
             <button
               onClick={() => mapInstanceRef.current?.zoomOut()}
-              className="p-1.5 text-slate-300 hover:text-white rounded-full transition"
+              className="p-1.5 rounded-full transition cursor-pointer"
+              style={{ color: '#ffffff' }}
               title="Zoom Out"
             >
               <ZoomOut size={12} />
             </button>
             <button
               onClick={handleResetMap}
-              className="p-1.5 text-slate-300 hover:text-white rounded-full transition"
+              className="p-1.5 rounded-full transition cursor-pointer"
+              style={{ color: '#ffffff' }}
               title="Reset View"
             >
               <RotateCcw size={12} />
@@ -385,22 +398,23 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [], c
 
         {/* Slide-over Apple Frosted Roster Drawer */}
         {showRosterOverlay && (
-          <div className="absolute top-14 right-3 z-30 w-64 bg-slate-900/90 border border-white/15 backdrop-blur-2xl rounded-2xl p-3 shadow-2xl space-y-2 animate-fade-in max-h-[260px] overflow-y-auto custom-scrollbar">
-            <div className="flex items-center justify-between border-b border-white/10 pb-1.5">
-              <span className="text-[10px] font-black uppercase tracking-wider text-sky-400 flex items-center gap-1">
+          <div className="absolute top-14 right-3 z-30 w-64 border border-white/25 backdrop-blur-2xl rounded-2xl p-3 shadow-2xl space-y-2 animate-fade-in max-h-[260px] overflow-y-auto custom-scrollbar" style={{ background: 'rgba(15, 23, 42, 0.95)' }}>
+            <div className="flex items-center justify-between border-b border-white/15 pb-1.5">
+              <span className="text-[10px] font-black uppercase tracking-wider flex items-center gap-1" style={{ color: '#38bdf8' }}>
                 <Navigation size={11} /> Duty of Care Roster
               </span>
-              <span className="text-[9px] text-slate-400 font-mono font-semibold">{filteredRequests.length} active</span>
+              <span className="text-[9.5px] font-mono font-bold" style={{ color: '#cbd5e1' }}>{filteredRequests.length} active</span>
             </div>
 
             <div className="relative">
-              <Search className="w-3 h-3 absolute left-2.5 top-2 text-slate-500" />
+              <Search className="w-3 h-3 absolute left-2.5 top-2" style={{ color: '#94a3b8' }} />
               <input
                 type="text"
                 placeholder="Filter destination..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-slate-950/80 border border-white/10 rounded-lg pl-7 pr-2 py-1 text-[10px] text-white focus:outline-none focus:border-sky-500 placeholder:text-slate-600"
+                className="w-full border border-white/15 rounded-lg pl-7 pr-2 py-1 text-[10px] text-white focus:outline-none focus:border-sky-500 placeholder:text-slate-400"
+                style={{ background: 'rgba(2, 6, 23, 0.9)', color: '#ffffff' }}
               />
             </div>
 
@@ -412,22 +426,23 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [], c
                   <div
                     key={req.id}
                     onClick={() => handleFlyTo(req)}
-                    className={`p-2 rounded-xl border transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-sky-500/20 border-sky-400 text-white shadow'
-                        : 'bg-slate-950/50 border-white/5 text-slate-300 hover:bg-slate-800/60 hover:text-white'
-                    }`}
+                    className="p-2 rounded-xl border transition-all cursor-pointer"
+                    style={{
+                      background: isSelected ? 'rgba(14, 165, 233, 0.25)' : 'rgba(2, 6, 23, 0.6)',
+                      borderColor: isSelected ? '#38bdf8' : 'rgba(255, 255, 255, 0.1)',
+                      color: '#ffffff',
+                    }}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-white flex items-center gap-1">
-                        <MapPin size={10} className="text-sky-400" />
+                      <span className="text-[11px] font-bold flex items-center gap-1" style={{ color: '#ffffff' }}>
+                        <MapPin size={10} style={{ color: '#38bdf8' }} />
                         <span>{req.destination}</span>
                       </span>
-                      <span className="text-[8.5px] font-mono text-sky-400 font-bold">#{req.id}</span>
+                      <span className="text-[8.5px] font-mono font-bold" style={{ color: '#38bdf8' }}>#{req.id}</span>
                     </div>
-                    <div className="text-[9px] text-slate-400 mt-0.5 flex items-center justify-between">
+                    <div className="text-[9px] mt-0.5 flex items-center justify-between" style={{ color: '#cbd5e1' }}>
                       <span>{geo.country}</span>
-                      <span className="text-slate-500 font-mono">{geo.lat.toFixed(2)}°, {geo.lon.toFixed(2)}°</span>
+                      <span className="font-mono" style={{ color: '#94a3b8' }}>{geo.lat.toFixed(2)}°, {geo.lon.toFixed(2)}°</span>
                     </div>
                   </div>
                 );
@@ -438,14 +453,14 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [], c
       </div>
 
       {/* ── Apple-Style Minimal Footer Ribbon ─────────────────────────── */}
-      <div className="px-4 py-2 bg-slate-900/90 border-t border-white/10 flex items-center justify-between text-[10px] text-slate-400 z-20 backdrop-blur-xl">
+      <div className="px-4 py-2 border-t border-white/15 flex items-center justify-between text-[10.5px] z-20 backdrop-blur-2xl" style={{ background: 'rgba(15, 23, 42, 0.95)' }}>
         <div className="flex items-center gap-2">
-          <ShieldCheck size={12} className="text-sky-400" />
-          <span className="font-semibold text-slate-300">Open-Meteo Precision WGS84 GPS</span>
+          <ShieldCheck size={13} style={{ color: '#38bdf8' }} />
+          <span className="font-bold" style={{ color: '#f1f5f9' }}>Open-Meteo Precision WGS84 GPS</span>
         </div>
         <div className="flex items-center gap-3 font-mono text-[9.5px]">
-          <span className="text-emerald-400 font-extrabold">● Active Signal</span>
-          <span className="text-slate-500">100% Precision Plotted</span>
+          <span className="font-extrabold" style={{ color: '#34d399' }}>● Active Signal</span>
+          <span className="font-bold" style={{ color: '#cbd5e1' }}>100% Precision Plotted</span>
         </div>
       </div>
     </div>

@@ -466,17 +466,22 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
             return (
               <div className={`h-full min-h-[320px] flex flex-col justify-between rounded-3xl p-6 bg-gradient-to-br ${cardGrad} border backdrop-blur-2xl ring-1 ring-white/10 shadow-2xl relative overflow-hidden`}>
                 {/* Top status bar */}
-                <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-3">
+                <div className="flex items-center justify-between gap-2 border-b border-white/15 pb-3">
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0 shadow-sm" />
-                    <span className="text-xs font-black uppercase tracking-widest text-sky-300 truncate drop-shadow-sm">Live Weather Stream</span>
-                    <span className="text-[10px] text-slate-300 font-mono hidden sm:inline">• {liveTime}</span>
+                    <span className="text-xs font-black uppercase tracking-widest text-cyan-300 truncate" style={{ color: '#38bdf8' }}>
+                      Live Weather Stream
+                    </span>
+                    <span className="text-[11px] font-mono font-bold shrink-0" style={{ color: '#f1f5f9' }}>
+                      • {liveTime}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={handleManualWeatherRefresh}
                       disabled={isRefreshingWeather || weatherLoading}
-                      className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-[10px] font-extrabold transition-all active:scale-95 disabled:opacity-40 flex items-center gap-1 shadow"
+                      className="px-3 py-1 rounded-full border border-white/30 text-white text-[10px] font-extrabold transition-all active:scale-95 disabled:opacity-40 flex items-center gap-1 shadow-md"
+                      style={{ background: 'rgba(255, 255, 255, 0.15)', color: '#ffffff' }}
                     >
                       <RefreshCw size={10} className={isRefreshingWeather ? 'animate-spin' : ''} />
                       <span>{isRefreshingWeather ? 'Updating' : 'Refresh'}</span>
@@ -487,22 +492,22 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
                 {/* Big Temperature Hero */}
                 <div className="my-3 flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-xs font-black text-amber-300/90 uppercase tracking-wider drop-shadow-sm flex items-center gap-1">
+                    <p className="text-xs font-black uppercase tracking-wider flex items-center gap-1" style={{ color: '#fbbf24' }}>
                       <span>📍</span> <span>{selectedReq?.destination || weather?.city || 'Worldwide'}</span>
                     </p>
-                    <h3 className="text-5xl md:text-6xl font-black text-white mt-1 tracking-tight drop-shadow-md">
+                    <h3 className="text-5xl md:text-6xl font-black mt-1 tracking-tight drop-shadow-lg select-none" style={{ color: '#ffffff' }}>
                       {weather ? `${weather.temperature ?? weather.temp}°C` : '—'}
                     </h3>
-                    <p className="text-xs font-bold text-slate-200 mt-1 flex items-center gap-2 flex-wrap">
-                      <span className="text-white font-extrabold">{weather?.description ?? 'Partly Cloudy'}</span>
-                      <span className="text-slate-400">•</span>
-                      <span className="px-2 py-0.5 rounded-full bg-white/10 border border-white/15 text-[10px]">
+                    <p className="text-xs font-bold mt-1 flex items-center gap-2 flex-wrap" style={{ color: '#f1f5f9' }}>
+                      <span className="font-extrabold" style={{ color: '#ffffff' }}>{weather?.description ?? 'Partly Cloudy'}</span>
+                      <span style={{ color: '#94a3b8' }}>•</span>
+                      <span className="px-2 py-0.5 rounded-full border border-white/20 text-[10px] font-bold" style={{ background: 'rgba(255,255,255,0.15)', color: '#ffffff' }}>
                         {destLocalHour >= 6 && destLocalHour < 18 ? '☀️ Daylight' : '🌙 Night'}
                       </span>
                     </p>
                   </div>
 
-                  <div className="w-20 h-20 rounded-3xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0 shadow-lg backdrop-blur-md">
+                  <div className="w-20 h-20 rounded-3xl border border-white/25 flex items-center justify-center shrink-0 shadow-lg backdrop-blur-md" style={{ background: 'rgba(15, 23, 42, 0.6)' }}>
                     {(weather?.iconUrl || resolveWeatherIconUrl(weather?.iconBaseUri)) ? (
                       <img
                         src={weather?.iconUrl || resolveWeatherIconUrl(weather?.iconBaseUri)!}
@@ -510,36 +515,36 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
                         className="w-14 h-14 object-contain drop-shadow"
                       />
                     ) : (
-                      <span className="text-4xl">
+                      <span className="text-4xl select-none">
                         {conditionTypeToEmoji(weather?.conditionType || weather?.icon, destLocalHour >= 6 && destLocalHour < 18)}
                       </span>
                     )}
                   </div>
                 </div>
 
-                {/* 5 Minimal Metric Pills (Including Real-Time AQI) */}
+                {/* 5 Minimal Metric Pills (Dark Frosted Glass with White Text) */}
                 {weather && (
-                  <div className="grid grid-cols-5 gap-1.5 pt-3 border-t border-white/10">
-                    <div className="bg-slate-950/60 rounded-2xl p-2 text-center border border-white/10">
-                      <p className="text-[8px] text-slate-400 uppercase font-bold tracking-wider">Feels</p>
-                      <p className="text-xs font-black text-white mt-0.5">{weather.feelsLike ?? '—'}°C</p>
+                  <div className="grid grid-cols-5 gap-1.5 pt-3 border-t border-white/15">
+                    <div className="rounded-2xl p-2 text-center border border-white/20 shadow-md backdrop-blur-md" style={{ background: 'rgba(15, 23, 42, 0.85)' }}>
+                      <p className="text-[8px] uppercase font-bold tracking-wider" style={{ color: '#94a3b8' }}>Feels</p>
+                      <p className="text-xs font-black mt-0.5" style={{ color: '#ffffff' }}>{weather.feelsLike ?? '—'}°C</p>
                     </div>
-                    <div className="bg-slate-950/60 rounded-2xl p-2 text-center border border-white/10">
-                      <p className="text-[8px] text-slate-400 uppercase font-bold tracking-wider">Humidity</p>
-                      <p className="text-xs font-black text-white mt-0.5">{weather.humidity}%</p>
+                    <div className="rounded-2xl p-2 text-center border border-white/20 shadow-md backdrop-blur-md" style={{ background: 'rgba(15, 23, 42, 0.85)' }}>
+                      <p className="text-[8px] uppercase font-bold tracking-wider" style={{ color: '#94a3b8' }}>Humidity</p>
+                      <p className="text-xs font-black mt-0.5" style={{ color: '#ffffff' }}>{weather.humidity}%</p>
                     </div>
-                    <div className="bg-slate-950/60 rounded-2xl p-2 text-center border border-white/10">
-                      <p className="text-[8px] text-slate-400 uppercase font-bold tracking-wider">Wind</p>
-                      <p className="text-xs font-black text-white mt-0.5">{weather.windSpeed ?? '—'} km/h</p>
+                    <div className="rounded-2xl p-2 text-center border border-white/20 shadow-md backdrop-blur-md" style={{ background: 'rgba(15, 23, 42, 0.85)' }}>
+                      <p className="text-[8px] uppercase font-bold tracking-wider" style={{ color: '#94a3b8' }}>Wind</p>
+                      <p className="text-xs font-black mt-0.5" style={{ color: '#ffffff' }}>{weather.windSpeed ?? '—'} km/h</p>
                     </div>
-                    <div className="bg-slate-950/60 rounded-2xl p-2 text-center border border-white/10">
-                      <p className="text-[8px] text-slate-400 uppercase font-bold tracking-wider">UV Index</p>
-                      <p className="text-xs font-black text-white mt-0.5">{weather.uvIndex ?? '1'}</p>
+                    <div className="rounded-2xl p-2 text-center border border-white/20 shadow-md backdrop-blur-md" style={{ background: 'rgba(15, 23, 42, 0.85)' }}>
+                      <p className="text-[8px] uppercase font-bold tracking-wider" style={{ color: '#94a3b8' }}>UV Index</p>
+                      <p className="text-xs font-black mt-0.5" style={{ color: '#ffffff' }}>{weather.uvIndex ?? '1'}</p>
                     </div>
-                    <div className="bg-slate-950/60 rounded-2xl p-2 text-center border border-white/10">
-                      <p className="text-[8px] text-slate-400 uppercase font-bold tracking-wider">Air Quality</p>
-                      <p className={`text-xs font-black mt-0.5 ${aqiCat.textClass}`}>
-                        {aqiVal} <span className="text-[8px] font-bold block leading-none">{aqiCat.label}</span>
+                    <div className="rounded-2xl p-2 text-center border border-white/20 shadow-md backdrop-blur-md" style={{ background: 'rgba(15, 23, 42, 0.85)' }}>
+                      <p className="text-[8px] uppercase font-bold tracking-wider" style={{ color: '#94a3b8' }}>Air Quality</p>
+                      <p className="text-xs font-black mt-0.5" style={{ color: aqiVal <= 50 ? '#34d399' : aqiVal <= 100 ? '#fbbf24' : '#f87171' }}>
+                        {aqiVal} <span className="text-[8px] font-bold block leading-none" style={{ color: aqiVal <= 50 ? '#34d399' : aqiVal <= 100 ? '#fbbf24' : '#f87171' }}>{aqiCat.label}</span>
                       </p>
                     </div>
                   </div>

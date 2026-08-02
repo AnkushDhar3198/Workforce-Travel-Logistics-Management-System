@@ -220,7 +220,9 @@ function DashboardContent() {
               <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#22c55e' }} />
               <span>VoyaCore Level-5 Autonomous Session Active</span>
               <span>•</span>
-              <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Role: {user?.role}</span>
+              <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>
+                Role: {user?.role ? user.role.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()) : 'Employee'}
+              </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <span>256-Bit SSL Encrypted</span>

@@ -80,6 +80,8 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
   const [loading, setLoading] = useState(false);
   const [weather, setWeather] = useState<any>(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
+  const [weatherError, setWeatherError] = useState<string | null>(null);
+  const [nextRefreshIn, setNextRefreshIn] = useState<number>(600); // seconds until next auto-refresh
   const [liveTime, setLiveTime] = useState<string>(() => new Date().toLocaleTimeString());
   const [isRefreshingWeather, setIsRefreshingWeather] = useState(false);
   const [weatherNotice, setWeatherNotice] = useState<string | null>(null);
@@ -87,17 +89,19 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
   const handleManualWeatherRefresh = async () => {
     if (!selectedReq?.destination) return;
     setIsRefreshingWeather(true);
-    setWeather(null);
     setWeatherLoading(true);
+    setWeatherError(null);
     const dest = selectedReq.destination;
     try {
       const liveData = await fetchLiveSatelliteWeather(dest);
       setWeather(liveData);
       setWeatherLoading(false);
-      setWeatherNotice(`Updated: ${liveData.temperature}°C in ${liveData.city}`);
+      setNextRefreshIn(600); // reset countdown
+      setWeatherNotice(`✓ Updated: ${liveData.temperature}°C in ${liveData.city}`);
       setTimeout(() => setWeatherNotice(null), 4000);
     } catch (e) {
       setWeatherLoading(false);
+      setWeatherError('Could not fetch weather. Showing last known data.');
     }
     setIsRefreshingWeather(false);
   };
@@ -108,6 +112,14 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
       setLiveTime(new Date().toLocaleTimeString());
     }, 1000);
     return () => clearInterval(timer);
+  }, []);
+
+  // Countdown timer: ticks every second, shows time until next auto-refresh
+  useEffect(() => {
+    const tick = setInterval(() => {
+      setNextRefreshIn(prev => (prev <= 1 ? 600 : prev - 1));
+    }, 1000);
+    return () => clearInterval(tick);
   }, []);
 
   const loadItineraries = async () => {
@@ -143,17 +155,20 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
     loadItineraries();
   }, []);
 
-  // Immediately fetch fresh weather whenever the selected trip destination changes
+  // Fetch fresh weather whenever destination changes; auto-refresh every 10 minutes
   useEffect(() => {
     const dest = selectedReq?.destination;
     if (!dest) {
       setWeather(null);
+      setWeatherError(null);
       return;
     }
 
-    // Reset weather immediately so stale data from the previous city is never shown
+    // Reset immediately so stale data is never shown for the new destination
     setWeather(null);
+    setWeatherError(null);
     setWeatherLoading(true);
+    setNextRefreshIn(600);
 
     let cancelled = false;
     let intervalId: ReturnType<typeof setInterval>;
@@ -164,14 +179,20 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
         if (!cancelled) {
           setWeather(liveData);
           setWeatherLoading(false);
+          setWeatherError(null);
+          setNextRefreshIn(600); // reset countdown after each successful fetch
         }
       } catch (_) {
-        if (!cancelled) setWeatherLoading(false);
+        if (!cancelled) {
+          setWeatherLoading(false);
+          setWeatherError('Weather fetch failed. Retrying in 10 minutes.');
+        }
       }
     };
 
     fetchWeather();
-    intervalId = setInterval(fetchWeather, 15000);
+    // Auto-refresh every 10 minutes — best practice per API guidelines
+    intervalId = setInterval(fetchWeather, 10 * 60 * 1000);
 
     return () => {
       cancelled = true;
@@ -474,132 +495,189 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
           </CardContent>
         </Card>
 
-        {/* Live Google Maps Platform Weather API Card */}
-        <Card className="hover-elevate hover-glow bg-gradient-to-r from-sky-950/40 to-cyan-950/30 border border-sky-800/40 relative overflow-hidden">
-          <CardContent className="p-4 flex flex-col gap-2.5">
-            {/* Top Header Row: Live Pulse, Title & Refresh Button */}
-            <div className="flex items-center justify-between gap-2 border-b border-sky-800/30 pb-2">
-              <div className="flex items-center gap-1.5 min-w-0">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                <p className="text-[11px] text-sky-300 font-extrabold uppercase tracking-wider truncate">
-                  Google Maps Weather • {liveTime}
-                </p>
-              </div>
+        {/* Live Weather Card — Google Maps Platform Weather API */}
+        {(() => {
+          // Dynamic gradient based on condition type
+          const ct = (weather?.conditionType || '').toUpperCase();
+          let cardGrad = 'from-sky-950/50 to-cyan-950/40 border-sky-800/40';
+          if (ct === 'CLEAR' || ct === 'MOSTLY_CLEAR') cardGrad = 'from-amber-950/50 to-yellow-950/30 border-amber-700/40';
+          else if (ct.includes('THUNDER') || ct.includes('STORM')) cardGrad = 'from-slate-900/80 to-indigo-950/60 border-indigo-700/40';
+          else if (ct.includes('RAIN') || ct.includes('DRIZZLE') || ct.includes('SHOWER')) cardGrad = 'from-blue-950/60 to-sky-950/40 border-blue-700/40';
+          else if (ct.includes('SNOW') || ct.includes('ICE') || ct.includes('BLIZZARD')) cardGrad = 'from-slate-800/60 to-sky-900/50 border-sky-600/40';
+          else if (ct.includes('FOG') || ct.includes('HAZE') || ct.includes('MIST')) cardGrad = 'from-slate-800/60 to-zinc-900/50 border-zinc-600/40';
 
-              <button
-                onClick={handleManualWeatherRefresh}
-                disabled={isRefreshingWeather}
-                title="Refresh real-time weather data"
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-sky-500/40 bg-sky-500/10 hover:bg-sky-500/25 text-sky-300 text-[9.5px] font-bold transition-all cursor-pointer shrink-0 active:scale-95 disabled:opacity-50"
-              >
-                <RefreshCw size={11} className={isRefreshingWeather ? 'animate-spin text-cyan-300' : ''} />
-                <span>{isRefreshingWeather ? 'Updating…' : 'Refresh'}</span>
-              </button>
-            </div>
+          const mins = Math.floor(nextRefreshIn / 60);
+          const secs = nextRefreshIn % 60;
+          const countdownLabel = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
 
-            {/* Main Weather Details — Google Maps Platform Weather API */}
-            <div className="flex items-start gap-3 pt-0.5 min-h-[60px]">
-              {weatherLoading ? (
-                <div className="flex items-center gap-3 w-full animate-pulse">
-                  <div className="w-14 h-14 rounded-xl bg-sky-500/10 shrink-0" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-sky-500/10 rounded w-2/3" />
-                    <div className="h-3 bg-slate-700/40 rounded w-1/2" />
-                    <div className="h-3 bg-slate-700/30 rounded w-3/4" />
-                    <div className="h-2.5 bg-slate-700/20 rounded w-1/3" />
+          return (
+            <Card className={`hover-elevate hover-glow bg-gradient-to-br ${cardGrad} border relative overflow-hidden transition-all duration-700`}>
+              <CardContent className="p-4 flex flex-col gap-2">
+
+                {/* ── Header row ─────────────────────────────── */}
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                    <p className="text-[10px] text-sky-300 font-extrabold uppercase tracking-widest truncate">
+                      Live Weather
+                    </p>
+                    <span className="text-[9px] text-slate-500 font-medium hidden sm:block truncate">
+                      • {liveTime}
+                    </span>
                   </div>
-                </div>
-              ) : (
-                <>
-                  {/* Weather Icon — use Google's official iconBaseUri image if available, else emoji */}
-                  <div className="p-1.5 rounded-xl bg-sky-500/10 shrink-0 flex items-center justify-center w-14 h-14">
-                    {resolveWeatherIconUrl(weather?.iconBaseUri) ? (
-                      <img
-                        src={resolveWeatherIconUrl(weather?.iconBaseUri)!}
-                        alt={weather?.description || 'weather'}
-                        className="w-10 h-10 object-contain"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
-                      />
-                    ) : (
-                      <span className="text-3xl leading-none">
-                        {conditionTypeToEmoji(weather?.conditionType || weather?.icon, weather?.isDaytime !== false)}
+                  <div className="flex items-center gap-2 shrink-0">
+                    {/* Auto-refresh countdown */}
+                    {!weatherLoading && (
+                      <span className="text-[9px] text-slate-500 font-mono" title="Next auto-refresh">
+                        ⏱ {countdownLabel}
                       </span>
                     )}
+                    <button
+                      onClick={handleManualWeatherRefresh}
+                      disabled={isRefreshingWeather || weatherLoading}
+                      title="Refresh weather now"
+                      className="flex items-center gap-1 px-2 py-0.5 rounded-md border border-sky-500/40 bg-sky-500/10 hover:bg-sky-500/25 text-sky-300 text-[9px] font-bold transition-all cursor-pointer active:scale-95 disabled:opacity-40"
+                    >
+                      <RefreshCw size={10} className={isRefreshingWeather ? 'animate-spin' : ''} />
+                      <span>{isRefreshingWeather ? 'Updating…' : 'Refresh'}</span>
+                    </button>
                   </div>
+                </div>
 
-                  <div className="min-w-0 flex-1">
-                    {/* Temperature & Condition */}
-                    <h4 className="text-base sm:text-lg font-black text-white leading-tight">
-                      {weather
-                        ? `${weather.temperature ?? weather.temp}°C — ${weather.description ?? 'Partly Cloudy'}`
-                        : 'Fetching weather…'}
-                    </h4>
+                {/* ── Error banner (preserves last known data below) ── */}
+                {weatherError && !weatherLoading && (
+                  <div className="flex items-center gap-1.5 bg-orange-900/25 border border-orange-700/30 rounded-lg px-2.5 py-1">
+                    <AlertTriangle size={11} className="text-orange-400 shrink-0" />
+                    <p className="text-[9.5px] text-orange-300 font-semibold">{weatherError}</p>
+                  </div>
+                )}
 
-                    {/* Location */}
-                    <p className="text-xs font-bold text-slate-200 mt-0.5">
-                      📍 {selectedReq?.destination || weather?.city || 'Manali'}
-                      {weather?.isDaytime !== undefined && (
-                        <span className="ml-1.5 text-[10px] font-semibold text-slate-400">
-                          {weather.isDaytime ? '☀ Day' : '🌙 Night'}
-                        </span>
-                      )}
-                      {weather?.timezone && (
-                        <span className="ml-1.5 text-[10px] font-semibold text-slate-500">
-                          {weather.timezone}
-                        </span>
-                      )}
-                    </p>
+                {/* ── Loading skeleton ──────────────────────── */}
+                {weatherLoading ? (
+                  <div className="flex items-center gap-3 w-full animate-pulse pt-1">
+                    <div className="w-14 h-14 rounded-xl bg-sky-500/10 shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-5 bg-sky-500/10 rounded w-3/4" />
+                      <div className="h-3 bg-slate-700/40 rounded w-1/2" />
+                      <div className="h-3 bg-slate-700/25 rounded w-2/3" />
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {/* ── Main row: icon + temp ─────────────── */}
+                    <div className="flex items-center gap-3 pt-0.5">
+                      {/* Icon — official Google iconBaseUri .png, fall back to emoji */}
+                      <div className="w-14 h-14 rounded-xl bg-white/5 shrink-0 flex items-center justify-center ring-1 ring-white/10">
+                        {resolveWeatherIconUrl(weather?.iconBaseUri) ? (
+                          <img
+                            src={resolveWeatherIconUrl(weather?.iconBaseUri)!}
+                            alt={weather?.description || 'weather'}
+                            className="w-10 h-10 object-contain drop-shadow"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                          />
+                        ) : (
+                          <span className="text-3xl leading-none select-none">
+                            {conditionTypeToEmoji(weather?.conditionType, weather?.isDaytime !== false)}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        {/* Big temperature */}
+                        <div className="flex items-baseline gap-1.5 flex-wrap">
+                          <span className="text-2xl font-black text-white leading-none">
+                            {weather ? `${weather.temperature ?? weather.temp}°C` : '—'}
+                          </span>
+                          <span className="text-xs font-semibold text-slate-300 truncate">
+                            {weather?.description ?? 'Partly Cloudy'}
+                          </span>
+                        </div>
+                        {/* Location + Day/Night */}
+                        <p className="text-[10.5px] font-bold text-slate-300 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                          <span>📍 {selectedReq?.destination || weather?.city || '—'}</span>
+                          {weather?.isDaytime !== undefined && (
+                            <span className="text-slate-500">{weather.isDaytime ? '☀ Day' : '🌙 Night'}</span>
+                          )}
+                          {weather?.timezone && (
+                            <span className="text-slate-600 text-[9px]">{weather.timezone}</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
 
                     {weather && (
                       <>
-                        {/* Row 1: Feels Like, Humidity, Dew Point */}
-                        <p className="text-[10.5px] font-semibold text-slate-400 mt-0.5">
-                          Feels {weather.feelsLike ?? '—'}°C
-                          {weather.dewPoint != null && ` • Dew ${weather.dewPoint}°C`}
-                          {` • Humidity ${weather.humidity}%`}
-                        </p>
+                        {/* ── Metrics 2×2 grid ─────────────────── */}
+                        <div className="grid grid-cols-2 gap-1.5 pt-1">
+                          {/* Feels Like */}
+                          <div className="bg-white/5 rounded-lg px-2.5 py-1.5">
+                            <p className="text-[9px] text-slate-500 uppercase tracking-wider font-bold">Feels Like</p>
+                            <p className="text-[12px] font-black text-white mt-0.5">{weather.feelsLike ?? '—'}°C
+                              {weather.dewPoint != null && <span className="text-[9px] font-normal text-slate-500 ml-1">Dew {weather.dewPoint}°C</span>}
+                            </p>
+                          </div>
+                          {/* Humidity */}
+                          <div className="bg-white/5 rounded-lg px-2.5 py-1.5">
+                            <p className="text-[9px] text-slate-500 uppercase tracking-wider font-bold">Humidity</p>
+                            <p className="text-[12px] font-black text-white mt-0.5">{weather.humidity}%</p>
+                          </div>
+                          {/* Wind */}
+                          <div className="bg-white/5 rounded-lg px-2.5 py-1.5">
+                            <p className="text-[9px] text-slate-500 uppercase tracking-wider font-bold">Wind</p>
+                            <p className="text-[12px] font-black text-white mt-0.5">
+                              {weather.windSpeed ?? '—'} km/h
+                              {weather.windCardinal && <span className="text-[9px] font-semibold text-slate-400 ml-1">{weather.windCardinal}</span>}
+                            </p>
+                            {(weather.windGust != null && weather.windGust > 0) && (
+                              <p className="text-[9px] text-slate-500">Gusts {weather.windGust} km/h</p>
+                            )}
+                          </div>
+                          {/* UV + Visibility */}
+                          <div className="bg-white/5 rounded-lg px-2.5 py-1.5">
+                            <p className="text-[9px] text-slate-500 uppercase tracking-wider font-bold">UV / Visibility</p>
+                            <p className="text-[12px] font-black text-white mt-0.5">
+                              UV {weather.uvIndex ?? '—'}
+                              {weather.visibility != null && <span className="text-[9px] font-normal text-slate-400 ml-1">· {weather.visibility} km</span>}
+                            </p>
+                          </div>
+                        </div>
 
-                        {/* Row 2: Wind */}
-                        <p className="text-[10.5px] font-semibold text-slate-400 mt-0.5">
-                          💨 Wind {weather.windSpeed ?? '—'} km/h
-                          {weather.windCardinal && ` ${weather.windCardinal}`}
-                          {weather.windDegrees != null && ` (${weather.windDegrees}°)`}
-                          {weather.windGust != null && weather.windGust > 0 && ` • Gusts ${weather.windGust} km/h`}
-                          {weather.visibility != null && ` • Vis ${weather.visibility} km`}
-                        </p>
-
-                        {/* Row 3: UV Index + Precipitation Nowcast */}
-                        <p className="text-[10.5px] font-semibold text-slate-400 mt-0.5">
-                          {weather.uvIndex != null && `☀ UV ${weather.uvIndex}`}
-                          {weather.minuteForecast && (
-                            <span className={`ml-2 ${weather.minuteForecast.hasPrecipitationNext60Min ? 'text-blue-400' : 'text-slate-500'}`}>
-                              {weather.minuteForecast.hasPrecipitationNext60Min
-                                ? `🌧 Rain likely next 60 min (${weather.minuteForecast.maxPrecipLikelihood}%)`
-                                : '🌂 No precipitation next 60 min'}
+                        {/* ── Precipitation nowcast ─────────────── */}
+                        {weather.minuteForecast && (
+                          <div className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 ${weather.minuteForecast.hasPrecipitationNext60Min ? 'bg-blue-900/30 border border-blue-700/30' : 'bg-slate-800/30 border border-slate-700/20'}`}>
+                            <span className="text-sm shrink-0">
+                              {weather.minuteForecast.hasPrecipitationNext60Min ? '🌧' : '🌂'}
                             </span>
-                          )}
-                        </p>
+                            <p className={`text-[9.5px] font-semibold ${weather.minuteForecast.hasPrecipitationNext60Min ? 'text-blue-300' : 'text-slate-500'}`}>
+                              {weather.minuteForecast.hasPrecipitationNext60Min
+                                ? `Rain likely next 60 min · ${weather.minuteForecast.maxPrecipLikelihood}% chance`
+                                : 'No precipitation expected in next 60 min'}
+                            </p>
+                          </div>
+                        )}
 
-                        {/* Provider */}
-                        <p className="text-[10px] font-medium text-sky-500/70 mt-0.5">
-                          {weather.provider || 'Google Maps Platform Weather API'}
-                        </p>
+                        {/* ── Footer: Last updated + provider ──── */}
+                        <div className="flex items-center justify-between gap-2 pt-0.5 border-t border-white/5">
+                          <p className="text-[9px] text-slate-600 font-medium">
+                            Updated {weather.lastUpdated}
+                          </p>
+                          <p className="text-[9px] text-sky-600/80 font-medium truncate">
+                            {weather.provider || 'Google Maps Platform Weather API'}
+                          </p>
+                        </div>
                       </>
                     )}
+                  </>
+                )}
 
-                    {weatherNotice && (
-                      <p className="text-[10px] font-bold text-cyan-300 animate-fade-in mt-1">
-                        ✨ {weatherNotice}
-                      </p>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                {/* ── Success notice ────────────────────────── */}
+                {weatherNotice && (
+                  <p className="text-[9.5px] font-bold text-emerald-400 animate-fade-in">{weatherNotice}</p>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })()}
 
         <Card className="hover-elevate hover-glow bg-slate-900/40 border border-slate-850">
           <CardContent className="p-4 flex items-center gap-3.5">

@@ -453,57 +453,65 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
 
         {/* Live Satellite Weather Stat Card */}
         <Card className="hover-elevate hover-glow bg-gradient-to-r from-sky-950/40 to-cyan-950/30 border border-sky-800/40 relative overflow-hidden">
-          <CardContent className="p-4 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3.5 min-w-0">
-              <div className="p-2.5 rounded-xl bg-sky-500/10 text-sky-400 text-2xl shrink-0">
+          <CardContent className="p-4 flex flex-col gap-2.5">
+            {/* Top Header Row: Live Pulse, AccuWeather Title & Actions */}
+            <div className="flex items-center justify-between gap-2 border-b border-sky-800/30 pb-2">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                <p className="text-[11px] text-sky-300 font-extrabold uppercase tracking-wider truncate">
+                  AccuWeather RealFeel® • {liveTime}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-1.5 shrink-0">
+                <a
+                  href={weather?.accuWeatherUrl || `https://www.accuweather.com/en/search-locations?query=${encodeURIComponent(selectedReq?.destination || 'Switzerland')}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  title="Open AccuWeather.com Forecast"
+                  className="px-2 py-0.5 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-[9.5px] font-black flex items-center gap-1 transition-all cursor-pointer"
+                >
+                  <span>AccuWeather.com</span>
+                  <span className="text-[10px]">↗</span>
+                </a>
+
+                <button
+                  onClick={handleManualWeatherRefresh}
+                  disabled={isRefreshingWeather}
+                  title="Re-fetch AccuWeather Data"
+                  className="p-1.5 rounded-lg border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 transition-all cursor-pointer shrink-0 active:scale-95 disabled:opacity-50"
+                >
+                  <RefreshCw size={13} className={isRefreshingWeather ? 'animate-spin text-cyan-400' : ''} />
+                </button>
+              </div>
+            </div>
+
+            {/* Main Weather Details Row */}
+            <div className="flex items-center gap-3.5 pt-0.5">
+              <div className="p-2.5 rounded-xl bg-sky-500/10 text-sky-400 text-3xl shrink-0 flex items-center justify-center">
                 {weather?.icon === '01d' || weather?.icon === '01n' ? '☀️' :
                  weather?.icon?.startsWith('02') ? '⛅' :
                  weather?.icon?.startsWith('03') || weather?.icon?.startsWith('04') ? '☁️' :
                  weather?.icon?.startsWith('09') || weather?.icon?.startsWith('10') ? '🌧️' :
                  weather?.icon?.startsWith('13') ? '❄️' : '🌤️'}
               </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <p className="text-[11px] text-sky-400 font-bold uppercase tracking-wider truncate">
-                    AccuWeather RealFeel® Radar • {liveTime}
-                  </p>
-                </div>
-                <h4 className="text-base font-black text-white mt-0.5 truncate">
-                  {weather ? `${weather.temperature ?? weather.temp}°C — ${weather.description ?? 'Clear'}` : '18°C — Live'}
+
+              <div className="min-w-0 flex-1">
+                <h4 className="text-base sm:text-lg font-black text-white leading-tight">
+                  {weather ? `${weather.temperature ?? weather.temp}°C — ${weather.description ?? 'Sunny & Clear'}` : '18°C — Live'}
                 </h4>
-                <p className="text-[10px] text-slate-400 truncate">
-                  {selectedReq?.destination || weather?.city || 'Switzerland'} • Feels: {weather?.feelsLike ?? (weather?.temp ?? 18)}°C • Humidity: {weather?.humidity ?? 55}%{weather?.windSpeed ? ` • Wind: ${weather.windSpeed}km/h` : ''}
+                <p className="text-xs font-bold text-slate-200 mt-0.5">
+                  📍 {selectedReq?.destination || weather?.city || 'Switzerland'} • RealFeel® {weather?.feelsLike ?? (weather?.temp ?? 18)}°C
+                </p>
+                <p className="text-[10.5px] font-semibold text-slate-400 mt-0.5">
+                  Humidity: {weather?.humidity ?? 55}% • Wind: {weather?.windSpeed ?? 12} km/h • {weather?.provider || 'AccuWeather RealFeel® Radar'}
                 </p>
                 {weatherNotice && (
-                  <p className="text-[9.5px] font-bold text-cyan-300 animate-fade-in truncate mt-0.5">
+                  <p className="text-[10px] font-bold text-cyan-300 animate-fade-in mt-1">
                     ✨ {weatherNotice}
                   </p>
                 )}
               </div>
-            </div>
-
-            {/* AccuWeather.com Direct Link & Refresh Actions */}
-            <div className="flex items-center gap-1.5 shrink-0">
-              <a
-                href={weather?.accuWeatherUrl || `https://www.accuweather.com/en/search-locations?query=${encodeURIComponent(selectedReq?.destination || 'Switzerland')}`}
-                target="_blank"
-                rel="noreferrer"
-                title="Open AccuWeather.com Forecast"
-                className="px-2.5 py-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-[10px] font-extrabold flex items-center gap-1 transition-all cursor-pointer"
-              >
-                <span>AccuWeather.com</span>
-                <span className="text-[11px]">↗</span>
-              </a>
-
-              <button
-                onClick={handleManualWeatherRefresh}
-                disabled={isRefreshingWeather}
-                title="Re-fetch AccuWeather RealFeel® Radar"
-                className="p-2 rounded-xl border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 transition-all cursor-pointer shrink-0 active:scale-95 disabled:opacity-50"
-              >
-                <RefreshCw size={15} className={isRefreshingWeather ? 'animate-spin text-cyan-400' : ''} />
-              </button>
             </div>
           </CardContent>
         </Card>

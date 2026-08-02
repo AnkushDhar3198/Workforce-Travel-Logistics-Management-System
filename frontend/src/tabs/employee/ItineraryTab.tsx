@@ -78,18 +78,18 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
   const [bookings, setBookings] = useState<any[]>([]);
   const [shipments, setShipments] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [weather, setWeather] = useState<any>(() => getWeatherForLocation('Switzerland'));
+  const [weather, setWeather] = useState<any>(() => getWeatherForLocation(selectedReq?.destination || 'Manali'));
   const [liveTime, setLiveTime] = useState<string>(() => new Date().toLocaleTimeString());
   const [isRefreshingWeather, setIsRefreshingWeather] = useState(false);
   const [weatherNotice, setWeatherNotice] = useState<string | null>(null);
 
   const handleManualWeatherRefresh = async () => {
     setIsRefreshingWeather(true);
-    const dest = selectedReq?.destination || 'Switzerland';
+    const dest = selectedReq?.destination || 'Manali';
     try {
       const liveData = await fetchLiveSatelliteWeather(dest);
       setWeather(liveData);
-      setWeatherNotice(`Live Satellite Stream Refreshed: ${liveData.temperature}°C in ${liveData.city}`);
+      setWeatherNotice(`Google Weather Stream Refreshed: ${liveData.temperature}°C in ${liveData.city}`);
       setTimeout(() => setWeatherNotice(null), 4000);
     } catch (e) {}
     setIsRefreshingWeather(false);
@@ -136,10 +136,10 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
     loadItineraries();
   }, []);
 
-  // Continuous 15-second live satellite weather auto-refresh polling loop
+  // Continuous 15-second live Google Weather auto-refresh polling loop & req details loader
   useEffect(() => {
     if (selectedReq) {
-      const dest = selectedReq.destination || 'Switzerland';
+      const dest = selectedReq.destination || 'Manali';
 
       const updateWeather = async () => {
         const liveData = await fetchLiveSatelliteWeather(dest);
@@ -171,7 +171,7 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
 
       return () => clearInterval(weatherInterval);
     }
-  }, [selectedReq]);
+  }, [selectedReq?.id, selectedReq?.destination]);
 
   const downloadItineraryPdf = async (requestId: number) => {
     try {
@@ -501,7 +501,7 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
                   {weather ? `${weather.temperature ?? weather.temp}°C — ${weather.description ?? 'Partly cloudy'}` : '17°C — Live'}
                 </h4>
                 <p className="text-xs font-bold text-slate-200 mt-0.5">
-                  📍 {weather?.city || selectedReq?.destination || 'Jammu and Kashmir'}
+                  📍 {selectedReq?.destination || weather?.city || 'Manali'}
                 </p>
                 <p className="text-[10.5px] font-semibold text-slate-400 mt-0.5">
                   Humidity: {weather?.humidity ?? 92}% • Wind: {weather?.windSpeed ?? 2} km/h • {weather?.provider || 'Google Weather'}

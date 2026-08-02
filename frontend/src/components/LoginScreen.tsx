@@ -959,7 +959,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', overflowX: 'hidden', display: 'flex', flexDirection: 'column', background: 'var(--bg-gradient)', fontFamily: 'Inter, system-ui, sans-serif' }}>
+    <div style={{ minHeight: '100vh', width: '100%', overflowY: 'auto', overflowX: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'var(--bg-gradient)', fontFamily: 'Inter, system-ui, sans-serif' }}>
       <Canvas3DBackground />
 
       {/* HEADER */}

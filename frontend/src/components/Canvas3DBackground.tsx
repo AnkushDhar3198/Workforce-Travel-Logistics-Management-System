@@ -118,25 +118,33 @@ export default function Canvas3DBackground() {
     let w = 0, h = 0;
 
     function resize() {
-      w = canvas!.width  = window.innerWidth;
-      h = canvas!.height = window.innerHeight;
-      particlesRef.current = makeParticles(w, h);
+      try {
+        if (!canvas) return;
+        w = canvas.width  = window.innerWidth || 1280;
+        h = canvas.height = window.innerHeight || 720;
+        particlesRef.current = makeParticles(w, h);
+      } catch (e) {}
     }
 
     resize();
-    const ro = new ResizeObserver(resize);
-    ro.observe(document.documentElement);
+    let ro: ResizeObserver | null = null;
+    try {
+      ro = new ResizeObserver(resize);
+      ro.observe(document.documentElement);
+    } catch (e) {}
 
     function draw() {
-      const pal = THEME_PALETTE[themeRef.current] || THEME_PALETTE.midnight;
-      const mx = mouseRef.current.x;
-      const my = mouseRef.current.y;
-      const cx = w / 2;
-      const cy = h / 2;
+      try {
+        if (!ctx || !canvas) return;
+        const pal = THEME_PALETTE[themeRef.current] || THEME_PALETTE.midnight;
+        const mx = mouseRef.current.x;
+        const my = mouseRef.current.y;
+        const cx = (w || window.innerWidth) / 2;
+        const cy = (h || window.innerHeight) / 2;
 
-      ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = pal.bg;
-      ctx.fillRect(0, 0, w, h);
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = pal.bg;
+        ctx.fillRect(0, 0, w, h);
 
       // Radial glowing spotlight following mouse
       if (mouseRef.current.active) {
@@ -277,6 +285,8 @@ export default function Canvas3DBackground() {
         }
       }
 
+      } catch (err) {}
+
       rafRef.current = requestAnimationFrame(draw);
     }
 
@@ -284,7 +294,7 @@ export default function Canvas3DBackground() {
 
     return () => {
       cancelAnimationFrame(rafRef.current);
-      ro.disconnect();
+      if (ro) ro.disconnect();
     };
   }, []);
 

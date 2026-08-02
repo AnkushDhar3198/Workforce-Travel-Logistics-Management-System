@@ -235,6 +235,46 @@ function DashboardContent() {
   );
 }
 
+class GlobalErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: any }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error("VoyaCore Application Boundary Caught Error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', background: '#03050d', color: '#f0f6ff', fontFamily: 'Inter, sans-serif' }}>
+          <div style={{ maxWidth: '460px', width: '100%', textAlign: 'center', padding: '32px', borderRadius: '24px', background: 'rgba(13, 21, 38, 0.75)', border: '1px solid rgba(99, 179, 237, 0.2)', boxShadow: '0 24px 80px rgba(0,0,0,0.6)' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(34, 211, 238, 0.15)', color: '#22d3ee', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+              ⚡
+            </div>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 900, marginBottom: '8px', color: '#fff' }}>VoyaCore Enterprise Recovery</h2>
+            <p style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '20px', lineHeight: 1.5 }}>
+              The application encountered a minor runtime sync update. Click below to reload the session smoothly.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              style={{ padding: '12px 24px', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg, #22d3ee 0%, #6366f1 100%)', color: '#03050d', fontWeight: 800, fontSize: '0.88rem', cursor: 'pointer' }}
+            >
+              Reload Application
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function MainApp() {
   const { token } = useAuth();
   return !token ? <LoginScreen /> : <DashboardContent />;
@@ -242,10 +282,12 @@ function MainApp() {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <MainApp />
-      </AuthProvider>
-    </ThemeProvider>
+    <GlobalErrorBoundary>
+      <ThemeProvider>
+        <AuthProvider>
+          <MainApp />
+        </AuthProvider>
+      </ThemeProvider>
+    </GlobalErrorBoundary>
   );
 }

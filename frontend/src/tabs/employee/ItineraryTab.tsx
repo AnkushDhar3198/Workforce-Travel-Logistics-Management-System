@@ -55,9 +55,25 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
       const tz = weather?.timezone;
       if (tz) {
         try {
-          const destDate = new Date(new Date().toLocaleString('en-US', { timeZone: tz }));
-          setLiveTime(destDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }));
-          setDestLocalHour(destDate.getHours());
+          const now = new Date();
+          const timeStr = now.toLocaleTimeString('en-US', {
+            timeZone: tz,
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+          });
+
+          const parts = new Intl.DateTimeFormat('en-US', {
+            timeZone: tz,
+            hour: 'numeric',
+            hourCycle: 'h23'
+          }).formatToParts(now);
+          const hourPart = parts.find(p => p.type === 'hour');
+          const hourVal = hourPart ? parseInt(hourPart.value, 10) : now.getHours();
+
+          setLiveTime(timeStr);
+          setDestLocalHour(hourVal);
           return;
         } catch { /* fall through to local time */ }
       }

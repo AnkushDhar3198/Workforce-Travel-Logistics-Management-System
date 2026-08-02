@@ -60,21 +60,24 @@ public class WeatherService {
     public Map<String, Object> getCurrentWeather(String cityQuery) {
         String city = (cityQuery == null || cityQuery.isBlank()) ? "Manali" : cityQuery.trim();
 
+        // Step 0: Geocode city → [lat, lon, ianaTimezone] via Open-Meteo Geocoding
+        // We need the IANA timezone (e.g. "America/New_York") BEFORE fetching weather
+        // so the frontend can show correct day/night for the destination
+        String[] geoInfo = geocodeCity(city);
+        double lat = geoInfo != null ? Double.parseDouble(geoInfo[0]) : 32.2432;
+        double lon = geoInfo != null ? Double.parseDouble(geoInfo[1]) : 77.1892;
+        String ianaTimezone = geoInfo != null ? geoInfo[2] : "";
+
         // ═══════════════════════════════════════════════════════════════
         // ENGINE 1 (PRIMARY): wttr.in — Real Weather Station Observations
         // Free, no API key, uses actual ground station data worldwide
         // Most accurate for current conditions (matches timeanddate.com)
         // ═══════════════════════════════════════════════════════════════
-        Map<String, Object> wttrData = fetchWttrIn(city);
+        Map<String, Object> wttrData = fetchWttrIn(city, ianaTimezone);
         if (wttrData != null && wttrData.containsKey("temperature")) {
-            log.info("[Weather] ENGINE 1 (wttr.in station obs): Live weather for '{}'", city);
+            log.info("[Weather] ENGINE 1 (wttr.in station obs): Live weather for '{}' tz={}", city, ianaTimezone);
             return wttrData;
         }
-
-        // Geocode for lat/lon-based fallbacks
-        double[] latLon = geocodeCity(city);
-        double lat = latLon != null ? latLon[0] : 32.2432;
-        double lon = latLon != null ? latLon[1] : 77.1892;
 
         // ═══════════════════════════════════════════════════════════════
         // ENGINE 2 (FALLBACK): Open-Meteo Global Meteorological Network
@@ -124,7 +127,7 @@ public class WeatherService {
      * URL format: https://wttr.in/{city}?format=j1
      */
     @SuppressWarnings("unchecked")
-    private Map<String, Object> fetchWttrIn(String city) {
+    private Map<String, Object> fetchWttrIn(String city, String ianaTimezone) {
         try {
             Map<String, Object> response = wttrClient.get()
                     .uri("/{city}?format=j1", city)
@@ -208,7 +211,7 @@ public class WeatherService {
             result.put("conditionType", mapConditionTextToType(conditionText));
             result.put("icon", mapConditionTextToIcon(conditionText));
             result.put("iconUrl", iconUrl);
-            result.put("timezone", timezone);
+            result.put("timezone", (ianaTimezone != null && !ianaTimezone.isEmpty()) ? ianaTimezone : timezone);
             result.put("isLive", true);
             result.put("lastUpdated", new SimpleDateFormat("HH:mm:ss").format(new Date()));
             return result;
@@ -371,7 +374,12 @@ public class WeatherService {
     }
 
     @SuppressWarnings("unchecked")
-    private double[] geocodeCity(String city) {
+    /**
+     * Geocode city → [latitude, longitude, ianaTimezone]
+     * Uses Open-Meteo Geocoding API which returns IANA timezone strings like
+     * "America/New_York", "Europe/London", "Asia/Tokyo" etc.
+     */
+    private String[] geocodeCity(String city) {
         try {
             Map<String, Object> geoResponse = openMeteoGeoClient.get()
                     .uri(uriBuilder -> uriBuilder
@@ -389,9 +397,11 @@ public class WeatherService {
                 List<Map<String, Object>> results = (List<Map<String, Object>>) geoResponse.get("results");
                 if (results != null && !results.isEmpty()) {
                     Map<String, Object> loc = results.get(0);
-                    double lat = ((Number) loc.get("latitude")).doubleValue();
-                    double lon = ((Number) loc.get("longitude")).doubleValue();
-                    return new double[]{lat, lon};
+                    String lat = String.valueOf(((Number) loc.get("latitude")).doubleValue());
+                    String lon = String.valueOf(((Number) loc.get("longitude")).doubleValue());
+                    String tz = loc.get("timezone") != null ? loc.get("timezone").toString() : "";
+                    log.debug("[Geocode] '{}' → [{}, {}] tz={}", city, lat, lon, tz);
+                    return new String[]{lat, lon, tz};
                 }
             }
         } catch (Exception e) {

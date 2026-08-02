@@ -1024,6 +1024,8 @@ export default function LoginScreen() {
             </div>
           </div>
         </div>
+      )}
+
       {/* FEATURE MODALS */}
       {featureModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 1200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(16px)', animation: 'fadeIn 0.2s ease both' }}

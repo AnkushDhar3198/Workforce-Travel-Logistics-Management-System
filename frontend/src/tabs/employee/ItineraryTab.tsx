@@ -453,26 +453,51 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
         {/* Left: Destination & Weather Glass Hero Card (6 cols) */}
         <div className="lg:col-span-6 flex flex-col">
           {(() => {
-            const ct = (weather?.conditionType || '').toUpperCase();
+            const ct = (weather?.conditionType || weather?.icon || '').toUpperCase();
             const isNightAtDest = destLocalHour < 6 || destLocalHour >= 18;
-            let cardGrad = 'from-amber-950/60 via-slate-900/90 to-sky-950/60 border-amber-500/20 shadow-2xl';
+
+            // Apple Weather Dynamic Palette
+            let bgGrad = 'linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #0f172a 100%)'; // Apple Clear Day Sky
+            let accentYellow = '#fde047';
+            let pillBg = 'rgba(15, 23, 42, 0.65)';
+            let pillBorder = 'rgba(255, 255, 255, 0.25)';
+
             if (isNightAtDest) {
-              cardGrad = 'from-indigo-950/80 via-slate-950/90 to-slate-900/80 border-indigo-500/20 shadow-2xl';
+              // Deep Midnight Indigo Night
+              bgGrad = 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #020617 100%)';
+              accentYellow = '#fbbf24';
+              pillBg = 'rgba(2, 6, 23, 0.75)';
+              pillBorder = 'rgba(255, 255, 255, 0.15)';
+            } else if (ct.includes('RAIN') || ct.includes('DRIZZLE') || ct.includes('SHOWER')) {
+              // Rainy Slate Blue
+              bgGrad = 'linear-gradient(135deg, #334155 0%, #1e293b 50%, #0f172a 100%)';
+              accentYellow = '#38bdf8';
+            } else if (ct.includes('THUNDER') || ct.includes('STORM')) {
+              // Thunderstorm Violet
+              bgGrad = 'linear-gradient(135deg, #2e1065 0%, #1e1b4b 50%, #0f172a 100%)';
+              accentYellow = '#c084fc';
             }
 
             const aqiVal = weather?.aqi ?? 35;
             const aqiCat = getAqiCategory(aqiVal);
 
             return (
-              <div className={`h-full min-h-[320px] flex flex-col justify-between rounded-3xl p-6 bg-gradient-to-br ${cardGrad} border backdrop-blur-2xl ring-1 ring-white/10 shadow-2xl relative overflow-hidden`}>
+              <div
+                className="h-full min-h-[320px] flex flex-col justify-between rounded-3xl p-6 shadow-2xl relative overflow-hidden backdrop-blur-2xl border"
+                style={{
+                  background: bgGrad,
+                  borderColor: 'rgba(255, 255, 255, 0.2)',
+                  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4)',
+                }}
+              >
                 {/* Top status bar */}
-                <div className="flex items-center justify-between gap-2 border-b border-white/15 pb-3">
+                <div className="flex items-center justify-between gap-2 border-b pb-3" style={{ borderColor: 'rgba(255, 255, 255, 0.15)' }}>
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0 shadow-sm" />
-                    <span className="text-xs font-black uppercase tracking-widest text-cyan-300 truncate" style={{ color: '#38bdf8' }}>
+                    <span className="text-xs font-black uppercase tracking-widest truncate" style={{ color: '#38bdf8' }}>
                       Live Weather Stream
                     </span>
-                    <span className="text-[11px] font-mono font-bold shrink-0" style={{ color: '#f1f5f9' }}>
+                    <span className="text-[11px] font-mono font-bold shrink-0" style={{ color: '#ffffff' }}>
                       • {liveTime}
                     </span>
                   </div>
@@ -480,11 +505,11 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
                     <button
                       onClick={handleManualWeatherRefresh}
                       disabled={isRefreshingWeather || weatherLoading}
-                      className="px-3 py-1 rounded-full border border-white/30 text-white text-[10px] font-extrabold transition-all active:scale-95 disabled:opacity-40 flex items-center gap-1 shadow-md"
-                      style={{ background: 'rgba(255, 255, 255, 0.15)', color: '#ffffff' }}
+                      className="px-3 py-1 rounded-full text-[10px] font-extrabold transition-all active:scale-95 disabled:opacity-40 flex items-center gap-1 shadow-md cursor-pointer"
+                      style={{ background: 'rgba(255, 255, 255, 0.2)', color: '#ffffff', border: '1px solid rgba(255, 255, 255, 0.3)' }}
                     >
                       <RefreshCw size={10} className={isRefreshingWeather ? 'animate-spin' : ''} />
-                      <span>{isRefreshingWeather ? 'Updating' : 'Refresh'}</span>
+                      <span style={{ color: '#ffffff' }}>{isRefreshingWeather ? 'Updating' : 'Refresh'}</span>
                     </button>
                   </div>
                 </div>
@@ -492,22 +517,22 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
                 {/* Big Temperature Hero */}
                 <div className="my-3 flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-xs font-black uppercase tracking-wider flex items-center gap-1" style={{ color: '#fbbf24' }}>
+                    <p className="text-xs font-black uppercase tracking-wider flex items-center gap-1" style={{ color: accentYellow }}>
                       <span>📍</span> <span>{selectedReq?.destination || weather?.city || 'Worldwide'}</span>
                     </p>
-                    <h3 className="text-5xl md:text-6xl font-black mt-1 tracking-tight drop-shadow-lg select-none" style={{ color: '#ffffff' }}>
+                    <h3 className="text-6xl md:text-7xl font-black mt-1 tracking-tight select-none" style={{ color: '#ffffff', textShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
                       {weather ? `${weather.temperature ?? weather.temp}°C` : '—'}
                     </h3>
-                    <p className="text-xs font-bold mt-1 flex items-center gap-2 flex-wrap" style={{ color: '#f1f5f9' }}>
-                      <span className="font-extrabold" style={{ color: '#ffffff' }}>{weather?.description ?? 'Partly Cloudy'}</span>
-                      <span style={{ color: '#94a3b8' }}>•</span>
-                      <span className="px-2 py-0.5 rounded-full border border-white/20 text-[10px] font-bold" style={{ background: 'rgba(255,255,255,0.15)', color: '#ffffff' }}>
+                    <p className="text-xs font-bold mt-1 flex items-center gap-2 flex-wrap" style={{ color: '#ffffff' }}>
+                      <span className="font-black text-sm" style={{ color: '#ffffff' }}>{weather?.description ?? 'Partly Cloudy'}</span>
+                      <span style={{ color: 'rgba(255,255,255,0.6)' }}>•</span>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold" style={{ background: 'rgba(255,255,255,0.2)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.3)' }}>
                         {destLocalHour >= 6 && destLocalHour < 18 ? '☀️ Daylight' : '🌙 Night'}
                       </span>
                     </p>
                   </div>
 
-                  <div className="w-20 h-20 rounded-3xl border border-white/25 flex items-center justify-center shrink-0 shadow-lg backdrop-blur-md" style={{ background: 'rgba(15, 23, 42, 0.6)' }}>
+                  <div className="w-20 h-20 rounded-3xl flex items-center justify-center shrink-0 shadow-xl backdrop-blur-md" style={{ background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255, 255, 255, 0.3)' }}>
                     {(weather?.iconUrl || resolveWeatherIconUrl(weather?.iconBaseUri)) ? (
                       <img
                         src={weather?.iconUrl || resolveWeatherIconUrl(weather?.iconBaseUri)!}
@@ -522,27 +547,27 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
                   </div>
                 </div>
 
-                {/* 5 Minimal Metric Pills (Dark Frosted Glass with White Text) */}
+                {/* 5 Minimal Metric Pills (Dark Frosted Glass with Pure White Values) */}
                 {weather && (
-                  <div className="grid grid-cols-5 gap-1.5 pt-3 border-t border-white/15">
-                    <div className="rounded-2xl p-2 text-center border border-white/20 shadow-md backdrop-blur-md" style={{ background: 'rgba(15, 23, 42, 0.85)' }}>
-                      <p className="text-[8px] uppercase font-bold tracking-wider" style={{ color: '#94a3b8' }}>Feels</p>
+                  <div className="grid grid-cols-5 gap-1.5 pt-3 border-t" style={{ borderColor: 'rgba(255, 255, 255, 0.15)' }}>
+                    <div className="rounded-2xl p-2 text-center shadow-md backdrop-blur-md" style={{ background: pillBg, border: `1px solid ${pillBorder}` }}>
+                      <p className="text-[8.5px] uppercase font-bold tracking-wider" style={{ color: '#cbd5e1' }}>Feels</p>
                       <p className="text-xs font-black mt-0.5" style={{ color: '#ffffff' }}>{weather.feelsLike ?? '—'}°C</p>
                     </div>
-                    <div className="rounded-2xl p-2 text-center border border-white/20 shadow-md backdrop-blur-md" style={{ background: 'rgba(15, 23, 42, 0.85)' }}>
-                      <p className="text-[8px] uppercase font-bold tracking-wider" style={{ color: '#94a3b8' }}>Humidity</p>
+                    <div className="rounded-2xl p-2 text-center shadow-md backdrop-blur-md" style={{ background: pillBg, border: `1px solid ${pillBorder}` }}>
+                      <p className="text-[8.5px] uppercase font-bold tracking-wider" style={{ color: '#cbd5e1' }}>Humidity</p>
                       <p className="text-xs font-black mt-0.5" style={{ color: '#ffffff' }}>{weather.humidity}%</p>
                     </div>
-                    <div className="rounded-2xl p-2 text-center border border-white/20 shadow-md backdrop-blur-md" style={{ background: 'rgba(15, 23, 42, 0.85)' }}>
-                      <p className="text-[8px] uppercase font-bold tracking-wider" style={{ color: '#94a3b8' }}>Wind</p>
+                    <div className="rounded-2xl p-2 text-center shadow-md backdrop-blur-md" style={{ background: pillBg, border: `1px solid ${pillBorder}` }}>
+                      <p className="text-[8.5px] uppercase font-bold tracking-wider" style={{ color: '#cbd5e1' }}>Wind</p>
                       <p className="text-xs font-black mt-0.5" style={{ color: '#ffffff' }}>{weather.windSpeed ?? '—'} km/h</p>
                     </div>
-                    <div className="rounded-2xl p-2 text-center border border-white/20 shadow-md backdrop-blur-md" style={{ background: 'rgba(15, 23, 42, 0.85)' }}>
-                      <p className="text-[8px] uppercase font-bold tracking-wider" style={{ color: '#94a3b8' }}>UV Index</p>
+                    <div className="rounded-2xl p-2 text-center shadow-md backdrop-blur-md" style={{ background: pillBg, border: `1px solid ${pillBorder}` }}>
+                      <p className="text-[8.5px] uppercase font-bold tracking-wider" style={{ color: '#cbd5e1' }}>UV Index</p>
                       <p className="text-xs font-black mt-0.5" style={{ color: '#ffffff' }}>{weather.uvIndex ?? '1'}</p>
                     </div>
-                    <div className="rounded-2xl p-2 text-center border border-white/20 shadow-md backdrop-blur-md" style={{ background: 'rgba(15, 23, 42, 0.85)' }}>
-                      <p className="text-[8px] uppercase font-bold tracking-wider" style={{ color: '#94a3b8' }}>Air Quality</p>
+                    <div className="rounded-2xl p-2 text-center shadow-md backdrop-blur-md" style={{ background: pillBg, border: `1px solid ${pillBorder}` }}>
+                      <p className="text-[8.5px] uppercase font-bold tracking-wider" style={{ color: '#cbd5e1' }}>Air Quality</p>
                       <p className="text-xs font-black mt-0.5" style={{ color: aqiVal <= 50 ? '#34d399' : aqiVal <= 100 ? '#fbbf24' : '#f87171' }}>
                         {aqiVal} <span className="text-[8px] font-bold block leading-none" style={{ color: aqiVal <= 50 ? '#34d399' : aqiVal <= 100 ? '#fbbf24' : '#f87171' }}>{aqiCat.label}</span>
                       </p>

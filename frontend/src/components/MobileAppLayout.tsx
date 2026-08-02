@@ -161,7 +161,7 @@ export default function MobileAppLayout({
           {/* SOS Alert Button */}
           <button
             onClick={triggerSOS}
-            className="px-2.5 py-1 rounded-lg font-black text-[10px] text-white flex items-center gap-1 shadow-sm transition-transform active:scale-95"
+            className="px-2.5 py-1 rounded-lg font-black text-[10px] text-white flex items-center gap-1 shadow-sm transition-transform active:scale-95 shrink-0"
             style={{
               background: sosStatus === 'active' ? '#ef4444' : 'linear-gradient(135deg, #ef4444, #dc2626)',
               boxShadow: '0 2px 10px rgba(239, 68, 68, 0.4)',
@@ -169,6 +169,15 @@ export default function MobileAppLayout({
           >
             <ShieldAlert size={12} />
             <span>SOS</span>
+          </button>
+
+          {/* Quick Sign Out Header Button for Phone View */}
+          <button
+            onClick={logout}
+            className="p-1.5 rounded-lg border text-rose-400 border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 transition-all cursor-pointer shrink-0"
+            title="Sign Out Account"
+          >
+            <LogOut size={16} />
           </button>
 
           {/* Hamburger Menu / Role Drawer Button */}
@@ -258,7 +267,7 @@ export default function MobileAppLayout({
           onClick={() => setIsDrawerOpen(false)}
         >
           <div
-            className="w-4/5 max-w-xs h-full p-5 flex flex-col justify-between border-l shadow-2xl animate-slide-left"
+            className="w-4/5 max-w-xs h-full p-4 flex flex-col border-l shadow-2xl overflow-hidden animate-slide-left"
             style={{
               background: 'var(--card-bg)',
               borderColor: 'var(--card-border)',
@@ -266,21 +275,31 @@ export default function MobileAppLayout({
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div>
-              {/* Drawer Top Header */}
-              <div className="flex items-center justify-between pb-4 border-b mb-4" style={{ borderColor: 'var(--border-subtle)' }}>
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm"
-                    style={{ background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)' }}
-                  >
-                    {user?.name?.[0] || 'U'}
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-black truncate">{user?.name}</h4>
-                    <p className="text-[10px] font-semibold text-slate-400 truncate">{user?.email}</p>
-                  </div>
+            {/* Drawer Top Header with Profile & Quick Sign Out */}
+            <div className="shrink-0 flex items-center justify-between pb-3 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-xs shrink-0"
+                  style={{ background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)' }}
+                >
+                  {user?.name?.[0] || 'U'}
                 </div>
+                <div className="min-w-0">
+                  <h4 className="text-xs font-black truncate">{user?.name}</h4>
+                  <p className="text-[10px] font-semibold text-slate-400 truncate">{user?.email}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  onClick={() => {
+                    setIsDrawerOpen(false);
+                    logout();
+                  }}
+                  className="px-2 py-1 rounded-lg text-[10px] font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20"
+                >
+                  Sign Out
+                </button>
                 <button
                   onClick={() => setIsDrawerOpen(false)}
                   className="p-1 rounded-full text-slate-400 hover:text-white"
@@ -288,71 +307,74 @@ export default function MobileAppLayout({
                   <X size={18} />
                 </button>
               </div>
+            </div>
 
-              {/* All Application Modules / Tabs */}
-              <div className="space-y-1">
-                <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-450 mb-2">
-                  Navigation Modules
-                </p>
+            {/* Scrollable Navigation Modules List */}
+            <div className="flex-1 overflow-y-auto py-3 space-y-1 pr-1" style={{ WebkitOverflowScrolling: 'touch' }}>
+              <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-450 mb-2">
+                Navigation Modules
+              </p>
 
-                {[
-                  { id: 'itinerary', label: 'My Itinerary', icon: MapPin },
-                  { id: 'requisition', label: 'Travel Request', icon: Plane },
-                  { id: 'expenses-employee', label: 'Expense Report', icon: DollarSign },
-                  { id: 'docs-employee', label: 'Travel Documents', icon: FileText },
-                  { id: 'approvals', label: 'Pending Approvals', icon: CheckSquare },
-                  { id: 'vendors', label: 'Preferred Vendors', icon: Building },
-                  { id: 'policy', label: 'Policy Engine', icon: ShieldCheck },
-                  { id: 'expenses-finance', label: 'Expense Auditing', icon: DollarSign },
-                  { id: 'logistics', label: 'Logistics Pipeline', icon: Truck },
-                  { id: 'security', label: 'Duty of Care Map', icon: Activity },
-                  { id: 'analytics', label: 'Reports & ROI', icon: BarChart2 },
-                ].map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      setActiveTab(item.id);
-                      setIsDrawerOpen(false);
-                    }}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                      activeTab === item.id ? 'font-black' : ''
-                    }`}
-                    style={{
-                      background: activeTab === item.id ? 'var(--nav-active-bg)' : 'transparent',
-                      color: activeTab === item.id ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                      border: activeTab === item.id ? '1px solid var(--nav-active-border)' : 'none',
-                    }}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <item.icon size={16} />
-                      <span>{item.label}</span>
-                    </div>
-                    <ChevronRight size={14} className="opacity-40" />
-                  </button>
-                ))}
+              {[
+                { id: 'itinerary', label: 'My Itinerary', icon: MapPin },
+                { id: 'requisition', label: 'Travel Request', icon: Plane },
+                { id: 'expenses-employee', label: 'Expense Report', icon: DollarSign },
+                { id: 'docs-employee', label: 'Travel Documents', icon: FileText },
+                { id: 'approvals', label: 'Pending Approvals', icon: CheckSquare },
+                { id: 'vendors', label: 'Preferred Vendors', icon: Building },
+                { id: 'policy', label: 'Policy Engine', icon: ShieldCheck },
+                { id: 'expenses-finance', label: 'Expense Auditing', icon: DollarSign },
+                { id: 'logistics', label: 'Logistics Pipeline', icon: Truck },
+                { id: 'security', label: 'Duty of Care Map', icon: Activity },
+                { id: 'analytics', label: 'Reports & ROI', icon: BarChart2 },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    setIsDrawerOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                    activeTab === item.id ? 'font-black' : ''
+                  }`}
+                  style={{
+                    background: activeTab === item.id ? 'var(--nav-active-bg)' : 'transparent',
+                    color: activeTab === item.id ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                    border: activeTab === item.id ? '1px solid var(--nav-active-border)' : 'none',
+                  }}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <item.icon size={16} />
+                    <span>{item.label}</span>
+                  </div>
+                  <ChevronRight size={14} className="opacity-40" />
+                </button>
+              ))}
+            </div>
+
+            {/* Pinned Bottom Drawer Footer */}
+            <div className="shrink-0 pt-3 border-t space-y-2.5" style={{ borderColor: 'var(--border-subtle)' }}>
+              {/* Legal Governance & Security Links */}
+              <div className="flex items-center justify-around text-[10px] font-bold text-slate-400">
+                <button onClick={() => { setIsDrawerOpen(false); setLegalModal('privacy'); }} className="hover:text-cyan-400">Privacy</button>
+                <span>•</span>
+                <button onClick={() => { setIsDrawerOpen(false); setLegalModal('terms'); }} className="hover:text-cyan-400">Terms</button>
+                <span>•</span>
+                <button onClick={() => { setIsDrawerOpen(false); setLegalModal('security'); }} className="hover:text-cyan-400">Security</button>
               </div>
-            </div>
 
-            {/* Legal Governance & Security Links */}
-            <div className="pt-2 border-t flex items-center justify-around text-[10px] font-bold text-slate-400" style={{ borderColor: 'var(--border-subtle)' }}>
-              <button onClick={() => { setIsDrawerOpen(false); setLegalModal('privacy'); }} className="hover:text-cyan-400">Privacy</button>
-              <span>•</span>
-              <button onClick={() => { setIsDrawerOpen(false); setLegalModal('terms'); }} className="hover:text-cyan-400">Terms</button>
-              <span>•</span>
-              <button onClick={() => { setIsDrawerOpen(false); setLegalModal('security'); }} className="hover:text-cyan-400">Security</button>
+              {/* Bottom Logout Button */}
+              <button
+                onClick={() => {
+                  setIsDrawerOpen(false);
+                  logout();
+                }}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border font-extrabold text-xs text-rose-400 border-rose-500/30 bg-rose-500/15 hover:bg-rose-500/25 transition-colors shadow-sm"
+              >
+                <LogOut size={16} />
+                <span>Sign Out Account</span>
+              </button>
             </div>
-
-            {/* Bottom Logout Button */}
-            <button
-              onClick={() => {
-                setIsDrawerOpen(false);
-                logout();
-              }}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border font-bold text-xs text-rose-400 border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 transition-colors"
-            >
-              <LogOut size={16} />
-              <span>Sign Out Account</span>
-            </button>
           </div>
         </div>
       )}

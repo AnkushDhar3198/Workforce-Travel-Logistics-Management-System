@@ -80,6 +80,20 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
   const [loading, setLoading] = useState(false);
   const [weather, setWeather] = useState<any>(() => getWeatherForLocation('Switzerland'));
   const [liveTime, setLiveTime] = useState<string>(() => new Date().toLocaleTimeString());
+  const [isRefreshingWeather, setIsRefreshingWeather] = useState(false);
+  const [weatherNotice, setWeatherNotice] = useState<string | null>(null);
+
+  const handleManualWeatherRefresh = async () => {
+    setIsRefreshingWeather(true);
+    const dest = selectedReq?.destination || 'Switzerland';
+    try {
+      const liveData = await fetchLiveSatelliteWeather(dest);
+      setWeather(liveData);
+      setWeatherNotice(`Live Satellite Stream Refreshed: ${liveData.temperature}°C in ${liveData.city}`);
+      setTimeout(() => setWeatherNotice(null), 4000);
+    } catch (e) {}
+    setIsRefreshingWeather(false);
+  };
 
   // Live 1-second clock timer for destination real-time updates
   useEffect(() => {
@@ -461,20 +475,22 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
                 <p className="text-[10px] text-slate-400 truncate">
                   {selectedReq?.destination || weather?.city || 'Switzerland'} • Feels: {weather?.feelsLike ?? (weather?.temp ?? 18)}°C • Humidity: {weather?.humidity ?? 55}%{weather?.windSpeed ? ` • Wind: ${weather.windSpeed}km/h` : ''}
                 </p>
+                {weatherNotice && (
+                  <p className="text-[9.5px] font-bold text-cyan-300 animate-fade-in truncate mt-0.5">
+                    ✨ {weatherNotice}
+                  </p>
+                )}
               </div>
             </div>
 
             {/* Manual 1-Tap Refresh Button */}
             <button
-              onClick={async () => {
-                const dest = selectedReq?.destination || 'Switzerland';
-                const liveData = await fetchLiveSatelliteWeather(dest);
-                setWeather(liveData);
-              }}
+              onClick={handleManualWeatherRefresh}
+              disabled={isRefreshingWeather}
               title="Re-fetch Live Satellite Weather"
-              className="p-2 rounded-xl border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 transition-all cursor-pointer shrink-0 active:scale-95"
+              className="p-2.5 rounded-xl border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 transition-all cursor-pointer shrink-0 active:scale-95 disabled:opacity-50"
             >
-              <RefreshCw size={14} className="hover:rotate-180 transition-transform duration-500" />
+              <RefreshCw size={15} className={isRefreshingWeather ? 'animate-spin text-cyan-400' : ''} />
             </button>
           </CardContent>
         </Card>

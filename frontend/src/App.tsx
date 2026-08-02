@@ -210,7 +210,7 @@ function DashboardContent() {
               display: 'flex',
               flexWrap: 'wrap',
               alignItems: 'center',
-              justify: 'space-between',
+              justifyContent: 'space-between',
               gap: '12px',
               fontSize: '11px',
               color: 'var(--text-muted)',

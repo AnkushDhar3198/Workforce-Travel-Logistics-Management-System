@@ -483,7 +483,7 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
 
             return (
               <div
-                className="h-full min-h-[320px] flex flex-col justify-between rounded-3xl p-6 shadow-2xl relative overflow-hidden backdrop-blur-2xl border"
+                className="h-full min-h-[250px] sm:min-h-[270px] md:min-h-[290px] flex flex-col justify-between rounded-3xl p-4 sm:p-5 shadow-2xl relative overflow-hidden backdrop-blur-2xl border"
                 style={{
                   background: bgGrad,
                   borderColor: 'rgba(255, 255, 255, 0.2)',
@@ -491,13 +491,13 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
                 }}
               >
                 {/* Top status bar */}
-                <div className="flex items-center justify-between gap-2 border-b pb-3" style={{ borderColor: 'rgba(255, 255, 255, 0.15)' }}>
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0 shadow-sm" />
-                    <span className="text-xs font-black uppercase tracking-widest truncate" style={{ color: '#38bdf8' }}>
+                <div className="flex items-center justify-between gap-2 border-b pb-2" style={{ borderColor: 'rgba(255, 255, 255, 0.15)' }}>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0 shadow-sm" />
+                    <span className="text-[11px] font-black uppercase tracking-widest truncate" style={{ color: '#38bdf8' }}>
                       Live Weather Stream
                     </span>
-                    <span className="text-[11px] font-mono font-bold shrink-0" style={{ color: '#ffffff' }}>
+                    <span className="text-[10px] font-mono font-bold shrink-0" style={{ color: '#ffffff' }}>
                       • {liveTime}
                     </span>
                   </div>
@@ -505,42 +505,42 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
                     <button
                       onClick={handleManualWeatherRefresh}
                       disabled={isRefreshingWeather || weatherLoading}
-                      className="px-3 py-1 rounded-full text-[10px] font-extrabold transition-all active:scale-95 disabled:opacity-40 flex items-center gap-1 shadow-md cursor-pointer"
+                      className="px-2.5 py-0.5 rounded-full text-[9.5px] font-extrabold transition-all active:scale-95 disabled:opacity-40 flex items-center gap-1 shadow-md cursor-pointer"
                       style={{ background: 'rgba(255, 255, 255, 0.2)', color: '#ffffff', border: '1px solid rgba(255, 255, 255, 0.3)' }}
                     >
-                      <RefreshCw size={10} className={isRefreshingWeather ? 'animate-spin' : ''} />
+                      <RefreshCw size={9} className={isRefreshingWeather ? 'animate-spin' : ''} />
                       <span style={{ color: '#ffffff' }}>{isRefreshingWeather ? 'Updating' : 'Refresh'}</span>
                     </button>
                   </div>
                 </div>
 
                 {/* Big Temperature Hero */}
-                <div className="my-3 flex items-center justify-between gap-4">
+                <div className="my-2 flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-xs font-black uppercase tracking-wider flex items-center gap-1" style={{ color: accentYellow }}>
+                    <p className="text-[11px] font-black uppercase tracking-wider flex items-center gap-1" style={{ color: accentYellow }}>
                       <span>📍</span> <span>{selectedReq?.destination || weather?.city || 'Worldwide'}</span>
                     </p>
-                    <h3 className="text-6xl md:text-7xl font-black mt-1 tracking-tight select-none" style={{ color: '#ffffff', textShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
+                    <h3 className="text-4xl sm:text-5xl md:text-6xl font-black mt-0.5 tracking-tight select-none" style={{ color: '#ffffff', textShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
                       {weather ? `${weather.temperature ?? weather.temp}°C` : '—'}
                     </h3>
-                    <p className="text-xs font-bold mt-1 flex items-center gap-2 flex-wrap" style={{ color: '#ffffff' }}>
-                      <span className="font-black text-sm" style={{ color: '#ffffff' }}>{weather?.description ?? 'Partly Cloudy'}</span>
+                    <p className="text-[11px] font-bold mt-0.5 flex items-center gap-1.5 flex-wrap" style={{ color: '#ffffff' }}>
+                      <span className="font-black text-xs" style={{ color: '#ffffff' }}>{weather?.description ?? 'Partly Cloudy'}</span>
                       <span style={{ color: 'rgba(255,255,255,0.6)' }}>•</span>
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold" style={{ background: 'rgba(255,255,255,0.2)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.3)' }}>
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold" style={{ background: 'rgba(255,255,255,0.2)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.3)' }}>
                         {destLocalHour >= 6 && destLocalHour < 18 ? '☀️ Daylight' : '🌙 Night'}
                       </span>
                     </p>
                   </div>
 
-                  <div className="w-20 h-20 rounded-3xl flex items-center justify-center shrink-0 shadow-xl backdrop-blur-md" style={{ background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255, 255, 255, 0.3)' }}>
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-xl backdrop-blur-md" style={{ background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255, 255, 255, 0.3)' }}>
                     {(weather?.iconUrl || resolveWeatherIconUrl(weather?.iconBaseUri)) ? (
                       <img
                         src={weather?.iconUrl || resolveWeatherIconUrl(weather?.iconBaseUri)!}
                         alt={weather?.description || 'weather'}
-                        className="w-14 h-14 object-contain drop-shadow"
+                        className="w-10 h-10 sm:w-12 sm:h-12 object-contain drop-shadow"
                       />
                     ) : (
-                      <span className="text-4xl select-none">
+                      <span className="text-3xl select-none">
                         {conditionTypeToEmoji(weather?.conditionType || weather?.icon, destLocalHour >= 6 && destLocalHour < 18)}
                       </span>
                     )}
@@ -549,27 +549,27 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
 
                 {/* 5 Minimal Metric Pills (Dark Frosted Glass with Pure White Values) */}
                 {weather && (
-                  <div className="grid grid-cols-5 gap-1.5 pt-3 border-t" style={{ borderColor: 'rgba(255, 255, 255, 0.15)' }}>
-                    <div className="rounded-2xl p-2 text-center shadow-md backdrop-blur-md" style={{ background: pillBg, border: `1px solid ${pillBorder}` }}>
-                      <p className="text-[8.5px] uppercase font-bold tracking-wider" style={{ color: '#cbd5e1' }}>Feels</p>
-                      <p className="text-xs font-black mt-0.5" style={{ color: '#ffffff' }}>{weather.feelsLike ?? '—'}°C</p>
+                  <div className="grid grid-cols-5 gap-1 pt-2 border-t" style={{ borderColor: 'rgba(255, 255, 255, 0.15)' }}>
+                    <div className="rounded-xl p-1.5 text-center shadow-md backdrop-blur-md" style={{ background: pillBg, border: `1px solid ${pillBorder}` }}>
+                      <p className="text-[8px] uppercase font-bold tracking-wider" style={{ color: '#cbd5e1' }}>Feels</p>
+                      <p className="text-[11px] font-black mt-0.5" style={{ color: '#ffffff' }}>{weather.feelsLike ?? '—'}°C</p>
                     </div>
-                    <div className="rounded-2xl p-2 text-center shadow-md backdrop-blur-md" style={{ background: pillBg, border: `1px solid ${pillBorder}` }}>
-                      <p className="text-[8.5px] uppercase font-bold tracking-wider" style={{ color: '#cbd5e1' }}>Humidity</p>
-                      <p className="text-xs font-black mt-0.5" style={{ color: '#ffffff' }}>{weather.humidity}%</p>
+                    <div className="rounded-xl p-1.5 text-center shadow-md backdrop-blur-md" style={{ background: pillBg, border: `1px solid ${pillBorder}` }}>
+                      <p className="text-[8px] uppercase font-bold tracking-wider" style={{ color: '#cbd5e1' }}>Humidity</p>
+                      <p className="text-[11px] font-black mt-0.5" style={{ color: '#ffffff' }}>{weather.humidity}%</p>
                     </div>
-                    <div className="rounded-2xl p-2 text-center shadow-md backdrop-blur-md" style={{ background: pillBg, border: `1px solid ${pillBorder}` }}>
-                      <p className="text-[8.5px] uppercase font-bold tracking-wider" style={{ color: '#cbd5e1' }}>Wind</p>
-                      <p className="text-xs font-black mt-0.5" style={{ color: '#ffffff' }}>{weather.windSpeed ?? '—'} km/h</p>
+                    <div className="rounded-xl p-1.5 text-center shadow-md backdrop-blur-md" style={{ background: pillBg, border: `1px solid ${pillBorder}` }}>
+                      <p className="text-[8px] uppercase font-bold tracking-wider" style={{ color: '#cbd5e1' }}>Wind</p>
+                      <p className="text-[11px] font-black mt-0.5" style={{ color: '#ffffff' }}>{weather.windSpeed ?? '—'} km/h</p>
                     </div>
-                    <div className="rounded-2xl p-2 text-center shadow-md backdrop-blur-md" style={{ background: pillBg, border: `1px solid ${pillBorder}` }}>
-                      <p className="text-[8.5px] uppercase font-bold tracking-wider" style={{ color: '#cbd5e1' }}>UV Index</p>
-                      <p className="text-xs font-black mt-0.5" style={{ color: '#ffffff' }}>{weather.uvIndex ?? '1'}</p>
+                    <div className="rounded-xl p-1.5 text-center shadow-md backdrop-blur-md" style={{ background: pillBg, border: `1px solid ${pillBorder}` }}>
+                      <p className="text-[8px] uppercase font-bold tracking-wider" style={{ color: '#cbd5e1' }}>UV Index</p>
+                      <p className="text-[11px] font-black mt-0.5" style={{ color: '#ffffff' }}>{weather.uvIndex ?? '1'}</p>
                     </div>
-                    <div className="rounded-2xl p-2 text-center shadow-md backdrop-blur-md" style={{ background: pillBg, border: `1px solid ${pillBorder}` }}>
-                      <p className="text-[8.5px] uppercase font-bold tracking-wider" style={{ color: '#cbd5e1' }}>Air Quality</p>
-                      <p className="text-xs font-black mt-0.5" style={{ color: aqiVal <= 50 ? '#34d399' : aqiVal <= 100 ? '#fbbf24' : '#f87171' }}>
-                        {aqiVal} <span className="text-[8px] font-bold block leading-none" style={{ color: aqiVal <= 50 ? '#34d399' : aqiVal <= 100 ? '#fbbf24' : '#f87171' }}>{aqiCat.label}</span>
+                    <div className="rounded-xl p-1.5 text-center shadow-md backdrop-blur-md" style={{ background: pillBg, border: `1px solid ${pillBorder}` }}>
+                      <p className="text-[8px] uppercase font-bold tracking-wider" style={{ color: '#cbd5e1' }}>Air Quality</p>
+                      <p className="text-[11px] font-black mt-0.5" style={{ color: aqiVal <= 50 ? '#34d399' : aqiVal <= 100 ? '#fbbf24' : '#f87171' }}>
+                        {aqiVal} <span className="text-[7.5px] font-bold block leading-none" style={{ color: aqiVal <= 50 ? '#34d399' : aqiVal <= 100 ? '#fbbf24' : '#f87171' }}>{aqiCat.label}</span>
                       </p>
                     </div>
                   </div>

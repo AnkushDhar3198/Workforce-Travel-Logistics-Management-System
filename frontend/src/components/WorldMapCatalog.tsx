@@ -299,106 +299,107 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [], c
 
   return (
     <div className="relative w-full rounded-3xl overflow-hidden bg-slate-950/90 border border-white/20 ring-1 ring-white/10 shadow-2xl flex flex-col select-none backdrop-blur-2xl">
-      {/* ── Apple Floating Control Bar Overlay ─────────────────────── */}
-      <div className="absolute top-3 left-3 right-3 z-30 flex items-center justify-between pointer-events-none">
-        {/* Left Floating Info Pill */}
-        <div className="pointer-events-auto flex items-center gap-2 border border-white/25 backdrop-blur-2xl px-4 py-1.5 rounded-full shadow-2xl whitespace-nowrap" style={{ background: 'rgba(15, 23, 42, 0.92)' }}>
-          <Globe className="w-3.5 h-3.5 text-sky-400 animate-spin-slow shrink-0" />
-          <span className="text-[11px] font-black tracking-tight shrink-0" style={{ color: '#ffffff' }}>Live GPS Catalog</span>
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-          <span className="text-[10px] font-bold shrink-0" style={{ color: '#38bdf8' }}>{displayRequests.length} Active</span>
+      {/* ── Apple Floating Control Bar Overlay (Guaranteed Single Row 317px footprint) ── */}
+      <div className="absolute top-2 left-2 right-2 z-30 flex items-center justify-between gap-1 pointer-events-none">
+        {/* Pill 1: Left Info Pill */}
+        <div className="pointer-events-auto flex items-center gap-1 border border-white/20 backdrop-blur-2xl px-2 py-0.5 rounded-full shadow-lg shrink-0 whitespace-nowrap" style={{ background: 'rgba(15, 23, 42, 0.92)' }}>
+          <Globe className="w-3 h-3 text-sky-400 animate-spin-slow shrink-0" />
+          <span className="text-[9px] font-black tracking-tight text-white shrink-0">Live GPS</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+          <span className="text-[8.5px] font-bold text-sky-400 shrink-0">{displayRequests.length} Active</span>
         </div>
 
-        {/* Right Floating Controls */}
-        <div className="pointer-events-auto flex items-center gap-2">
-          {/* Layer Selector Frosted Pill */}
-          <div className="flex items-center border border-white/20 backdrop-blur-2xl p-0.5 rounded-full shadow-2xl" style={{ background: 'rgba(15, 23, 42, 0.9)' }}>
+        {/* Right Floating Controls Container (Pill 2, Pill 3, Pill 4) */}
+        <div className="pointer-events-auto flex items-center gap-1 shrink-0">
+          {/* Pill 2: Layer Selector Frosted Pill */}
+          <div className="flex items-center border border-white/20 backdrop-blur-2xl p-0.5 rounded-full shadow-lg shrink-0" style={{ background: 'rgba(15, 23, 42, 0.92)' }}>
             <button
               onClick={() => setActiveLayer('dark')}
-              className="px-2.5 py-1 rounded-full text-[9.5px] font-black transition-all cursor-pointer"
+              className="px-1.5 py-0.5 rounded-full text-[8.5px] font-black transition-all cursor-pointer whitespace-nowrap"
               style={{
                 background: activeLayer === 'dark' ? '#0ea5e9' : 'transparent',
-                color: activeLayer === 'dark' ? '#0284c7' : '#ffffff',
-                boxShadow: activeLayer === 'dark' ? '0 2px 8px rgba(14,165,233,0.4)' : 'none',
+                color: '#ffffff',
+                boxShadow: activeLayer === 'dark' ? '0 0 6px rgba(14, 165, 233, 0.6)' : 'none',
               }}
             >
               Dark
             </button>
             <button
               onClick={() => setActiveLayer('satellite')}
-              className="px-2.5 py-1 rounded-full text-[9.5px] font-black transition-all cursor-pointer"
+              className="px-1.5 py-0.5 rounded-full text-[8.5px] font-black transition-all cursor-pointer whitespace-nowrap"
               style={{
                 background: activeLayer === 'satellite' ? '#0ea5e9' : 'transparent',
-                color: activeLayer === 'satellite' ? '#0284c7' : '#ffffff',
-                boxShadow: activeLayer === 'satellite' ? '0 2px 8px rgba(14,165,233,0.4)' : 'none',
+                color: '#ffffff',
+                boxShadow: activeLayer === 'satellite' ? '0 0 6px rgba(14, 165, 233, 0.6)' : 'none',
               }}
             >
-              Satellite
+              Sat
             </button>
             <button
               onClick={() => setActiveLayer('street')}
-              className="px-2.5 py-1 rounded-full text-[9.5px] font-black transition-all cursor-pointer"
+              className="px-1.5 py-0.5 rounded-full text-[8.5px] font-black transition-all cursor-pointer whitespace-nowrap"
               style={{
                 background: activeLayer === 'street' ? '#0ea5e9' : 'transparent',
-                color: activeLayer === 'street' ? '#0284c7' : '#ffffff',
-                boxShadow: activeLayer === 'street' ? '0 2px 8px rgba(14,165,233,0.4)' : 'none',
+                color: '#ffffff',
+                boxShadow: activeLayer === 'street' ? '0 0 6px rgba(14, 165, 233, 0.6)' : 'none',
               }}
             >
               Street
             </button>
           </div>
 
-          {/* Toggle Roster Button */}
+          {/* Pill 3: Toggle Roster Button */}
           <button
             onClick={() => setShowRosterOverlay(!showRosterOverlay)}
-            className="px-3 py-1.5 rounded-full text-[10px] font-extrabold flex items-center gap-1.5 transition-all shadow-xl border backdrop-blur-2xl cursor-pointer"
+            className="px-2 py-0.5 rounded-full text-[8.5px] font-extrabold flex items-center gap-1 transition-all shadow-lg border backdrop-blur-2xl cursor-pointer shrink-0 whitespace-nowrap"
             style={{
-              background: showRosterOverlay ? '#0ea5e9' : 'rgba(15, 23, 42, 0.9)',
+              background: showRosterOverlay ? '#0ea5e9' : 'rgba(15, 23, 42, 0.92)',
               color: '#ffffff',
               borderColor: showRosterOverlay ? '#38bdf8' : 'rgba(255, 255, 255, 0.2)',
+              boxShadow: showRosterOverlay ? '0 0 6px rgba(14, 165, 233, 0.6)' : 'none',
             }}
           >
-            <List size={12} />
+            <List size={10} />
             <span>Roster ({displayRequests.length})</span>
           </button>
 
-          {/* Zoom Controls */}
-          <div className="flex items-center border border-white/20 backdrop-blur-2xl p-0.5 rounded-full shadow-2xl" style={{ background: 'rgba(15, 23, 42, 0.9)' }}>
+          {/* Pill 4: Zoom Controls */}
+          <div className="flex items-center border border-white/20 backdrop-blur-2xl p-0.5 rounded-full shadow-lg shrink-0" style={{ background: 'rgba(15, 23, 42, 0.92)' }}>
             <button
               onClick={() => mapInstanceRef.current?.zoomIn()}
-              className="p-1.5 rounded-full transition cursor-pointer"
+              className="p-1 rounded-full transition cursor-pointer hover:bg-white/10"
               style={{ color: '#ffffff' }}
               title="Zoom In"
             >
-              <ZoomIn size={12} />
+              <ZoomIn size={10} />
             </button>
             <button
               onClick={() => mapInstanceRef.current?.zoomOut()}
-              className="p-1.5 rounded-full transition cursor-pointer"
+              className="p-1 rounded-full transition cursor-pointer hover:bg-white/10"
               style={{ color: '#ffffff' }}
               title="Zoom Out"
             >
-              <ZoomOut size={12} />
+              <ZoomOut size={10} />
             </button>
             <button
               onClick={handleResetMap}
-              className="p-1.5 rounded-full transition cursor-pointer"
+              className="p-1 rounded-full transition cursor-pointer hover:bg-white/10"
               style={{ color: '#ffffff' }}
               title="Reset View"
             >
-              <RotateCcw size={12} />
+              <RotateCcw size={10} />
             </button>
           </div>
         </div>
       </div>
 
       {/* ── Leaflet Map Container ──────────────────────────────────── */}
-      <div className="relative w-full h-[310px] md:h-[340px] flex">
+      <div className="relative w-full h-[250px] sm:h-[270px] md:h-[290px] flex">
         <div ref={mapContainerRef} className="w-full h-full z-10 bg-slate-950"></div>
 
         {/* Slide-over Apple Frosted Roster Drawer */}
         {showRosterOverlay && (
-          <div className="absolute top-14 right-3 z-30 w-64 border border-white/25 backdrop-blur-2xl rounded-2xl p-3 shadow-2xl space-y-2 animate-fade-in max-h-[260px] overflow-y-auto custom-scrollbar" style={{ background: 'rgba(15, 23, 42, 0.95)' }}>
+          <div className="absolute top-12 sm:top-14 right-2.5 sm:right-3 z-30 w-64 max-w-[calc(100%-1.25rem)] border border-white/25 backdrop-blur-2xl rounded-2xl p-3 shadow-2xl space-y-2 animate-fade-in max-h-[260px] overflow-y-auto custom-scrollbar" style={{ background: 'rgba(15, 23, 42, 0.95)' }}>
             <div className="flex items-center justify-between border-b border-white/15 pb-1.5">
               <span className="text-[10px] font-black uppercase tracking-wider flex items-center gap-1" style={{ color: '#38bdf8' }}>
                 <Navigation size={11} /> Duty of Care Roster
@@ -426,7 +427,7 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [], c
                   <div
                     key={req.id}
                     onClick={() => handleFlyTo(req)}
-                    className="p-2 rounded-xl border transition-all cursor-pointer"
+                    className="p-2 rounded-xl border transition-all cursor-pointer hover:border-sky-400/50"
                     style={{
                       background: isSelected ? 'rgba(14, 165, 233, 0.25)' : 'rgba(2, 6, 23, 0.6)',
                       borderColor: isSelected ? '#38bdf8' : 'rgba(255, 255, 255, 0.1)',
@@ -453,12 +454,12 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [], c
       </div>
 
       {/* ── Apple-Style Minimal Footer Ribbon ─────────────────────────── */}
-      <div className="px-4 py-2 border-t border-white/15 flex items-center justify-between text-[10.5px] z-20 backdrop-blur-2xl" style={{ background: 'rgba(15, 23, 42, 0.95)' }}>
-        <div className="flex items-center gap-2">
+      <div className="px-3 sm:px-4 py-2 border-t border-white/15 flex flex-wrap items-center justify-between gap-2 text-[9.5px] sm:text-[10.5px] z-20 backdrop-blur-2xl" style={{ background: 'rgba(15, 23, 42, 0.95)' }}>
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <ShieldCheck size={13} style={{ color: '#38bdf8' }} />
           <span className="font-bold" style={{ color: '#f1f5f9' }}>Open-Meteo Precision WGS84 GPS</span>
         </div>
-        <div className="flex items-center gap-3 font-mono text-[9.5px]">
+        <div className="flex items-center gap-2 sm:gap-3 font-mono text-[8.5px] sm:text-[9.5px]">
           <span className="font-extrabold" style={{ color: '#34d399' }}>● Active Signal</span>
           <span className="font-bold" style={{ color: '#cbd5e1' }}>100% Precision Plotted</span>
         </div>

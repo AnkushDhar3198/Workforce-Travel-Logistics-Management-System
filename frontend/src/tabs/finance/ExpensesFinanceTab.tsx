@@ -5,11 +5,14 @@ import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/ca
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Alert, AlertTitle, AlertDescription } from '../../components/ui/alert';
+import Pagination from '../../components/Pagination';
 
 export default function ExpensesFinanceTab() {
   const { authFetch } = useAuth();
   const [expenses, setExpenses] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
   const loadPending = async () => {
     setLoading(true);
@@ -133,103 +136,115 @@ export default function ExpensesFinanceTab() {
                   <p className="text-xs text-slate-450 max-w-sm mx-auto">No pending employee reimbursement claims require auditing at this time. New expense filings will route here automatically.</p>
                 </div>
               ) : (
-                <div className="space-y-6">
-                  {expenses.map(exp => {
-                    let ocrVendor = '';
-                    let ocrAmount = 0;
-                    let ocrConfidence = 0;
-                    let hasDiscrepancy = false;
-                    
-                    if (exp.ocrExtractedData) {
-                      try {
-                        const parsed = JSON.parse(exp.ocrExtractedData);
-                        ocrVendor = parsed.vendor;
-                        ocrAmount = parsed.amount;
-                        ocrConfidence = parsed.confidence;
-                        hasDiscrepancy = Math.abs(exp.amount - ocrAmount) > 10.0;
-                      } catch (e) {}
-                    }
+                  <div className="space-y-6">
+                    {expenses.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(exp => {
+                      let ocrVendor = '';
+                      let ocrAmount = 0;
+                      let ocrConfidence = 0;
+                      let hasDiscrepancy = false;
+                      
+                      if (exp.ocrExtractedData) {
+                        try {
+                          const parsed = JSON.parse(exp.ocrExtractedData);
+                          ocrVendor = parsed.vendor;
+                          ocrAmount = parsed.amount;
+                          ocrConfidence = parsed.confidence;
+                          hasDiscrepancy = Math.abs(exp.amount - ocrAmount) > 10.0;
+                        } catch (e) {}
+                      }
 
-                    return (
-                      <div 
-                        key={exp.id} 
-                        className={`p-4 rounded-xl border bg-slate-900/60 space-y-4 ${
-                          hasDiscrepancy ? 'border-red-500/25 shadow-lg shadow-red-950/20' : 'border-slate-850'
-                        }`}
-                      >
-                        <div className="flex justify-between items-start border-b border-slate-800/80 pb-3">
-                          <div>
-                            <h4 className="font-extrabold text-white text-sm">
-                              Expense ID: #{exp.id} – <span className="text-cyan-405">{exp.category}</span>
-                            </h4>
-                            <p className="text-[11px] text-slate-400 mt-1">
-                              Submitted by Employee ID: <span className="font-bold text-white">#{exp.employeeId}</span> | Trip Link Request ID: #{exp.travelRequestId}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <span className="text-slate-500 text-[9px] font-bold block mb-0.5">Claimed Amount</span>
-                            <span className="text-lg font-black text-cyan-450">${exp.amount}</span>
-                          </div>
-                        </div>
-
-                        {exp.ocrExtractedData ? (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                            <div className="p-3 bg-slate-950/40 rounded-lg border border-slate-850 space-y-1">
-                              <span className="font-bold text-slate-400">Claim Details:</span>
-                              <div>Category: {exp.category}</div>
-                              <div>Amount: ${exp.amount}</div>
-                              <div>Uploaded File: <a href={getFileUrl(exp.receiptUrl)} target="_blank" rel="noreferrer" className="text-cyan-400 underline hover:text-cyan-300">View Receipt Document</a></div>
+                      return (
+                        <div 
+                          key={exp.id} 
+                          className={`p-4 rounded-xl border bg-slate-900/60 space-y-4 ${
+                            hasDiscrepancy ? 'border-red-500/25 shadow-lg shadow-red-950/20' : 'border-slate-850'
+                          }`}
+                        >
+                          <div className="flex justify-between items-start border-b border-slate-800/80 pb-3">
+                            <div>
+                              <h4 className="font-extrabold text-white text-sm">
+                                Expense ID: #{exp.id} – <span className="text-cyan-405">{exp.category}</span>
+                              </h4>
+                              <p className="text-[11px] text-slate-400 mt-1">
+                                Submitted by Employee ID: <span className="font-bold text-white">#{exp.employeeId}</span> | Trip Link Request ID: #{exp.travelRequestId}
+                              </p>
                             </div>
-                            <div className={`p-3 rounded-lg border space-y-1 ${
-                              hasDiscrepancy ? 'bg-red-950/20 border-red-900/30 text-red-300' : 'bg-slate-950/20 border-slate-850 text-slate-350'
-                            }`}>
-                              <div className="flex justify-between items-center font-bold">
-                                <span>Extracted OCR receipt:</span>
-                                {hasDiscrepancy && (
-                                  <Badge variant="destructive" className="animate-pulse text-[8px] uppercase">
-                                    Discrepancy Flag
-                                  </Badge>
-                                )}
+                            <div className="text-right">
+                              <span className="text-slate-500 text-[9px] font-bold block mb-0.5">Claimed Amount</span>
+                              <span className="text-lg font-black text-cyan-450">${exp.amount}</span>
+                            </div>
+                          </div>
+
+                          {exp.ocrExtractedData ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                              <div className="p-3 bg-slate-950/40 rounded-lg border border-slate-850 space-y-1">
+                                <span className="font-bold text-slate-400">Claim Details:</span>
+                                <div>Category: {exp.category}</div>
+                                <div>Amount: ${exp.amount}</div>
+                                <div>Uploaded File: <a href={getFileUrl(exp.receiptUrl)} target="_blank" rel="noreferrer" className="text-cyan-400 underline hover:text-cyan-300">View Receipt Document</a></div>
                               </div>
-                              <div>Merchant: {ocrVendor}</div>
-                              <div>Scanned Amount: ${ocrAmount}</div>
-                              <div>Scan confidence: {(ocrConfidence * 100).toFixed(0)}%</div>
+                              <div className={`p-3 rounded-lg border space-y-1 ${
+                                hasDiscrepancy ? 'bg-red-950/20 border-red-900/30 text-red-300' : 'bg-slate-950/20 border-slate-850 text-slate-355'
+                              }`}>
+                                <div className="flex justify-between items-center font-bold">
+                                  <span>Extracted OCR receipt:</span>
+                                  {hasDiscrepancy && (
+                                    <Badge variant="destructive" className="animate-pulse text-[8px] uppercase">
+                                      Discrepancy Flag
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div>Merchant: {ocrVendor}</div>
+                                <div>Scanned Amount: ${ocrAmount}</div>
+                                <div>Scan confidence: {(ocrConfidence * 100).toFixed(0)}%</div>
+                              </div>
                             </div>
-                          </div>
-                        ) : (
-                          <div className="p-3 bg-slate-950/25 rounded-lg text-xs text-slate-500 border border-slate-900 text-center">
-                            No scanned receipt uploaded. Manual review recommended.
-                          </div>
-                        )}
+                          ) : (
+                            <div className="p-3 bg-slate-950/25 rounded-lg text-xs text-slate-500 border border-slate-900 text-center">
+                              No scanned receipt uploaded. Manual review recommended.
+                            </div>
+                          )}
 
-                        <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-800/60 items-center justify-between">
-                          <div className="flex gap-2">
-                            <Button 
-                              onClick={() => handleAudit(exp.id, true)}
-                              className="text-xs font-bold btn-hover-scale h-8"
-                            >
-                              Approve Claim
-                            </Button>
-                            <Button 
-                              onClick={() => handleAudit(exp.id, false)}
-                              variant="destructive"
-                              className="text-xs font-bold btn-hover-scale h-8"
-                            >
-                              Reject Claim
-                            </Button>
+                          <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-800/60 items-center justify-between">
+                            <div className="flex gap-2">
+                              <Button 
+                                onClick={() => handleAudit(exp.id, true)}
+                                className="text-xs font-bold btn-hover-scale h-8"
+                              >
+                                Approve Claim
+                              </Button>
+                              <Button 
+                                onClick={() => handleAudit(exp.id, false)}
+                                variant="destructive"
+                                className="text-xs font-bold btn-hover-scale h-8"
+                              >
+                                Reject Claim
+                              </Button>
+                            </div>
+
+                            {exp.status === 'APPROVED' && (
+                              <Button 
+                                onClick={() => handleReimburse(exp.id)}
+                                variant="outline"
+                                className="text-xs font-bold bg-emerald-500/10 text-emerald-400 border-emerald-500/30 h-8"
+                              >
+                                Mark Reimbursed
+                              </Button>
+                            )}
                           </div>
-                          <Button 
-                            onClick={() => handleReimburse(exp.id)}
-                            variant="secondary"
-                            className="text-xs font-bold text-cyan-400 border border-slate-800 bg-slate-900/60 hover:bg-slate-800 btn-hover-scale h-8"
-                          >
-                            Mark Reimbursed
-                          </Button>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={Math.ceil(expenses.length / itemsPerPage)}
+                      totalItems={expenses.length}
+                      itemsPerPage={itemsPerPage}
+                      onPageChange={setCurrentPage}
+                      onItemsPerPageChange={setItemsPerPage}
+                    />
+                  </div>
               )}
             </CardContent>
           </Card>

@@ -7,12 +7,15 @@ import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Alert, AlertTitle, AlertDescription } from '../../components/ui/alert';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip as ChartTooltip } from 'recharts';
+import Pagination from '../../components/Pagination';
 
 export default function ApprovalsTab() {
   const { authFetch } = useAuth();
   const [requests, setRequests] = useState<any[]>([]);
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
   const loadApprovals = async () => {
     setLoading(true);
@@ -140,7 +143,7 @@ export default function ApprovalsTab() {
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {pendingList.map(req => (
+                  {pendingList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(req => (
                     <div key={req.id} className="p-4 rounded-xl border border-slate-850 bg-slate-900/60 space-y-4">
                       <div className="flex justify-between items-start border-b border-slate-800/80 pb-3">
                         <div>
@@ -200,6 +203,15 @@ export default function ApprovalsTab() {
                       </div>
                     </div>
                   ))}
+
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={Math.ceil(pendingList.length / itemsPerPage)}
+                    totalItems={pendingList.length}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                    onItemsPerPageChange={setItemsPerPage}
+                  />
                 </div>
               )}
             </CardContent>

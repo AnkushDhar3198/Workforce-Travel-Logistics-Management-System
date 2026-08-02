@@ -3,11 +3,16 @@ import { useAuth, API_BASE } from '../../context/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
-import { Users, Building2, Shield } from 'lucide-react';
+import { Input } from '../../components/ui/input';
+import { Users, Building2, Shield, Search } from 'lucide-react';
+import Pagination from '../../components/Pagination';
 
 export default function UsersTab() {
   const { authFetch } = useAuth();
   const [users, setUsers] = useState<any[]>([]);
+  const [search, setSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -18,6 +23,16 @@ export default function UsersTab() {
     };
     loadUsers();
   }, []);
+
+  const filteredUsers = users.filter(u =>
+    u.name?.toLowerCase().includes(search.toLowerCase()) ||
+    u.email?.toLowerCase().includes(search.toLowerCase()) ||
+    u.role?.toLowerCase().includes(search.toLowerCase()) ||
+    u.department?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const paginatedUsers = filteredUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   // Calculations for Admin directory stats
   const totalCorporateUsers = users.length;
@@ -86,10 +101,17 @@ export default function UsersTab() {
 
       {/* 3. Directory Card list */}
       <Card className="bg-slate-900/40 border border-slate-850">
-        <CardHeader className="border-b border-slate-850 pb-3 mb-4">
+        <CardHeader className="flex flex-row justify-between items-center border-b border-slate-850 pb-3 mb-4">
           <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-350">
             Corporate User Directory
           </CardTitle>
+          <Input 
+            type="text" 
+            value={search}
+            onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
+            placeholder="Search users by name, email, role..."
+            className="max-w-xs text-xs h-8 bg-slate-950 border-slate-800 text-white"
+          />
         </CardHeader>
         <CardContent>
           <Table>
@@ -103,13 +125,13 @@ export default function UsersTab() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map(u => (
+              {paginatedUsers.map(u => (
                 <TableRow key={u.id} className="hover:bg-slate-900/30">
                   <TableCell className="font-bold text-white text-xs">{u.name}</TableCell>
                   <TableCell className="text-slate-400 text-xs">{u.email}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className="text-cyan-400 font-bold border-cyan-500/20 text-[9px] uppercase tracking-wider">
-                      {u.role.replace('_', ' ')}
+                      {u.role.replace(/_/g, ' ')}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-xs">{u.department}</TableCell>
@@ -118,6 +140,15 @@ export default function UsersTab() {
               ))}
             </TableBody>
           </Table>
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredUsers.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onItemsPerPageChange={setItemsPerPage}
+          />
         </CardContent>
       </Card>
     </div>

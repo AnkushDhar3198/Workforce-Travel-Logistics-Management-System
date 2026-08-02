@@ -6,12 +6,15 @@ import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
+import Pagination from '../../components/Pagination';
 
 const VENDOR_TYPES = ['AIRLINE', 'HOTEL', 'TRANSPORT', 'LOGISTICS'];
 
 export default function VendorsTab() {
   const { authFetch } = useAuth();
   const [vendors, setVendors] = useState<any[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
   const [name, setName] = useState('');
   const [type, setType] = useState('AIRLINE');
   const [contractTerms, setContractTerms] = useState('');
@@ -235,32 +238,43 @@ export default function VendorsTab() {
                   <p className="text-xs">No corporate vendors registered.</p>
                 </div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-xs font-bold text-slate-400">Name</TableHead>
-                      <TableHead className="text-xs font-bold text-slate-400">Type</TableHead>
-                      <TableHead className="text-xs font-bold text-slate-400">Terms</TableHead>
-                      <TableHead className="text-xs font-bold text-slate-400">Performance</TableHead>
-                      <TableHead className="text-xs font-bold text-slate-400 text-right">Action</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {vendors.map(v => (
-                      <TableRow key={v.id} className="hover:bg-slate-900/30">
-                        <TableCell className="font-bold text-white text-xs">{v.name}</TableCell>
-                        <TableCell className="text-cyan-400 font-semibold text-xs">{v.type}</TableCell>
-                        <TableCell className="max-w-[200px] truncate text-xs">{v.contractTerms || 'No contract terms defined'}</TableCell>
-                        <TableCell className="font-bold text-xs">⭐ {v.performanceRating.toFixed(1)}</TableCell>
-                        <TableCell className="text-right text-xs">
-                          <Button onClick={() => deleteVendor(v.id)} variant="ghost" size="sm" className="btn-hover-scale p-1">
-                            <Trash2 className="w-4 h-4 text-red-400 hover:text-red-300" />
-                          </Button>
-                        </TableCell>
+                <>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-xs font-bold text-slate-400">Name</TableHead>
+                        <TableHead className="text-xs font-bold text-slate-400">Type</TableHead>
+                        <TableHead className="text-xs font-bold text-slate-400">Terms</TableHead>
+                        <TableHead className="text-xs font-bold text-slate-400">Performance</TableHead>
+                        <TableHead className="text-xs font-bold text-slate-400 text-right">Action</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {vendors.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(v => (
+                        <TableRow key={v.id} className="hover:bg-slate-900/30">
+                          <TableCell className="font-bold text-white text-xs">{v.name}</TableCell>
+                          <TableCell className="text-cyan-400 font-semibold text-xs">{v.type}</TableCell>
+                          <TableCell className="max-w-[200px] truncate text-xs">{v.contractTerms || 'No contract terms defined'}</TableCell>
+                          <TableCell className="font-bold text-xs">⭐ {v.performanceRating.toFixed(1)}</TableCell>
+                          <TableCell className="text-right text-xs">
+                            <Button onClick={() => deleteVendor(v.id)} variant="ghost" size="sm" className="btn-hover-scale p-1">
+                              <Trash2 className="w-4 h-4 text-red-400 hover:text-red-300" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={Math.ceil(vendors.length / itemsPerPage)}
+                    totalItems={vendors.length}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                    onItemsPerPageChange={setItemsPerPage}
+                  />
+                </>
               )}
             </CardContent>
           </Card>

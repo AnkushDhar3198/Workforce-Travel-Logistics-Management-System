@@ -5,12 +5,15 @@ import { Input } from '../../components/ui/input';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '../../components/ui/table';
 import { ClipboardList, Shield, Users, Clock, Activity } from 'lucide-react';
 import { Badge } from '../../components/ui/badge';
+import Pagination from '../../components/Pagination';
 
 export default function AuditLogsTab() {
   const { authFetch } = useAuth();
   const [logs, setLogs] = useState<any[]>([]);
   const [filter, setFilter] = useState('');
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     const loadLogs = async () => {
@@ -31,6 +34,9 @@ export default function AuditLogsTab() {
     l.entity.toLowerCase().includes(filter.toLowerCase()) ||
     l.userId.toString().includes(filter)
   );
+
+  const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
+  const paginatedLogs = filteredLogs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   if (loading) return <div className="text-center text-slate-500 py-10">Loading security audit trail logs...</div>;
 
@@ -114,7 +120,7 @@ export default function AuditLogsTab() {
               <Input 
                 type="text" 
                 value={filter}
-                onChange={e => setFilter(e.target.value)}
+                onChange={e => { setFilter(e.target.value); setCurrentPage(1); }}
                 placeholder="Filter audit actions/entities..."
                 className="max-w-xs text-xs h-8 bg-slate-950 border-slate-800 text-white animate-fade-in-up"
               />
@@ -123,28 +129,39 @@ export default function AuditLogsTab() {
               {filteredLogs.length === 0 ? (
                 <div className="text-center py-12 text-slate-550">No logs found matching filter criteria.</div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-xs font-bold text-slate-450">User ID</TableHead>
-                      <TableHead className="text-xs font-bold text-slate-450">Action Event</TableHead>
-                      <TableHead className="text-xs font-bold text-slate-450">Entity Context</TableHead>
-                      <TableHead className="text-xs font-bold text-slate-450">Linked ID</TableHead>
-                      <TableHead className="text-xs font-bold text-slate-450">Timestamp</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredLogs.map(l => (
-                      <TableRow key={l.id} className="hover:bg-slate-900/30 font-mono text-[11px]">
-                        <TableCell className="font-bold text-cyan-400">#{l.userId}</TableCell>
-                        <TableCell className="font-bold text-white uppercase">{l.action}</TableCell>
-                        <TableCell className="text-slate-300">{l.entity}</TableCell>
-                        <TableCell className="text-slate-500">{l.entityId || '-'}</TableCell>
-                        <TableCell className="text-slate-500">{new Date(l.timestamp).toLocaleString()}</TableCell>
+                <>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-xs font-bold text-slate-450">User ID</TableHead>
+                        <TableHead className="text-xs font-bold text-slate-450">Action Event</TableHead>
+                        <TableHead className="text-xs font-bold text-slate-450">Entity Context</TableHead>
+                        <TableHead className="text-xs font-bold text-slate-450">Linked ID</TableHead>
+                        <TableHead className="text-xs font-bold text-slate-450">Timestamp</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {paginatedLogs.map(l => (
+                        <TableRow key={l.id} className="hover:bg-slate-900/30 font-mono text-[11px]">
+                          <TableCell className="font-bold text-cyan-400">#{l.userId}</TableCell>
+                          <TableCell className="font-bold text-white uppercase">{l.action}</TableCell>
+                          <TableCell className="text-slate-300">{l.entity}</TableCell>
+                          <TableCell className="text-slate-500">{l.entityId || '-'}</TableCell>
+                          <TableCell className="text-slate-500">{new Date(l.timestamp).toLocaleString()}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={filteredLogs.length}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                    onItemsPerPageChange={setItemsPerPage}
+                  />
+                </>
               )}
             </CardContent>
           </Card>

@@ -132,6 +132,13 @@ public class DatabaseSeeder implements CommandLineRunner {
             userRepository.save(user);
             System.out.println("Seeded official corporate account: " + cleanEmail + " (" + role + ")");
         });
+
+        // Direct JDBC forced sync to guarantee password_hash column in PostgreSQL is updated
+        try {
+            jdbcTemplate.update("UPDATE users SET password_hash = ? WHERE email = ?", passwordHash, cleanEmail);
+        } catch (Exception ex) {
+            System.err.println("JDBC direct password sync note: " + ex.getMessage());
+        }
     }
 
     private void seedVendors() {

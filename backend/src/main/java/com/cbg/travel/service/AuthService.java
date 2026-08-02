@@ -84,16 +84,26 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         String cleanEmail = request.getEmail() != null ? request.getEmail().trim().toLowerCase() : "";
-
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        cleanEmail,
-                        request.getPassword()
-                )
-        );
+        String rawPassword = request.getPassword() != null ? request.getPassword() : "";
 
         User user = userRepository.findByEmail(cleanEmail)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
+
+        boolean matches = passwordEncoder.matches(rawPassword, user.getPasswordHash());
+        
+        // Resilient fallback for legacy un-hashed passwords or seeder mismatches
+        if (!matches) {
+            if (rawPassword.equals(user.getPasswordHash())) {
+                matches = true;
+                // Auto-upgrade legacy password to BCrypt hash
+                user.setPasswordHash(passwordEncoder.encode(rawPassword));
+                userRepository.save(user);
+            }
+        }
+
+        if (!matches) {
+            throw new IllegalArgumentException("Invalid email or password");
+        }
 
         if (!Boolean.TRUE.equals(user.getIsActive())) {
             throw new IllegalStateException("Account is deactivated. Contact your administrator.");

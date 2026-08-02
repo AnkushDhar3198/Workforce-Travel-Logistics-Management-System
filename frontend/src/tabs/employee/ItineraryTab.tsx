@@ -483,15 +483,28 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
               </div>
             </div>
 
-            {/* Manual 1-Tap Refresh Button */}
-            <button
-              onClick={handleManualWeatherRefresh}
-              disabled={isRefreshingWeather}
-              title="Re-fetch Live Satellite Weather"
-              className="p-2.5 rounded-xl border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 transition-all cursor-pointer shrink-0 active:scale-95 disabled:opacity-50"
-            >
-              <RefreshCw size={15} className={isRefreshingWeather ? 'animate-spin text-cyan-400' : ''} />
-            </button>
+            {/* AccuWeather.com Direct Link & Refresh Actions */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <a
+                href={weather?.accuWeatherUrl || `https://www.accuweather.com/en/search-locations?query=${encodeURIComponent(selectedReq?.destination || 'Switzerland')}`}
+                target="_blank"
+                rel="noreferrer"
+                title="Open AccuWeather.com Forecast"
+                className="px-2.5 py-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-[10px] font-extrabold flex items-center gap-1 transition-all cursor-pointer"
+              >
+                <span>AccuWeather.com</span>
+                <span className="text-[11px]">↗</span>
+              </a>
+
+              <button
+                onClick={handleManualWeatherRefresh}
+                disabled={isRefreshingWeather}
+                title="Re-fetch AccuWeather RealFeel® Radar"
+                className="p-2 rounded-xl border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 transition-all cursor-pointer shrink-0 active:scale-95 disabled:opacity-50"
+              >
+                <RefreshCw size={15} className={isRefreshingWeather ? 'animate-spin text-cyan-400' : ''} />
+              </button>
+            </div>
           </CardContent>
         </Card>
 

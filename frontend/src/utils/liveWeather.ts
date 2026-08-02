@@ -19,6 +19,7 @@ export interface LiveWeatherData {
   lastUpdated: string;
   latitude?: number;
   longitude?: number;
+  accuWeatherUrl?: string;
 }
 
 // WMO World Meteorological Organization Weather Interpretation Codes
@@ -77,8 +78,9 @@ export async function fetchLiveSatelliteWeather(locationQuery: string): Promise<
           windSpeed: Math.round(bData.windSpeed ?? 12),
           icon: bData.icon || '01d',
           isLive: bData.isLive ?? true,
-          provider: bData.source || 'AccuWeather RealFeel® Radar',
+          provider: bData.source || 'AccuWeather RealFeel® Radar (accuweather.com)',
           lastUpdated: bData.lastUpdated || new Date().toLocaleTimeString(),
+          accuWeatherUrl: `https://www.accuweather.com/en/search-locations?query=${encodeURIComponent(query)}`,
         };
       }
     }

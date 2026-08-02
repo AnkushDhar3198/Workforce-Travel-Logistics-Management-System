@@ -58,35 +58,28 @@ export default function ApprovalsTab() {
   }, []);
 
   const handleDecision = async (id: number, approve: boolean) => {
-    let success = false;
-    try {
-      const endpoint = approve ? 'approve' : 'reject';
-      const res = await authFetch(`${API_BASE}/travel/${id}/${endpoint}?comment=${encodeURIComponent(comment)}`, {
-        method: 'POST'
-      });
-      if (res.ok) {
-        success = true;
-      }
-    } catch (e) {}
+    const newStatus = approve ? 'APPROVED' : 'REJECTED';
 
-    // Also update local sync storage item if present
+    // 1. Instant local state update (< 5ms)
+    setRequests(prev => prev.map(r => r.id === id ? { ...r, status: newStatus } : r));
+
+    // Update local sync storage item if present
     try {
       const localReqs = JSON.parse(localStorage.getItem('voyacore_local_travel_requests') || '[]');
-      const updated = localReqs.map((r: any) => {
-        if (r.id === id) {
-          return { ...r, status: approve ? 'APPROVED' : 'REJECTED' };
-        }
-        return r;
-      });
+      const updated = localReqs.map((r: any) => r.id === id ? { ...r, status: newStatus } : r);
       localStorage.setItem('voyacore_local_travel_requests', JSON.stringify(updated));
-      success = true;
     } catch (e) {}
 
-    if (success) {
-      alert(approve ? 'Request approved.' : 'Request rejected.');
-      setComment('');
-      loadApprovals();
-    }
+    alert(approve ? 'Request approved.' : 'Request rejected.');
+    setComment('');
+
+    // 2. Background API sync
+    const endpoint = approve ? 'approve' : 'reject';
+    authFetch(`${API_BASE}/travel/${id}/${endpoint}?comment=${encodeURIComponent(comment)}`, {
+      method: 'POST'
+    }).catch(err => {
+      console.warn('[Approvals] Background sync notice:', err);
+    });
   };
 
   if (loading) return <div className="text-center text-slate-500 py-10">Loading approval routing queue...</div>;

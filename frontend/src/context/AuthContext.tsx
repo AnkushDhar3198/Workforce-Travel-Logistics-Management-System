@@ -107,7 +107,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!(options.body instanceof FormData) && !headers.has('Content-Type')) {
       headers.set('Content-Type', 'application/json');
     }
-    return fetch(url, { ...options, headers });
+
+    // Fast timeout: 4.5s for write mutations, 2.5s for read queries
+    const isMutation = options.method && options.method !== 'GET';
+    const timeoutMs = isMutation ? 4500 : 2500;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers,
+        signal: options.signal || controller.signal,
+      });
+      clearTimeout(timer);
+      return response;
+    } catch (err: any) {
+      clearTimeout(timer);
+      throw err;
+    }
   };
 
   return (

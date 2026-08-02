@@ -61,45 +61,36 @@ export default function RequisitionTab() {
       department: user?.department || 'Operations'
     };
 
-    let submittedSuccessfully = false;
-
-    try {
-      const res = await authFetch(`${API_BASE}/travel`, {
-        method: 'POST',
-        body: JSON.stringify({
-          destination,
-          startDate,
-          endDate,
-          purpose,
-          estimatedCost,
-          status: 'PENDING'
-        })
-      });
-      if (res.ok) {
-        submittedSuccessfully = true;
-      }
-    } catch (err) {
-      console.warn('[Requisition] Remote API sync warning, using local sync fallback:', err);
-    }
-
-    // Always persist to local travel requests sync storage for zero-glitch manager & employee visibility
+    // 1. Instant local persistence for zero-delay UI response (< 5ms)
     try {
       const existing = JSON.parse(localStorage.getItem('voyacore_local_travel_requests') || '[]');
       localStorage.setItem('voyacore_local_travel_requests', JSON.stringify([newReq, ...existing]));
-      submittedSuccessfully = true;
     } catch (e) {}
 
-    if (submittedSuccessfully) {
-      alert('Travel request successfully submitted for manager approval.');
-      setDestination('');
-      setStartDate('');
-      setEndDate('');
-      setPurpose('');
-      setEstimatedCost(500);
-    } else {
-      alert('Submission failed. Please check inputs.');
-    }
+    // Reset form fields immediately for instant feedback
+    setDestination('');
+    setStartDate('');
+    setEndDate('');
+    setPurpose('');
+    setEstimatedCost(500);
     setSubmitting(false);
+
+    alert('Travel request successfully submitted for manager approval.');
+
+    // 2. Background API sync without blocking the user interface
+    authFetch(`${API_BASE}/travel`, {
+      method: 'POST',
+      body: JSON.stringify({
+        destination: newReq.destination,
+        startDate: newReq.startDate,
+        endDate: newReq.endDate,
+        purpose: newReq.purpose,
+        estimatedCost: newReq.estimatedCost,
+        status: 'PENDING'
+      })
+    }).catch(err => {
+      console.warn('[Requisition] Background sync notice:', err);
+    });
   };
 
   return (

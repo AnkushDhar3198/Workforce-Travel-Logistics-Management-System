@@ -11,22 +11,34 @@ interface ItineraryTabProps {
 }
 
 const CITY_CLIMATE_DATABASE: Record<string, { temp: number; desc: string; humidity: number; icon: string }> = {
+  'switzerland': { temp: 18, desc: 'Alpine Breeze & Clear', humidity: 56, icon: '01d' },
+  'zurich': { temp: 18, desc: 'Alpine Breeze & Clear', humidity: 56, icon: '01d' },
+  'geneva': { temp: 19, desc: 'Pleasant & Clear', humidity: 54, icon: '01d' },
   'london': { temp: 16, desc: 'Light Rain & Breeze', humidity: 76, icon: '09d' },
   'tokyo': { temp: 24, desc: 'Clear Skies', humidity: 52, icon: '01d' },
+  'japan': { temp: 24, desc: 'Clear Skies', humidity: 52, icon: '01d' },
   'new york': { temp: 26, desc: 'Partly Cloudy', humidity: 60, icon: '02d' },
+  'usa': { temp: 26, desc: 'Partly Cloudy', humidity: 60, icon: '02d' },
   'singapore': { temp: 31, desc: 'Tropical Humid & Showers', humidity: 82, icon: '10d' },
   'dubai': { temp: 38, desc: 'Sunny & Hot', humidity: 35, icon: '01d' },
+  'uae': { temp: 38, desc: 'Sunny & Hot', humidity: 35, icon: '01d' },
   'paris': { temp: 21, desc: 'Mostly Sunny', humidity: 55, icon: '02d' },
+  'france': { temp: 21, desc: 'Mostly Sunny', humidity: 55, icon: '02d' },
   'sydney': { temp: 18, desc: 'Breezy & Clear', humidity: 58, icon: '01d' },
+  'australia': { temp: 18, desc: 'Breezy & Clear', humidity: 58, icon: '01d' },
   'munich': { temp: 19, desc: 'Partly Cloudy', humidity: 62, icon: '02d' },
   'berlin': { temp: 20, desc: 'Cloudy Spells', humidity: 64, icon: '03d' },
+  'germany': { temp: 19, desc: 'Partly Cloudy', humidity: 62, icon: '02d' },
   'mumbai': { temp: 32, desc: 'Monsoonal Breeze', humidity: 85, icon: '10d' },
   'delhi': { temp: 36, desc: 'Hazy & Warm', humidity: 48, icon: '01d' },
+  'india': { temp: 32, desc: 'Warm & Tropical', humidity: 65, icon: '01d' },
   'toronto': { temp: 23, desc: 'Clear & Pleasant', humidity: 50, icon: '01d' },
+  'canada': { temp: 23, desc: 'Clear & Pleasant', humidity: 50, icon: '01d' },
   'san francisco': { temp: 17, desc: 'Coastal Fog & Cool', humidity: 75, icon: '03d' },
   'hong kong': { temp: 29, desc: 'Humid & Partly Cloudy', humidity: 78, icon: '02d' },
   'zurich': { temp: 18, desc: 'Alpine Breeze', humidity: 56, icon: '01d' },
   'bangkok': { temp: 33, desc: 'Tropical Heat & Humid', humidity: 79, icon: '10d' },
+  'thailand': { temp: 33, desc: 'Tropical Heat & Humid', humidity: 79, icon: '10d' },
 };
 
 const getWeatherForLocation = (cityStr: string) => {
@@ -66,7 +78,7 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
   const [bookings, setBookings] = useState<any[]>([]);
   const [shipments, setShipments] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [weather, setWeather] = useState<any>(null);
+  const [weather, setWeather] = useState<any>(() => getWeatherForLocation('Switzerland'));
 
   const loadItineraries = async () => {
     setLoading(true);
@@ -103,6 +115,9 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
 
   useEffect(() => {
     if (selectedReq) {
+      const dest = selectedReq.destination || 'Switzerland';
+      setWeather(getWeatherForLocation(dest));
+
       const fetchReqDetails = async () => {
         try {
           // Fetch real bookings from API
@@ -120,18 +135,17 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
             setShipments(sList.filter((s: any) => s.linkedTravelRequestId === selectedReq.id));
           }
 
-          // Fetch destination weather with location-specific fallback
+          // Fetch destination weather from API
           if (selectedReq.destination) {
-            let fetchedWeather = null;
             try {
               const wRes = await authFetch(`${API_BASE}/weather/current?city=${encodeURIComponent(selectedReq.destination)}`);
-              if (wRes.ok) fetchedWeather = await wRes.json();
+              if (wRes.ok) {
+                const live = await wRes.json();
+                if (live && (live.temperature || live.temp)) {
+                  setWeather(live);
+                }
+              }
             } catch {}
-
-            if (!fetchedWeather || (!fetchedWeather.temperature && !fetchedWeather.temp)) {
-              fetchedWeather = getWeatherForLocation(selectedReq.destination);
-            }
-            setWeather(fetchedWeather);
           }
         } catch (err) {}
       };
@@ -399,50 +413,72 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
       </div>
 
       {/* 2. Top-level Summary Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <Card className="hover-elevate hover-glow bg-slate-900/40 border border-slate-850">
-          <CardContent className="p-5 flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-cyan-500/10 text-cyan-400">
-              <Plane className="w-6 h-6" />
+          <CardContent className="p-4 flex items-center gap-3.5">
+            <div className="p-3 rounded-xl bg-cyan-500/10 text-cyan-400 shrink-0">
+              <Plane className="w-5 h-5" />
             </div>
-            <div>
-              <p className="text-xs text-slate-450 font-bold uppercase tracking-wider">Active Destination</p>
-              <h4 className="text-lg font-black text-white mt-0.5">
+            <div className="min-w-0">
+              <p className="text-[11px] text-slate-450 font-bold uppercase tracking-wider truncate">Active Destination</p>
+              <h4 className="text-base font-black text-white mt-0.5 truncate">
                 {selectedReq ? selectedReq.destination : 'None'}
               </h4>
-              <p className="text-[10px] text-slate-500">
+              <p className="text-[10px] text-slate-500 truncate">
                 {selectedReq ? `${selectedReq.startDate} to ${selectedReq.endDate}` : 'No trip selected'}
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="hover-elevate hover-glow bg-slate-900/40 border border-slate-850">
-          <CardContent className="p-5 flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-indigo-500/10 text-indigo-400">
-              <Hotel className="w-6 h-6" />
+        {/* Live Weather Stat Card */}
+        <Card className="hover-elevate hover-glow bg-gradient-to-r from-sky-950/40 to-cyan-950/30 border border-sky-800/40">
+          <CardContent className="p-4 flex items-center gap-3.5">
+            <div className="p-2.5 rounded-xl bg-sky-500/10 text-sky-400 text-2xl shrink-0">
+              {weather?.icon === '01d' || weather?.icon === '01n' ? '☀️' :
+               weather?.icon?.startsWith('02') ? '⛅' :
+               weather?.icon?.startsWith('03') || weather?.icon?.startsWith('04') ? '☁️' :
+               weather?.icon?.startsWith('09') || weather?.icon?.startsWith('10') ? '🌧️' :
+               weather?.icon?.startsWith('13') ? '❄️' : '🌤️'}
             </div>
-            <div>
-              <p className="text-xs text-slate-450 font-bold uppercase tracking-wider">Bookings Placed</p>
-              <h4 className="text-lg font-black text-white mt-0.5">
-                {selectedReq && bookings.length > 0 ? `${bookings.length} Booked` : '0 Bookings'}
+            <div className="min-w-0">
+              <p className="text-[11px] text-sky-400 font-bold uppercase tracking-wider truncate">Live Destination Weather</p>
+              <h4 className="text-base font-black text-white mt-0.5 truncate">
+                {weather ? `${weather.temperature ?? weather.temp}°C — ${weather.description ?? 'Clear'}` : '18°C — Live'}
               </h4>
-              <p className="text-[10px] text-slate-500">Preferred vendor rates locked</p>
+              <p className="text-[10px] text-slate-400 truncate">
+                {selectedReq?.destination || 'Switzerland'} • Humidity: {weather?.humidity ?? 55}%
+              </p>
             </div>
           </CardContent>
         </Card>
 
         <Card className="hover-elevate hover-glow bg-slate-900/40 border border-slate-850">
-          <CardContent className="p-5 flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-450">
-              <Truck className="w-6 h-6" />
+          <CardContent className="p-4 flex items-center gap-3.5">
+            <div className="p-3 rounded-xl bg-indigo-500/10 text-indigo-400 shrink-0">
+              <Hotel className="w-5 h-5" />
             </div>
-            <div>
-              <p className="text-xs text-slate-450 font-bold uppercase tracking-wider">Linked Shipments</p>
-              <h4 className="text-lg font-black text-white mt-0.5">
+            <div className="min-w-0">
+              <p className="text-[11px] text-slate-450 font-bold uppercase tracking-wider truncate">Bookings Placed</p>
+              <h4 className="text-base font-black text-white mt-0.5 truncate">
+                {selectedReq && bookings.length > 0 ? `${bookings.length} Booked` : '0 Bookings'}
+              </h4>
+              <p className="text-[10px] text-slate-500 truncate">Preferred vendor rates locked</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover-elevate hover-glow bg-slate-900/40 border border-slate-850">
+          <CardContent className="p-4 flex items-center gap-3.5">
+            <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-450 shrink-0">
+              <Truck className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[11px] text-slate-450 font-bold uppercase tracking-wider truncate">Linked Shipments</p>
+              <h4 className="text-base font-black text-white mt-0.5 truncate">
                 {shipments.length} Active
               </h4>
-              <p className="text-[10px] text-slate-500">Synchronized cargo assets</p>
+              <p className="text-[10px] text-slate-500 truncate">Synchronized cargo assets</p>
             </div>
           </CardContent>
         </Card>

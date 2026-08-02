@@ -171,15 +171,6 @@ export default function MobileAppLayout({
             <span>SOS</span>
           </button>
 
-          {/* Quick Sign Out Header Button for Phone View */}
-          <button
-            onClick={logout}
-            className="p-1.5 rounded-lg border text-rose-400 border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 transition-all cursor-pointer shrink-0"
-            title="Sign Out Account"
-          >
-            <LogOut size={16} />
-          </button>
-
           {/* Hamburger Menu / Role Drawer Button */}
           <button
             onClick={() => setIsDrawerOpen(true)}
@@ -290,23 +281,12 @@ export default function MobileAppLayout({
                 </div>
               </div>
 
-              <div className="flex items-center gap-1.5 shrink-0">
-                <button
-                  onClick={() => {
-                    setIsDrawerOpen(false);
-                    logout();
-                  }}
-                  className="px-2 py-1 rounded-lg text-[10px] font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20"
-                >
-                  Sign Out
-                </button>
-                <button
-                  onClick={() => setIsDrawerOpen(false)}
-                  className="p-1 rounded-full text-slate-400 hover:text-white"
-                >
-                  <X size={18} />
-                </button>
-              </div>
+              <button
+                onClick={() => setIsDrawerOpen(false)}
+                className="p-1 rounded-full text-slate-400 hover:text-white"
+              >
+                <X size={18} />
+              </button>
             </div>
 
             {/* Scrollable Navigation Modules List */}

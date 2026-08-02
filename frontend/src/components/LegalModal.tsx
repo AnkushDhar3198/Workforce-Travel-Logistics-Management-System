@@ -60,7 +60,7 @@ export default function LegalModal({ initialTab = 'privacy', onClose }: LegalMod
       <div className="space-y-3">
         <h5 className="font-black text-white uppercase tracking-wider text-[11px] text-indigo-400">1. Autonomous Rebooking & Policy Engine Delegation</h5>
         <p>
-          Level-5 Autonomous Protocol authorizes VoyaCore AI to execute flight re-allocations and hotel modifications during emergency cancellations or severe risk events up to the pre-approved corporate threshold ($2,500 USD).
+          VoyaCore Smart Rebooking Protocol authorizes automated travel modifications during emergency cancellations or severe risk events up to the pre-approved corporate threshold ($2,500 USD).
         </p>
 
         <h5 className="font-black text-white uppercase tracking-wider text-[11px] text-indigo-400">2. Expense Receipt Validation & Fraud Prevention</h5>

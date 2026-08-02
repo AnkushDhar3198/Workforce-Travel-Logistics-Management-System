@@ -234,7 +234,7 @@ function DashboardContent() {
                 {user?.role ? user.role.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()) : 'Employee'} Session
               </span>
               <span>•</span>
-              <span>Level-5 Autonomous Protocol</span>
+              <span>Next-Gen Enterprise Protocol</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span style={{ cursor: 'pointer', color: 'var(--accent-primary)', fontWeight: 600 }} onClick={() => setLegalModal('privacy')}>Privacy</span>

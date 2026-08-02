@@ -317,7 +317,7 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
           </div>
 
           <div class="footer">
-            VoyaCore Level-5 Autonomous Travel Protocol • Confidential Enterprise Document • Generated on ${new Date().toLocaleDateString()}
+            VoyaCore Next-Gen Enterprise Travel Protocol • Confidential Enterprise Document • Generated on ${new Date().toLocaleDateString()}
           </div>
         </body>
         </html>

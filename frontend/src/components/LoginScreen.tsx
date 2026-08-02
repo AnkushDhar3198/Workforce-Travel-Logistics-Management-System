@@ -1172,7 +1172,7 @@ export default function LoginScreen() {
         <div style={{ maxWidth: '840px', width: '100%', margin: '0 auto' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '100px', background: 'var(--nav-active-bg)', border: '1px solid var(--nav-active-border)', color: 'var(--accent-primary)', fontSize: '10px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '16px', maxWidth: '90vw', animation: 'fadeSlideDown 0.6s ease both' }}>
             <Sparkles size={13} />
-            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>LEVEL 5 HUMAN + AI AUTONOMY MODEL</span>
+            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>NEXT-GEN WORKFORCE TRAVEL & LOGISTICS</span>
           </div>
           <h1 style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: 'clamp(1.75rem, 5vw, 3.2rem)', letterSpacing: '-0.04em', color: 'var(--text-primary)', margin: '0 0 14px', lineHeight: 1.12, wordBreak: 'break-word' }}>
             Next-Gen Workforce Travel & Logistics Management
@@ -1486,7 +1486,7 @@ export default function LoginScreen() {
         <div style={{ maxWidth: '960px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {/* Compact Footnotes */}
           <div style={{ color: 'var(--text-muted)', fontSize: '9.5px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '8px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
-            <div>1. VoyaCore Level-5 Autonomous Travel Protocol provides real-time destination risk monitoring and automated expense auditing across 140+ enterprise corridors.</div>
+            <div>1. VoyaCore Next-Gen Enterprise Travel Protocol provides real-time destination risk monitoring and automated expense auditing across 140+ enterprise corridors.</div>
             <div>2. Emergency SOS satellite dispatch operates 24/7 with encrypted location pings. Duty-of-care compliance requires real-time profile authorization.</div>
           </div>
 

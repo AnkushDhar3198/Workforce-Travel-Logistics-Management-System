@@ -302,11 +302,11 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [], c
       {/* ── Apple Floating Control Bar Overlay ─────────────────────── */}
       <div className="absolute top-3 left-3 right-3 z-30 flex items-center justify-between pointer-events-none">
         {/* Left Floating Info Pill */}
-        <div className="pointer-events-auto flex items-center gap-2 border border-white/20 backdrop-blur-2xl px-3 py-1.5 rounded-full shadow-2xl" style={{ background: 'rgba(15, 23, 42, 0.9)' }}>
+        <div className="pointer-events-auto flex items-center gap-2 border border-white/25 backdrop-blur-2xl px-4 py-1.5 rounded-full shadow-2xl whitespace-nowrap" style={{ background: 'rgba(15, 23, 42, 0.92)' }}>
           <Globe className="w-3.5 h-3.5 text-sky-400 animate-spin-slow shrink-0" />
-          <span className="text-[11px] font-black tracking-wide shrink-0" style={{ color: '#ffffff' }}>Live GPS World Catalog</span>
+          <span className="text-[11px] font-black tracking-tight shrink-0" style={{ color: '#ffffff' }}>Live GPS Catalog</span>
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-          <span className="text-[10px] font-bold hidden sm:inline shrink-0" style={{ color: '#38bdf8' }}>• {displayRequests.length} Locations</span>
+          <span className="text-[10px] font-bold shrink-0" style={{ color: '#38bdf8' }}>{displayRequests.length} Active</span>
         </div>
 
         {/* Right Floating Controls */}

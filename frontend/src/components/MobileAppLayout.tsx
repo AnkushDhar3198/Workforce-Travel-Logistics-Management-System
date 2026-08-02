@@ -82,7 +82,7 @@ export default function MobileAppLayout({
 
   return (
     <div
-      className="flex flex-col min-h-screen w-full select-none"
+      className="flex flex-col h-screen max-h-screen w-full overflow-hidden"
       style={{
         background: 'var(--bg-main)',
         color: 'var(--text-primary)',
@@ -91,7 +91,7 @@ export default function MobileAppLayout({
     >
       {/* SMARTPHONE TOP HEADER (APPLE & ANDROID NATIVE HEADER) */}
       <header
-        className="sticky top-0 z-40 w-full px-4 h-14 flex items-center justify-between border-b shadow-sm"
+        className="shrink-0 w-full px-4 h-14 flex items-center justify-between border-b shadow-sm z-40"
         style={{
           background: 'var(--card-bg)',
           borderColor: 'var(--border-subtle)',
@@ -183,8 +183,14 @@ export default function MobileAppLayout({
         </div>
       </header>
 
-      {/* MAIN SMARTPHONE CONTENT AREA (SCROLLABLE) */}
-      <main className="flex-1 w-full p-4 pb-28 overflow-y-auto">
+      {/* MAIN SMARTPHONE CONTENT AREA (SMOOTH MOMENTUM SCROLLABLE) */}
+      <main
+        className="flex-1 w-full p-4 pb-32 overflow-y-auto"
+        style={{
+          WebkitOverflowScrolling: 'touch',
+          touchAction: 'pan-y',
+        }}
+      >
         {children}
       </main>
 

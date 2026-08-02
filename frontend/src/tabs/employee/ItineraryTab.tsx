@@ -6,14 +6,24 @@ import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Alert, AlertTitle, AlertDescription } from '../../components/ui/alert';
 
-export default function ItineraryTab() {
+interface ItineraryTabProps {
+  onNavigateToRequisition?: () => void;
+}
+
+export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabProps) {
   const { authFetch } = useAuth();
   const [requests, setRequests] = useState<any[]>([]);
   const [selectedReq, setSelectedReq] = useState<any>(null);
   const [bookings, setBookings] = useState<any[]>([]);
   const [shipments, setShipments] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [weather, setWeather] = useState<any>(null);
+  const [weather, setWeather] = useState<any>({
+    temperature: 22,
+    temp: 22,
+    description: 'Partly Cloudy',
+    humidity: 58,
+    icon: '02d'
+  });
 
   const loadItineraries = async () => {
     setLoading(true);
@@ -517,7 +527,14 @@ export default function ItineraryTab() {
           <h4 className="text-base font-extrabold text-white">No active itineraries found</h4>
           <p className="text-xs text-slate-400 max-w-sm mx-auto">Create a travel requisition request to submit budget, destination, and purpose details to your department manager.</p>
           <div>
-            <Button className="font-extrabold text-xs px-6 py-2 btn-hover-scale">
+            <Button
+              className="font-extrabold text-xs px-6 py-2 btn-hover-scale bg-cyan-600 hover:bg-cyan-500 text-white cursor-pointer"
+              onClick={() => {
+                if (onNavigateToRequisition) {
+                  onNavigateToRequisition();
+                }
+              }}
+            >
               Submit Travel Requisition
             </Button>
           </div>

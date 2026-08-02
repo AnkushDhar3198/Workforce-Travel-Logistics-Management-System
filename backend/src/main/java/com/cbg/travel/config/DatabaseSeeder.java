@@ -5,7 +5,11 @@ import com.cbg.travel.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 
 @Component
@@ -14,6 +18,8 @@ public class DatabaseSeeder implements CommandLineRunner {
 
     private final VendorRepository vendorRepository;
     private final PolicyRuleRepository policyRuleRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
     private final JdbcTemplate jdbcTemplate;
 
     @Override
@@ -22,7 +28,8 @@ public class DatabaseSeeder implements CommandLineRunner {
         ensureUploadDirectoryExists();
         seedVendors();
         seedPolicyRules();
-        System.out.println("System configuration seeding completed.");
+        seedOfficialAccounts();
+        System.out.println("System configuration & official accounts seeding completed.");
     }
 
     private void migrateUserTableSchema() {
@@ -73,6 +80,51 @@ public class DatabaseSeeder implements CommandLineRunner {
         } catch (Exception e) {
             System.err.println("Users table schema migration warning: " + e.getMessage());
         }
+    }
+
+    private void seedOfficialAccounts() {
+        String commonPasswordHash = passwordEncoder.encode("VoyaCore2026!");
+
+        createOfficialAccount("employee@voyacore.com", "Ankush", "Dhar", UserRole.TRAVELING_EMPLOYEE, "Engineering", "Senior Software Engineer", "+91 9825073871", "EMP-00101", commonPasswordHash);
+        createOfficialAccount("manager@voyacore.com", "Sarah", "Connor", UserRole.APPROVING_MANAGER, "Engineering", "Engineering Director", "+1 415-555-0192", "EMP-00102", commonPasswordHash);
+        createOfficialAccount("travel.manager@voyacore.com", "David", "Miller", UserRole.CORPORATE_TRAVEL_MANAGER, "Administration", "Corporate Travel Manager", "+1 212-555-0144", "EMP-00103", commonPasswordHash);
+        createOfficialAccount("finance@voyacore.com", "Elena", "Rostova", UserRole.FINANCE_PROCUREMENT, "Finance", "Chief Procurement Officer", "+44 20-7946-0912", "EMP-00104", commonPasswordHash);
+        createOfficialAccount("security@voyacore.com", "Marcus", "Vance", UserRole.SECURITY_RISK_OFFICER, "Security Operations", "Global Security Chief", "+1 202-555-0177", "EMP-00105", commonPasswordHash);
+        createOfficialAccount("logistics@voyacore.com", "Carlos", "Mendez", UserRole.LOGISTICS_COORDINATOR, "Logistics", "Global Logistics Lead", "+34 91-123-4567", "EMP-00106", commonPasswordHash);
+        createOfficialAccount("admin@voyacore.com", "VoyaCore", "Admin", UserRole.ADMIN, "IT Operations", "System Administrator", "+1 800-555-0199", "EMP-00100", commonPasswordHash);
+    }
+
+    private void createOfficialAccount(String email, String firstName, String lastName, UserRole role, String department, String designation, String phone, String empCode, String passwordHash) {
+        if (userRepository.findByEmail(email).isPresent()) return;
+        
+        User user = User.builder()
+                .email(email)
+                .name(firstName + " " + lastName)
+                .firstName(firstName)
+                .lastName(lastName)
+                .passwordHash(passwordHash)
+                .role(role)
+                .department(department)
+                .designation(designation)
+                .phone(phone)
+                .employeeCode(empCode)
+                .gender("MALE")
+                .nationality("United States")
+                .addressLine1("100 Corporate Plaza, Suite 500")
+                .city("New York")
+                .state("NY")
+                .postalCode("10001")
+                .country("United States")
+                .emergencyContactName("Corporate Security Desk")
+                .emergencyContactPhone("+1 800-555-9111")
+                .emergencyContactRelation("Other")
+                .joiningDate(LocalDate.of(2024, 1, 15))
+                .isActive(true)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        userRepository.save(user);
+        System.out.println("Seeded official corporate account: " + email + " (" + role + ")");
     }
 
     private void seedVendors() {

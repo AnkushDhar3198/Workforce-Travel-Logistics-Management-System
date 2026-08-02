@@ -186,7 +186,7 @@ function DashboardContent() {
           }}
         >
           <div key={activeTab} className="animate-fade-slide-up">
-            {activeTab === 'itinerary' && <ItineraryTab />}
+            {activeTab === 'itinerary' && <ItineraryTab onNavigateToRequisition={() => setActiveTab('requisition')} />}
             {activeTab === 'requisition' && <RequisitionTab />}
             {activeTab === 'expenses-employee' && <ExpensesEmployeeTab />}
             {activeTab === 'docs-employee' && <DocsEmployeeTab />}

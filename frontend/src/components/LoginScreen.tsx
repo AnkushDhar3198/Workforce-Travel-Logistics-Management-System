@@ -975,6 +975,45 @@ export default function LoginScreen() {
                   <button type="submit" disabled={loading} style={{ width: '100%', padding: '11px', borderRadius: '12px', border: 'none', cursor: 'pointer', background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)', fontWeight: 800, fontSize: '0.88rem', boxShadow: '0 4px 16px var(--accent-glow)', marginTop: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                     {loading ? 'Authenticating...' : 'Sign In to Portal'}
                   </button>
+
+                  {/* Official Corporate Accounts Quick Role Access */}
+                  <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--border-subtle)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent-primary)' }}>
+                        ⚡ Official Corporate Accounts Access
+                      </span>
+                      <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Role Verified</span>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+                      {[
+                        { role: 'TRAVELING_EMPLOYEE', label: 'Employee', email: 'employee@voyacore.com', icon: User, color: '#38bdf8' },
+                        { role: 'APPROVING_MANAGER', label: 'Manager', email: 'manager@voyacore.com', icon: Building2, color: '#a855f7' },
+                        { role: 'CORPORATE_TRAVEL_MANAGER', label: 'Travel Mgr', email: 'travel.manager@voyacore.com', icon: Plane, color: '#06b6d4' },
+                        { role: 'FINANCE_PROCUREMENT', label: 'Finance', email: 'finance@voyacore.com', icon: DollarSign, color: '#eab308' },
+                        { role: 'SECURITY_RISK_OFFICER', label: 'Security', email: 'security@voyacore.com', icon: ShieldAlert, color: '#f87171' },
+                        { role: 'LOGISTICS_COORDINATOR', label: 'Logistics', email: 'logistics@voyacore.com', icon: Truck, color: '#818cf8' },
+                        { role: 'ADMIN', label: 'Admin', email: 'admin@voyacore.com', icon: KeyRound, color: '#34d399' },
+                      ].map((acc) => (
+                        <button
+                          key={acc.role}
+                          type="button"
+                          onClick={() => {
+                            setLoginEmail(acc.email);
+                            setLoginPassword('VoyaCore2026!');
+                          }}
+                          title={`Sign in as ${acc.label} (${acc.email})`}
+                          style={{
+                            padding: '6px 4px', borderRadius: '10px', border: '1px solid var(--border-subtle)',
+                            background: 'var(--nav-hover-bg)', color: 'var(--text-primary)', cursor: 'pointer',
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', transition: 'all 0.2s'
+                          }}
+                        >
+                          <acc.icon size={13} style={{ color: acc.color }} />
+                          <span style={{ fontSize: '9px', fontWeight: 700, textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', width: '100%', textAlign: 'center' }}>{acc.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </form>
               ) : (
                 <div>

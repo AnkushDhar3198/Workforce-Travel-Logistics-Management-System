@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, X, Check, Sparkles, Menu, LogOut, ShieldAlert } from 'lucide-react';
+import { Bell, X, Check, Sparkles, Menu, LogOut, ShieldAlert, Phone } from 'lucide-react';
 import { useAuth, API_BASE } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import VoiceCallModal from './VoiceCallModal';
 
 interface HeaderProps {
   activeTab: string;
@@ -32,6 +33,7 @@ export default function Header({ activeTab, notifications, loadNotifications, on
   const { user, authFetch, logout } = useAuth();
   const { themeData } = useTheme();
   const [showNotifPanel, setShowNotifPanel] = useState(false);
+  const [showVoiceCall, setShowVoiceCall] = useState<{ phone: string; name: string } | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
   const unreadCount = notifications.filter(n => !n.readStatus).length;
@@ -104,6 +106,21 @@ export default function Header({ activeTab, notifications, loadNotifications, on
           <span>{themeData.emoji}</span>
           <span>{themeData.name}</span>
         </div>
+
+        {/* 24/7 Corporate Hotline Call Button */}
+        <button
+          onClick={() => setShowVoiceCall({ phone: '+1 800-555-9111', name: '24/7 Corporate Security Desk' })}
+          title="Call 24/7 Corporate Security Desk"
+          className="px-2.5 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all shrink-0"
+          style={{
+            background: 'rgba(56,189,248,0.12)',
+            border: '1px solid rgba(56,189,248,0.3)',
+            color: '#38bdf8',
+          }}
+        >
+          <Phone className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Hotline</span>
+        </button>
 
         {/* Emergency SOS Button for Traveling Employees */}
         {user?.role === 'TRAVELING_EMPLOYEE' && triggerSOS && (
@@ -258,6 +275,14 @@ export default function Header({ activeTab, notifications, loadNotifications, on
           )}
         </div>
       </div>
+
+      {showVoiceCall && (
+        <VoiceCallModal
+          phoneNumber={showVoiceCall.phone}
+          calleeName={showVoiceCall.name}
+          onClose={() => setShowVoiceCall(null)}
+        />
+      )}
     </header>
   );
 }

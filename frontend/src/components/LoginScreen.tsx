@@ -960,7 +960,20 @@ export default function LoginScreen() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', width: '100%', overflowY: 'auto', overflowX: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'var(--bg-gradient)', fontFamily: 'Inter, system-ui, sans-serif' }}>
+    <div
+      style={{
+        minHeight: '100dvh',
+        width: '100%',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        background: 'var(--bg-gradient)',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        WebkitOverflowScrolling: 'touch',
+        touchAction: 'pan-y',
+      }}
+    >
       <Canvas3DBackground />
 
       {/* HEADER */}
@@ -1153,7 +1166,7 @@ export default function LoginScreen() {
       )}
 
       {/* HERO */}
-      <main style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 20px 24px', boxSizing: 'border-box', textAlign: 'center' }}>
+      <main style={{ position: 'relative', zIndex: 10, flex: '1 0 auto', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 16px 32px', boxSizing: 'border-box', textAlign: 'center' }}>
         <div style={{ maxWidth: '840px', width: '100%', margin: '0 auto' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '100px', background: 'var(--nav-active-bg)', border: '1px solid var(--nav-active-border)', color: 'var(--accent-primary)', fontSize: '10px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '16px', maxWidth: '90vw', animation: 'fadeSlideDown 0.6s ease both' }}>
             <Sparkles size={13} />
@@ -1461,8 +1474,8 @@ export default function LoginScreen() {
           background: 'var(--card-bg)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
-          padding: '16px 20px 20px',
-          marginTop: '16px',
+          padding: '16px 20px calc(24px + env(safe-area-inset-bottom, 16px))',
+          marginTop: 'auto',
           fontSize: '10px',
           color: 'var(--text-secondary)',
           lineHeight: 1.4,

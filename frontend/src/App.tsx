@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AuthProvider, useAuth, API_BASE, BACKEND_URL } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { AlertProvider } from './context/AlertContext';
 import LoginScreen from './components/LoginScreen';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -294,7 +295,9 @@ export default function App() {
     <GlobalErrorBoundary>
       <ThemeProvider>
         <AuthProvider>
-          <MainApp />
+          <AlertProvider>
+            <MainApp />
+          </AlertProvider>
         </AuthProvider>
       </ThemeProvider>
     </GlobalErrorBoundary>

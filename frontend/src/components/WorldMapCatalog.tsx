@@ -205,7 +205,7 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [], c
     });
 
     if (bounds.length > 0) {
-      map.fitBounds(bounds, { padding: [30, 30], maxZoom: 5 });
+      map.fitBounds(L.latLngBounds(bounds), { padding: [30, 30], maxZoom: 5 });
     }
 
     return () => {

@@ -964,19 +964,19 @@ export default function LoginScreen() {
       <Canvas3DBackground />
 
       {/* HEADER */}
-      <header style={{ position: 'relative', zIndex: 30, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 24px', background: 'var(--card-bg)', borderBottom: '1px solid var(--card-border)', backdropFilter: 'blur(24px) saturate(180%)', WebkitBackdropFilter: 'blur(24px)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'var(--btn-primary-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px var(--accent-glow)' }}>
-            <Plane size={20} style={{ color: 'var(--btn-primary-text)' }} />
+      <header style={{ position: 'relative', zIndex: 30, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'var(--card-bg)', borderBottom: '1px solid var(--card-border)', backdropFilter: 'blur(24px) saturate(180%)', WebkitBackdropFilter: 'blur(24px)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'var(--btn-primary-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px var(--accent-glow)' }}>
+            <Plane size={18} style={{ color: 'var(--btn-primary-text)' }} />
           </div>
           <div>
-            <span style={{ fontWeight: 900, fontSize: '1.1rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>VoyaCore</span>
-            <span style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--accent-primary)', marginLeft: '8px' }}>ENTERPRISE</span>
+            <span style={{ fontWeight: 900, fontSize: '1rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>VoyaCore</span>
+            <span className="hidden sm:inline-block" style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--accent-primary)', marginLeft: '6px' }}>ENTERPRISE</span>
           </div>
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="voyacore-nav-desktop">
+        <nav className="hidden lg:flex items-center gap-6">
           <div
             onClick={() => setActiveDropdown(curr => curr === 'solutions' ? null : 'solutions')}
             onMouseEnter={() => handleMouseEnterDropdown('solutions')}
@@ -1041,9 +1041,10 @@ export default function LoginScreen() {
           <div onClick={() => setFeatureModal('logistics')} style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 700, color: 'var(--text-secondary)', transition: 'color 0.2s' }}><span>Logistics Manifest</span></div>
         </nav>
 
-        {/* Right Side */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div className="voyacore-theme-picker">
+        {/* Right Side Header Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          {/* Desktop Theme Picker (Hidden on Mobile) */}
+          <div className="hidden md:flex items-center gap-1">
             {THEMES.map(t => (
               <button key={t.id} onClick={() => setTheme(t.id as ThemeId)} title={t.name}
                 style={{ padding: '4px 7px', borderRadius: '100px', border: '1px solid', borderColor: theme === t.id ? 'var(--border-active)' : 'transparent', background: theme === t.id ? 'var(--nav-active-bg)' : 'transparent', color: theme === t.id ? 'var(--accent-primary)' : 'var(--text-muted)', fontSize: '11px', cursor: 'pointer', transition: 'all 0.2s ease' }}>
@@ -1051,36 +1052,104 @@ export default function LoginScreen() {
               </button>
             ))}
           </div>
-          <button onClick={openLogin} style={{ padding: '8px 15px', borderRadius: '100px', border: '1px solid var(--border-default)', background: 'var(--nav-hover-bg)', color: 'var(--text-primary)', fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s ease', backdropFilter: 'blur(12px)', whiteSpace: 'nowrap' }}>Log In</button>
-          <button onClick={openSignUp} style={{ padding: '8px 16px', borderRadius: '100px', border: 'none', background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s ease', boxShadow: '0 4px 16px var(--accent-glow)', whiteSpace: 'nowrap' }}>Sign Up</button>
-          <button onClick={() => setIsMobileNavOpen(v => !v)} className="voyacore-nav-mobile-btn"
-            style={{ padding: '8px', borderRadius: '10px', border: '1px solid var(--border-default)', background: 'var(--nav-hover-bg)', color: 'var(--text-primary)', cursor: 'pointer' }}>
+
+          {/* Desktop Action Buttons */}
+          <div className="hidden sm:flex items-center gap-2">
+            <button onClick={openLogin} style={{ padding: '8px 15px', borderRadius: '100px', border: '1px solid var(--border-default)', background: 'var(--nav-hover-bg)', color: 'var(--text-primary)', fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s ease', backdropFilter: 'blur(12px)', whiteSpace: 'nowrap' }}>Log In</button>
+            <button onClick={openSignUp} style={{ padding: '8px 16px', borderRadius: '100px', border: 'none', background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s ease', boxShadow: '0 4px 16px var(--accent-glow)', whiteSpace: 'nowrap' }}>Sign Up</button>
+          </div>
+
+          {/* Smartphone Quick Log In Pill */}
+          <button
+            onClick={openLogin}
+            className="sm:hidden px-3 py-1.5 rounded-full text-xs font-black shadow-md cursor-pointer transition-transform active:scale-95"
+            style={{ background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)' }}
+          >
+            Log In
+          </button>
+
+          {/* Smartphone Hamburger Drawer Toggle */}
+          <button
+            onClick={() => setIsMobileNavOpen(v => !v)}
+            className="p-1.5 rounded-xl border border-slate-700 bg-slate-800/80 text-white cursor-pointer active:scale-95 transition-transform"
+          >
             {isMobileNavOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
       </header>
 
-      {/* Mobile Nav Drawer */}
+      {/* Smartphone Slide-Down Nav Drawer */}
       {isMobileNavOpen && (
-        <div style={{ position: 'fixed', top: '56px', left: 0, right: 0, zIndex: 900, padding: '20px', background: 'var(--card-bg)', borderBottom: '1px solid var(--card-border)', backdropFilter: 'blur(32px) saturate(180%)', display: 'flex', flexDirection: 'column', gap: '16px', boxShadow: '0 12px 32px rgba(0,0,0,0.4)', animation: 'fadeSlideDown 0.25s ease both' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '12px', borderBottom: '1px solid var(--border-subtle)' }}>
-            <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)' }}>Select Theme</span>
-            <div style={{ display: 'flex', gap: '6px' }}>
-              {THEMES.map(t => (
-                <button key={t.id} onClick={() => setTheme(t.id as ThemeId)}
-                  style={{ padding: '6px 10px', borderRadius: '100px', border: '1px solid', borderColor: theme === t.id ? 'var(--border-active)' : 'transparent', background: theme === t.id ? 'var(--nav-active-bg)' : 'transparent', fontSize: '12px', cursor: 'pointer' }}>{t.emoji}</button>
-              ))}
+        <>
+          {/* Backdrop Overlay */}
+          <div
+            onClick={() => setIsMobileNavOpen(false)}
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm animate-fade-in"
+          />
+
+          <div
+            className="fixed top-14 left-0 right-0 z-50 p-4 border-b shadow-2xl flex flex-col gap-4 max-h-[calc(100dvh-56px)] overflow-y-auto"
+            style={{
+              background: 'var(--card-bg)',
+              borderColor: 'var(--card-border)',
+              backdropFilter: 'blur(32px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(32px)',
+            }}
+          >
+            {/* Theme Selector */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Select Theme</span>
+              <div className="flex gap-1.5">
+                {THEMES.map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => setTheme(t.id as ThemeId)}
+                    className={`px-2 py-1 rounded-full text-xs font-bold border transition-all ${
+                      theme === t.id ? 'border-cyan-400 bg-cyan-400/20 text-cyan-400' : 'border-slate-800 bg-slate-900/60 text-slate-400'
+                    }`}
+                  >
+                    {t.emoji}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => { setIsMobileNavOpen(false); setFeatureModal('duty'); }}
+                className="p-2.5 rounded-xl border border-slate-800 bg-slate-900/60 text-xs font-bold text-slate-200 flex items-center justify-center gap-2"
+              >
+                <ShieldAlert size={15} className="text-cyan-400" />
+                <span>Duty of Care</span>
+              </button>
+              <button
+                onClick={() => { setIsMobileNavOpen(false); setFeatureModal('logistics'); }}
+                className="p-2.5 rounded-xl border border-slate-800 bg-slate-900/60 text-xs font-bold text-slate-200 flex items-center justify-center gap-2"
+              >
+                <Truck size={15} className="text-indigo-400" />
+                <span>Cargo Manifest</span>
+              </button>
+            </div>
+
+            {/* Primary Log In / Sign Up */}
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <button
+                onClick={() => { setIsMobileNavOpen(false); openLogin(); }}
+                className="w-full py-2.5 rounded-xl border border-slate-700 bg-slate-800/80 font-bold text-xs text-white"
+              >
+                Account Log In
+              </button>
+              <button
+                onClick={() => { setIsMobileNavOpen(false); openSignUp(); }}
+                className="w-full py-2.5 rounded-xl font-extrabold text-xs text-slate-950 shadow-md"
+                style={{ background: 'var(--btn-primary-bg)' }}
+              >
+                Sign Up
+              </button>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button onClick={() => { setIsMobileNavOpen(false); setFeatureModal('duty'); }} style={{ flex: 1, padding: '10px', borderRadius: '12px', background: 'var(--nav-hover-bg)', border: '1px solid var(--border-default)', fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer' }}>🛡️ Duty of Care</button>
-            <button onClick={() => { setIsMobileNavOpen(false); setFeatureModal('logistics'); }} style={{ flex: 1, padding: '10px', borderRadius: '12px', background: 'var(--nav-hover-bg)', border: '1px solid var(--border-default)', fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer' }}>📦 Cargo Manifest</button>
-          </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button onClick={openLogin} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid var(--border-default)', background: 'var(--nav-hover-bg)', fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer' }}>Log In</button>
-            <button onClick={openSignUp} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', background: 'var(--btn-primary-bg)', fontSize: '13px', fontWeight: 800, color: 'var(--btn-primary-text)', cursor: 'pointer' }}>Sign Up</button>
-          </div>
-        </div>
+        </>
       )}
 
       {/* HERO */}

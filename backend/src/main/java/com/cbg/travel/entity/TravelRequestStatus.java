@@ -4,5 +4,6 @@ public enum TravelRequestStatus {
     DRAFT,
     PENDING,
     APPROVED,
-    REJECTED
+    REJECTED,
+    CANCELLED
 }

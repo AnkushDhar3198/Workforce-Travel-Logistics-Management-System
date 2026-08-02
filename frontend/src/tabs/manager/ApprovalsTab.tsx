@@ -48,10 +48,15 @@ export default function ApprovalsTab() {
   const pendingList = requests.filter(r => r.status === 'PENDING');
   const approvedList = requests.filter(r => r.status === 'APPROVED');
 
+  const totalSpent = approvedList.reduce((sum, r) => sum + (r.estimatedCost || 0), 0);
+  const budgetCap = 50000;
+  const remainingBudget = Math.max(0, budgetCap - totalSpent);
+  const usagePct = budgetCap > 0 ? Math.min(100, Math.round((totalSpent / budgetCap) * 100)) : 0;
+
   // Donut chart budget data
   const budgetData = [
-    { name: 'Spent YTD', value: 45000, color: '#6366f1' },
-    { name: 'Remaining Budget', value: 35000, color: '#14b8a6' }
+    { name: 'Spent YTD', value: totalSpent, color: '#6366f1' },
+    { name: 'Remaining Budget', value: remainingBudget, color: '#14b8a6' }
   ];
 
   return (
@@ -95,8 +100,8 @@ export default function ApprovalsTab() {
             </div>
             <div>
               <p className="text-xs text-slate-455 font-bold uppercase tracking-wider">Department Spend YTD</p>
-              <h4 className="text-lg font-black text-white mt-0.5">$45,000.00</h4>
-              <p className="text-[10px] text-emerald-450">Budget ceiling: $80,000.00</p>
+              <h4 className="text-lg font-black text-white mt-0.5">${totalSpent.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</h4>
+              <p className="text-[10px] text-emerald-450">Budget ceiling: ${budgetCap.toLocaleString()}</p>
             </div>
           </CardContent>
         </Card>
@@ -230,7 +235,7 @@ export default function ApprovalsTab() {
                 {/* Center text overlay */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-[10px] text-slate-500 font-bold uppercase">Usage</span>
-                  <span className="text-lg font-black text-white">56.2%</span>
+                  <span className="text-lg font-black text-white">{usagePct}%</span>
                 </div>
               </div>
 

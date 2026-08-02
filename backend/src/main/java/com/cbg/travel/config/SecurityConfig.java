@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .requestMatchers(
                     AntPathRequestMatcher.antMatcher("/api/auth/**"),
                     AntPathRequestMatcher.antMatcher("/api/public/**"),
+                    AntPathRequestMatcher.antMatcher("/api/sse/**"),
                     AntPathRequestMatcher.antMatcher("/uploads/**"),
                     AntPathRequestMatcher.antMatcher("/error")
                 ).permitAll()

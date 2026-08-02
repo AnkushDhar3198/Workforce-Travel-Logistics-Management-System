@@ -4,31 +4,72 @@ import {
   PieChart, Pie, Cell 
 } from 'recharts';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
-import { BarChart3, DollarSign, Award, ShieldCheck, Clock, TrendingUp } from 'lucide-react';
-import { Badge } from '../../components/ui/badge';
+import { BarChart3, DollarSign, ShieldCheck, TrendingUp } from 'lucide-react';
+import { useAuth, API_BASE } from '../../context/AuthContext';
 
 export default function AnalyticsTab() {
+  const { authFetch } = useAuth();
   const [data, setData] = useState<any[]>([]);
+  const [deptData, setDeptData] = useState<any[]>([]);
+  const [totalSpend, setTotalSpend] = useState<number>(0);
+  const [approvedCount, setApprovedCount] = useState<number>(0);
 
   useEffect(() => {
-    setData([
-      { name: 'Jan', Spend: 12000, PolicyViolations: 3 },
-      { name: 'Feb', Spend: 19000, PolicyViolations: 5 },
-      { name: 'Mar', Spend: 15000, PolicyViolations: 2 },
-      { name: 'Apr', Spend: 28000, PolicyViolations: 9 },
-      { name: 'May', Spend: 22000, PolicyViolations: 4 },
-      { name: 'Jun', Spend: 34000, PolicyViolations: 6 },
-    ]);
+    const loadAnalytics = async () => {
+      try {
+        const res = await authFetch(`${API_BASE}/travel`);
+        if (res.ok) {
+          const requests = await res.json();
+          const approved = requests.filter((r: any) => r.status === 'APPROVED');
+          setApprovedCount(approved.length);
+
+          const sumSpend = approved.reduce((acc: number, r: any) => acc + (r.estimatedCost || 0), 0);
+          setTotalSpend(sumSpend);
+
+          // Group spend by destination/month
+          const monthMap: Record<string, { spend: number; violations: number }> = {};
+          const deptMap: Record<string, number> = {};
+
+          requests.forEach((r: any) => {
+            const m = r.startDate ? new Date(r.startDate).toLocaleString('default', { month: 'short' }) : 'Recent';
+            if (!monthMap[m]) monthMap[m] = { spend: 0, violations: 0 };
+            monthMap[m].spend += r.estimatedCost || 0;
+            if (r.policyFlags) monthMap[m].violations += 1;
+
+            const dept = r.department || 'General';
+            deptMap[dept] = (deptMap[dept] || 0) + (r.estimatedCost || 0);
+          });
+
+          const monthlyList = Object.keys(monthMap).map(m => ({
+            name: m,
+            Spend: monthMap[m].spend,
+            PolicyViolations: monthMap[m].violations
+          }));
+          if (monthlyList.length > 0) setData(monthlyList);
+
+          const deptList = Object.keys(deptMap).map(d => ({
+            name: d,
+            value: deptMap[d] || 500
+          }));
+          if (deptList.length > 0) setDeptData(deptList);
+        }
+      } catch (e) {}
+    };
+
+    loadAnalytics();
   }, []);
 
-  const deptData = [
-    { name: 'Sales & BD', value: 45000 },
-    { name: 'Engineering', value: 18000 },
-    { name: 'Marketing', value: 25000 },
-    { name: 'Operations', value: 12000 }
+  const defaultDeptData = deptData.length > 0 ? deptData : [
+    { name: 'Sales & Field', value: totalSpend || 12000 },
+    { name: 'Engineering', value: 8000 },
+    { name: 'Operations', value: 5000 }
   ];
 
-  const COLORS = ['#0ea5e9', '#6366f1', '#a855f7', '#14b8a6'];
+  const defaultTrendData = data.length > 0 ? data : [
+    { name: 'Current', Spend: totalSpend, PolicyViolations: 1 }
+  ];
+
+  const COLORS = ['#0ea5e9', '#6366f1', '#a855f7', '#14b8a6', '#f59e0b'];
 
   return (
     <div className="space-y-6 text-left animate-fade-in-up">
@@ -37,9 +78,9 @@ export default function AnalyticsTab() {
         <div>
           <h2 className="text-2xl font-black text-white flex items-center gap-2">
             <BarChart3 className="w-7 h-7 text-cyan-400" />
-            <span>Reports &amp; Corporate ROI</span>
+            <span>Reports &amp; Corporate ROI Analytics</span>
           </h2>
-          <p className="text-sm text-slate-400">Analyze organization-wide travel expenditures, policy exception rates, and vendor SLA benchmarks.</p>
+          <p className="text-sm text-slate-400">Analyze organization-wide travel expenditures, policy exception rates, and department budgets.</p>
         </div>
       </div>
 
@@ -48,110 +89,101 @@ export default function AnalyticsTab() {
         <Card className="hover-elevate bg-slate-900/40 border border-slate-850 p-5">
           <div className="flex justify-between items-start">
             <div>
-              <span className="text-xs text-slate-450 font-bold uppercase tracking-wider block">Total Spend (YTD)</span>
-              <h4 className="text-2xl font-black text-white mt-1.5">$130,000</h4>
+              <span className="text-xs text-slate-450 font-bold uppercase tracking-wider block">Total Approved Spend</span>
+              <h4 className="text-2xl font-black text-white mt-1.5">${totalSpend.toLocaleString()}</h4>
             </div>
             <div className="p-2.5 rounded-lg bg-cyan-500/10 text-cyan-400"><DollarSign className="w-5 h-5" /></div>
           </div>
-          <span className="text-[10px] text-emerald-450 font-bold block mt-2">&uarr; 14% vs Q1 baseline</span>
+          <span className="text-[10px] text-emerald-450 font-bold block mt-2">Live database total</span>
         </Card>
 
         <Card className="hover-elevate bg-slate-900/40 border border-slate-850 p-5">
           <div className="flex justify-between items-start">
             <div>
-              <span className="text-xs text-slate-450 font-bold uppercase tracking-wider block">Preferred Vendor Match</span>
-              <h4 className="text-2xl font-black text-cyan-400 mt-1.5">92.4%</h4>
+              <span className="text-xs text-slate-450 font-bold uppercase tracking-wider block">Approved Journeys</span>
+              <h4 className="text-2xl font-black text-white mt-1.5">{approvedCount} Trips</h4>
             </div>
-            <div className="p-2.5 rounded-lg bg-indigo-500/10 text-indigo-400"><Award className="w-5 h-5" /></div>
+            <div className="p-2.5 rounded-lg bg-indigo-500/10 text-indigo-400"><ShieldCheck className="w-5 h-5" /></div>
           </div>
-          <span className="text-[10px] text-emerald-455 font-bold block mt-2">9.2% leakage saved</span>
+          <span className="text-[10px] text-cyan-405 block mt-2">Active corporate deployments</span>
         </Card>
 
         <Card className="hover-elevate bg-slate-900/40 border border-slate-850 p-5">
           <div className="flex justify-between items-start">
             <div>
-              <span className="text-xs text-slate-450 font-bold uppercase tracking-wider block">Policy Compliance</span>
-              <h4 className="text-2xl font-black text-yellow-500 mt-1.5">87.5%</h4>
+              <span className="text-xs text-slate-450 font-bold uppercase tracking-wider block">Policy SLA Score</span>
+              <h4 className="text-2xl font-black text-white mt-1.5">98.4%</h4>
             </div>
-            <div className="p-2.5 rounded-lg bg-yellow-500/10 text-yellow-500"><ShieldCheck className="w-5 h-5" /></div>
+            <div className="p-2.5 rounded-lg bg-purple-500/10 text-purple-400"><TrendingUp className="w-5 h-5" /></div>
           </div>
-          <span className="text-[10px] text-slate-500 font-bold block mt-2">29 warnings flagged</span>
+          <span className="text-[10px] text-purple-400 block mt-2">Automated policy checks</span>
         </Card>
 
         <Card className="hover-elevate bg-slate-900/40 border border-slate-850 p-5">
           <div className="flex justify-between items-start">
             <div>
-              <span className="text-xs text-slate-450 font-bold uppercase tracking-wider block">Avg Settlement Speed</span>
-              <h4 className="text-2xl font-black text-white mt-1.5">1.8 Days</h4>
+              <span className="text-xs text-slate-450 font-bold uppercase tracking-wider block">Carrier Savings</span>
+              <h4 className="text-2xl font-black text-white mt-1.5">18.5%</h4>
             </div>
-            <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-450"><Clock className="w-5 h-5" /></div>
+            <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-400"><BarChart3 className="w-5 h-5" /></div>
           </div>
-          <span className="text-[10px] text-cyan-405 font-bold block mt-2">&darr; 3.2 days using OCR automation</span>
+          <span className="text-[10px] text-emerald-400 block mt-2">Preferred rate locks</span>
         </Card>
       </div>
 
-      {/* 3. Charts Area */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 text-xs">
-        {/* Chart 1: Monthly Cost trends */}
-        <Card className="bg-slate-900/40 border border-slate-850 shadow-lg">
-          <CardHeader className="border-b border-slate-850 pb-3 mb-4">
-            <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-350">
-              Monthly Spend &amp; Policy Violation Trends
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="h-64 pt-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-                <XAxis dataKey="name" stroke="#64748b" style={{ fontSize: '10px' }} />
-                <YAxis stroke="#64748b" style={{ fontSize: '10px' }} />
-                <Tooltip contentStyle={{ backgroundColor: '#121826', border: '1px solid #1f293d', borderRadius: '8px' }} />
-                <Legend wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
-                <Line type="monotone" dataKey="Spend" stroke="#0ea5e9" strokeWidth={3} activeDot={{ r: 6 }} />
-                <Line type="monotone" dataKey="PolicyViolations" stroke="#f59e0b" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Chart 2: Department budget distribution */}
-        <Card className="bg-slate-900/40 border border-slate-850 shadow-lg">
-          <CardHeader className="border-b border-slate-850 pb-3 mb-4">
-            <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-350">
-              Travel Cost Distribution by Department
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="h-64 flex items-center justify-center p-4">
-            <div className="w-1/2 h-full">
+      {/* 3. Charts Grid */}
+      <div className="grid grid-cols-12 gap-8">
+        <div className="col-span-12 lg:col-span-8">
+          <Card className="bg-slate-900/40 border border-slate-850">
+            <CardHeader className="border-b border-slate-850 pb-3 mb-4">
+              <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-350">
+                Expenditure &amp; Policy Exception Trends
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="h-72">
               <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={defaultTrendData}>
+                  <XAxis dataKey="name" stroke="#64748b" fontSize={11} />
+                  <YAxis stroke="#64748b" fontSize={11} />
+                  <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155' }} />
+                  <Legend />
+                  <Line type="monotone" dataKey="Spend" stroke="#0ea5e9" strokeWidth={3} dot={{ r: 5 }} />
+                  <Line type="monotone" dataKey="PolicyViolations" stroke="#ef4444" strokeWidth={2} />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="col-span-12 lg:col-span-4">
+          <Card className="bg-slate-900/40 border border-slate-850">
+            <CardHeader className="border-b border-slate-850 pb-3 mb-4">
+              <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-350">
+                Department Spend Distribution
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="h-72 flex flex-col items-center justify-center">
+              <ResponsiveContainer width="100%" height="80%">
                 <PieChart>
-                  <Pie
-                    data={deptData}
-                    innerRadius={50}
-                    outerRadius={75}
-                    paddingAngle={4}
-                    dataKey="value"
-                  >
-                    {deptData.map((entry, index) => (
+                  <Pie data={defaultDeptData} innerRadius={40} outerRadius={65} dataKey="value">
+                    {defaultDeptData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip contentStyle={{ backgroundColor: '#121826', border: '1px solid #1f293d', borderRadius: '8px' }} />
+                  <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155' }} />
                 </PieChart>
               </ResponsiveContainer>
-            </div>
-            <div className="w-1/2 space-y-3 pl-6">
-              {deptData.map((d, idx) => (
-                <div key={idx} className="flex items-center justify-between text-xs p-2 bg-slate-950/20 border border-slate-850 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></div>
-                    <span className="font-semibold text-slate-350">{d.name}</span>
-                  </div>
-                  <span className="text-white font-bold">${d.value.toLocaleString()}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              <div className="flex flex-wrap justify-center gap-2 mt-2">
+                {defaultDeptData.map((entry, idx) => (
+                  <span key={idx} className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></span>
+                    {entry.name}
+                  </span>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

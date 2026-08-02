@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Info, Plane, Hotel, Truck, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Calendar, Info, Plane, Hotel, Truck, AlertTriangle, CheckCircle, FileText } from 'lucide-react';
 import { useAuth, API_BASE } from '../../context/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
@@ -13,6 +13,7 @@ export default function ItineraryTab() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [shipments, setShipments] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [weather, setWeather] = useState<any>(null);
 
   const loadItineraries = async () => {
     setLoading(true);
@@ -37,23 +38,48 @@ export default function ItineraryTab() {
     if (selectedReq) {
       const fetchReqDetails = async () => {
         try {
-          const sRes = await authFetch(`${API_BASE}/shipments/employee`);
-          const sList = await sRes.json();
-          setShipments(sList.filter((s: any) => s.linkedTravelRequestId === selectedReq.id));
-          
-          if (selectedReq.destination === 'London') {
-            setBookings([
-              { type: 'FLIGHT', vendor: 'Delta Air Lines', cost: 1200, details: 'Delta DL-18, Seat 14A, departure 10:00 AM' },
-              { type: 'HOTEL', vendor: 'Marriott Hotels', cost: 1500, details: 'Marriott Regent\'s Park, 5 nights' }
-            ]);
+          // Fetch real bookings from API
+          const bRes = await authFetch(`${API_BASE}/travel/${selectedReq.id}/bookings`);
+          if (bRes.ok) {
+            setBookings(await bRes.json());
           } else {
             setBookings([]);
+          }
+
+          // Fetch shipments
+          const sRes = await authFetch(`${API_BASE}/shipments/employee`);
+          if (sRes.ok) {
+            const sList = await sRes.json();
+            setShipments(sList.filter((s: any) => s.linkedTravelRequestId === selectedReq.id));
+          }
+
+          // Fetch destination weather
+          if (selectedReq.destination) {
+            try {
+              const wRes = await authFetch(`${API_BASE}/weather/current?city=${encodeURIComponent(selectedReq.destination)}`);
+              if (wRes.ok) setWeather(await wRes.json());
+            } catch {}
           }
         } catch (err) {}
       };
       fetchReqDetails();
     }
   }, [selectedReq]);
+
+  const downloadItineraryPdf = async (requestId: number) => {
+    try {
+      const res = await authFetch(`${API_BASE}/pdf/itinerary/${requestId}`);
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `itinerary_${requestId}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }
+    } catch {}
+  };
 
   // Stepper helper for shipment status
   const renderShipmentStepper = (status: string) => {
@@ -189,6 +215,40 @@ export default function ItineraryTab() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Weather & Actions Row */}
+      {selectedReq && (
+        <div className="flex flex-col sm:flex-row gap-4 items-stretch">
+          {weather && (
+            <Card className="flex-1 bg-gradient-to-r from-sky-950/40 to-cyan-950/30 border border-sky-800/30">
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="p-3 rounded-xl bg-sky-500/10 text-sky-400 text-2xl">
+                  {weather.icon === '01d' || weather.icon === '01n' ? '☀️' :
+                   weather.icon?.startsWith('02') ? '⛅' :
+                   weather.icon?.startsWith('03') || weather.icon?.startsWith('04') ? '☁️' :
+                   weather.icon?.startsWith('09') || weather.icon?.startsWith('10') ? '🌧️' :
+                   weather.icon?.startsWith('13') ? '❄️' : '🌤️'}
+                </div>
+                <div>
+                  <p className="text-[10px] text-sky-400 font-bold uppercase tracking-wider">Destination Weather</p>
+                  <p className="text-lg font-black text-white">{weather.temperature ?? weather.temp}°C — {weather.description ?? 'N/A'}</p>
+                  <p className="text-[10px] text-slate-500">{selectedReq.destination} • Humidity: {weather.humidity ?? 'N/A'}%</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          <div className="flex gap-2 items-center">
+            <Button
+              variant="outline"
+              className="bg-cyan-600/15 border-cyan-700/40 text-cyan-300 hover:bg-cyan-600/30 h-full px-5"
+              onClick={() => downloadItineraryPdf(selectedReq.id)}
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Download Itinerary PDF
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Select Trip Filter panel */}
       <div 

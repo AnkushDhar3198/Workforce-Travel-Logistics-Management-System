@@ -5,23 +5,55 @@ import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/ca
 import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
-import { Alert, AlertTitle, AlertDescription } from '../../components/ui/alert';
 
 export default function SecurityTab() {
   const { authFetch } = useAuth();
   const [activeAlerts, setActiveAlerts] = useState<any[]>([]);
+  const [approvedRequests, setApprovedRequests] = useState<any[]>([]);
+  const [riskFeeds, setRiskFeeds] = useState<{ city: string; risk: string; time: string }[]>([]);
   const [notes, setNotes] = useState('');
 
   const loadSecurity = async () => {
     try {
       const activeRes = await authFetch(`${API_BASE}/alerts/active`);
       if (activeRes.ok) setActiveAlerts(await activeRes.json());
+
+      const reqRes = await authFetch(`${API_BASE}/travel`);
+      if (reqRes.ok) {
+        const all = await reqRes.json();
+        const approved = all.filter((r: any) => r.status === 'APPROVED');
+        setApprovedRequests(approved);
+
+        // Fetch live weather/advisories for active travel destinations
+        const cities = Array.from(new Set(approved.map((r: any) => r.destination))).filter(Boolean);
+        const feeds: { city: string; risk: string; time: string }[] = [];
+        for (const city of cities.slice(0, 5)) {
+          try {
+            const wRes = await authFetch(`${API_BASE}/weather/current?city=${encodeURIComponent(city as string)}`);
+            if (wRes.ok) {
+              const w = await wRes.json();
+              feeds.push({
+                city: city as string,
+                risk: `${w.description ?? 'Weather update'}: ${w.temperature ?? w.temp}°C, Humidity ${w.humidity ?? 'N/A'}%`,
+                time: 'Live'
+              });
+            }
+          } catch {}
+        }
+        if (feeds.length > 0) {
+          setRiskFeeds(feeds);
+        } else {
+          setRiskFeeds([
+            { city: 'Global Operations', risk: 'All destination airspace channels open. Standard monitoring active.', time: 'Live' }
+          ]);
+        }
+      }
     } catch (e) {}
   };
 
   useEffect(() => {
     loadSecurity();
-    const interval = setInterval(loadSecurity, 5000);
+    const interval = setInterval(loadSecurity, 15000);
     return () => clearInterval(interval);
   }, []);
 
@@ -37,12 +69,6 @@ export default function SecurityTab() {
       }
     } catch (e) {}
   };
-
-  const riskFeeds = [
-    { city: 'Manila', risk: 'Typhoon alert level warning. Moderate risk.', time: '10 min ago' },
-    { city: 'Tokyo', risk: 'Minor seismic alert registered (4.2 Richter). No damage.', time: '1 hr ago' },
-    { city: 'London', risk: 'Local public transit strike. Delays expected.', time: '3 hrs ago' }
-  ];
 
   return (
     <div className="space-y-6 text-left animate-fade-in-up">
@@ -85,7 +111,7 @@ export default function SecurityTab() {
             </div>
             <div>
               <p className="text-xs text-slate-450 font-bold uppercase tracking-wider">Travelers En Route</p>
-              <h4 className="text-lg font-black text-white mt-0.5">2 Employees</h4>
+              <h4 className="text-lg font-black text-white mt-0.5">{approvedRequests.length} Active Trips</h4>
               <p className="text-[10px] text-slate-500">Live GPS tracking connected</p>
             </div>
           </CardContent>
@@ -111,7 +137,7 @@ export default function SecurityTab() {
             </div>
             <div>
               <p className="text-xs text-slate-450 font-bold uppercase tracking-wider">Risk Level Index</p>
-              <h4 className="text-lg font-black text-white mt-0.5">Low-Medium</h4>
+              <h4 className="text-lg font-black text-white mt-0.5">{activeAlerts.length > 0 ? 'HIGH (SOS ACTIVE)' : 'Low-Normal'}</h4>
               <p className="text-[10px] text-cyan-405">Global intelligence feeds verified</p>
             </div>
           </CardContent>
@@ -120,29 +146,30 @@ export default function SecurityTab() {
 
       {/* 4. 12-Column Responsive Layout Grid */}
       <div className="grid grid-cols-12 gap-8">
-        {/* Travelers monitor list & Mock Map - span 8 */}
+        {/* Travelers monitor list & Map - span 8 */}
         <div className="col-span-12 lg:col-span-8 space-y-6">
-          {/* Mock Map panel */}
+          {/* Map panel */}
           <div className="relative h-80 bg-slate-950 border border-slate-855 flex flex-col justify-end p-6 rounded-xl overflow-hidden shadow-2xl">
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:20px_20px] flex items-center justify-center">
               <div className="text-center space-y-2 opacity-20 select-none">
                 <Map className="w-16 h-16 mx-auto text-slate-555" />
                 <div className="text-xs uppercase tracking-widest font-black text-slate-400">Live GPS Traveler Locations Catalog</div>
               </div>
-              {/* Blip dots */}
-              <div className="absolute top-[40%] left-[30%] text-cyan-400 flex items-center gap-1.5 animate-pulse">
-                <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping absolute -left-0"></span>
-                <MapPin className="w-6 h-6 relative z-10" />
-                <span className="text-[9px] font-bold bg-slate-950/80 border border-slate-850 px-2 py-0.5 rounded text-white shadow-sm shrink-0">
-                  Bob (Manila)
-                </span>
-              </div>
-              <div className="absolute top-[55%] left-[65%] text-indigo-400 flex items-center gap-1.5">
-                <MapPin className="w-5 h-5" />
-                <span className="text-[9px] font-bold bg-slate-950/80 border border-slate-850 px-2 py-0.5 rounded text-white shadow-sm shrink-0">
-                  London trip
-                </span>
-              </div>
+
+              {/* Dynamic traveler map markers */}
+              {approvedRequests.map((req, i) => {
+                const topPct = 25 + (i * 20) % 55;
+                const leftPct = 20 + (i * 25) % 65;
+                return (
+                  <div key={req.id} style={{ top: `${topPct}%`, left: `${leftPct}%` }} className="absolute text-cyan-400 flex items-center gap-1.5 animate-pulse">
+                    <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping absolute -left-0"></span>
+                    <MapPin className="w-5 h-5 relative z-10" />
+                    <span className="text-[9px] font-bold bg-slate-950/80 border border-slate-850 px-2 py-0.5 rounded text-white shadow-sm shrink-0">
+                      #{req.id} — {req.destination}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
             <div className="relative z-10 glass-panel p-4 rounded-xl max-w-sm border border-slate-800">
               <h4 className="font-extrabold text-white flex items-center gap-1.5 mb-1 text-xs uppercase tracking-wider">
@@ -163,11 +190,10 @@ export default function SecurityTab() {
             </CardHeader>
             <CardContent>
               {activeAlerts.length === 0 ? (
-                /* Polished Empty State Check */
                 <div className="text-center py-10 text-slate-500 space-y-3">
                   <ShieldCheck className="w-12 h-12 mx-auto text-slate-655" />
                   <h4 className="text-xs font-bold text-white">All coordinates clear</h4>
-                  <p className="text-xs text-slate-450">No employee SOS panics registered on current tracking coordinates.</p>
+                  <p className="text-xs text-slate-455">No employee SOS panics registered on current tracking coordinates.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -192,7 +218,7 @@ export default function SecurityTab() {
                           value={notes}
                           onChange={e => setNotes(e.target.value)}
                           placeholder="Input resolution logs / action comments..."
-                          className="flex-1 text-xs h-8 bg-slate-950 border-slate-850 text-white"
+                          className="flex-1 text-xs h-8 bg-slate-950 border-slate-855 text-white"
                         />
                         <Button 
                           onClick={() => handleResolve(alert.id)}

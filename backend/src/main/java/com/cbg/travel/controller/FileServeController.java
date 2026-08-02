@@ -1,5 +1,6 @@
 package com.cbg.travel.controller;
 
+import com.cbg.travel.service.PdfGenerationService;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -16,17 +17,20 @@ import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Locale;
 
 @RestController
 @RequestMapping("/uploads")
 public class FileServeController {
 
     private final Path rootLocation = Paths.get("uploads");
+    private final PdfGenerationService pdfGenerationService;
+
+    public FileServeController(PdfGenerationService pdfGenerationService) {
+        this.pdfGenerationService = pdfGenerationService;
+    }
 
     @GetMapping("/{filename:.+}")
     public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
@@ -34,37 +38,35 @@ public class FileServeController {
             ensureDirectoryExists();
             Path file = rootLocation.resolve(filename);
 
+            // Check if the file actually exists on disk first
+            if (Files.exists(file)) {
+                Resource resource = new UrlResource(file.toUri());
+                String contentType = filename.toLowerCase().endsWith(".pdf") ?
+                        "application/pdf" : "application/octet-stream";
+                return ResponseEntity.ok()
+                        .contentType(MediaType.parseMediaType(contentType))
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                        .body(resource);
+            }
+
             String lower = filename.toLowerCase();
-            byte[] fileBytes;
 
+            // Generate PDFs on the fly if file doesn't exist
             if (lower.endsWith(".pdf")) {
-                fileBytes = generateRichPdfBytes(filename);
-                try {
-                    Files.write(file, fileBytes);
-                } catch (Exception ignored) {}
-
+                byte[] pdfBytes = generateContextualPdf(filename);
                 return ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_PDF)
                         .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
-                        .body(new ByteArrayResource(fileBytes));
-            } else if (lower.endsWith(".png") || lower.endsWith(".jpg") || lower.endsWith(".jpeg")) {
-                fileBytes = generateRichReceiptImageBytes(filename);
-                try {
-                    Files.write(file, fileBytes);
-                } catch (Exception ignored) {}
+                        .body(new ByteArrayResource(pdfBytes));
+            }
 
+            // Generate receipt images on the fly
+            if (lower.endsWith(".png") || lower.endsWith(".jpg") || lower.endsWith(".jpeg")) {
+                byte[] imageBytes = generateReceiptImage(filename);
                 return ResponseEntity.ok()
                         .contentType(MediaType.IMAGE_PNG)
                         .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
-                        .body(new ByteArrayResource(fileBytes));
-            }
-
-            if (Files.exists(file)) {
-                Resource resource = new UrlResource(file.toUri());
-                return ResponseEntity.ok()
-                        .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
-                        .body(resource);
+                        .body(new ByteArrayResource(imageBytes));
             }
 
             return ResponseEntity.notFound().build();
@@ -73,233 +75,63 @@ public class FileServeController {
         }
     }
 
-    private void ensureDirectoryExists() {
+    private byte[] generateContextualPdf(String filename) {
+        // Try to extract travel request ID from filename for real data
         try {
-            if (!Files.exists(rootLocation)) {
-                Files.createDirectories(rootLocation);
+            String idStr = filename.replaceAll("[^0-9]", "");
+            if (!idStr.isEmpty()) {
+                long id = Long.parseLong(idStr);
+                String lower = filename.toLowerCase();
+                if (lower.contains("itinerary") || lower.contains("ticket") || lower.contains("flight")) {
+                    return pdfGenerationService.generateItineraryPdf(id);
+                } else if (lower.contains("expense")) {
+                    return pdfGenerationService.generateExpenseReportPdf(id);
+                } else if (lower.contains("auth")) {
+                    return pdfGenerationService.generateAuthorizationPdf(id);
+                } else if (lower.contains("shipment") || lower.contains("manifest")) {
+                    return pdfGenerationService.generateShipmentManifestPdf(id);
+                } else {
+                    return pdfGenerationService.generateItineraryPdf(id);
+                }
             }
-        } catch (IOException ignored) {}
-    }
-
-    public static byte[] generateRichPdfBytes(String filename) {
-        String lower = filename.toLowerCase();
-        String docTitle;
-        String[] lines;
-
-        if (lower.contains("ticket") || lower.contains("flight") || lower.contains("pnr")) {
-            docTitle = "DELTA AIR LINES / CBG WORKFORCE TRAVEL";
-            lines = new String[] {
-                "ELECTRONIC FLIGHT TICKET & ITINERARY BOARDING PASS",
-                "====================================================================================================",
-                "DOCUMENT TYPE: E-TICKET & FLIGHT RESERVATION CONFIRMATION",
-                "",
-                "SECTION: 1. PASSENGER & FLIGHT DETAILS",
-                "Passenger Name:        Bob Employee",
-                "Employee ID:           EMP-88219",
-                "PNR / Confirmation:    PNR-DL9842A",
-                "Operating Airline:     Delta Air Lines",
-                "Flight Number:         DL-104 (Non-Stop)",
-                "Cabin Class / Seat:    Economy Plus / Seat 14A",
-                "Travel Date:           03-AUG-2026",
-                "Departure Time:        10:00 AM EST",
-                "",
-                "SECTION: 2. ROUTING & AIRPORT TERMINAL",
-                "Departure Airport:     Chicago O'Hare Intl (ORD) - Terminal 5",
-                "Arrival Airport:       London Heathrow (LHR) - Terminal 3",
-                "Flight Duration:       7 Hours 45 Minutes",
-                "Baggage Allowance:     2 Checked Bags (23kg max each) Included",
-                "Boarding Gate:         Gate B22 (Boarding starts 09:15 AM)",
-                "",
-                "SECTION: 3. CORPORATE FARE & BILLING DETAILS",
-                "Fare Basis Code:       Y-CORP-BIZ-FLEX",
-                "Billing Account:       CBG Corporate Master Amex (**** 8821)",
-                "Ticket Status:         CONFIRMED & ISSUED",
-                "====================================================================================================",
-                "CONFIDENTIAL - PRESENT THIS E-TICKET AT AIRPORT CHECK-IN & BORDER CONTROL",
-                "Digital Verification Signature: CBG-TKT-DL9842A-VERIFIED-OK"
-            };
-        } else if (lower.contains("visa") || lower.contains("permit")) {
-            docTitle = "UK VISAS & IMMIGRATION / CBG TRAVEL";
-            lines = new String[] {
-                "OFFICIAL UK BUSINESS TRAVEL VISA CLEARANCE CERTIFICATE",
-                "====================================================================================================",
-                "DOCUMENT TYPE: MULTIPLE ENTRY UK BUSINESS VISA",
-                "",
-                "SECTION: 1. VISA HOLDER IDENTIFICATION",
-                "Full Legal Name:       Bob Employee",
-                "Employee Ref:          EMP-88219",
-                "Nationality:           United States of America",
-                "Corporate Sponsor:     CBG UK Operations Ltd, London UK",
-                "",
-                "SECTION: 2. VISA PERMIT DETAILS",
-                "Visa Permit Number:    GBR-VISA-883912",
-                "Permit Category:       Tier-2 Business & Commercial Negotiations",
-                "Valid From:            01-JAN-2025",
-                "Valid Until:           31-DEC-2027 (ACTIVE PERMIT)",
-                "Entries Allowed:       MULTIPLE ENTRIES PERMITTED",
-                "====================================================================================================",
-                "CONFIDENTIAL - OFFICIAL UK VISAS & IMMIGRATION DOCUMENT",
-                "Verification Stamp:    GBR-UKVI-APPROVED-2026-STAMPED"
-            };
-        } else if (lower.contains("insurance") || lower.contains("policy") || lower.contains("medical")) {
-            docTitle = "ALLIANZ GLOBAL CORPORATE SHIELD";
-            lines = new String[] {
-                "INTERNATIONAL WORKFORCE MEDICAL & EVACUATION POLICY",
-                "====================================================================================================",
-                "DOCUMENT TYPE: CERTIFICATE OF GLOBAL TRAVEL INSURANCE",
-                "",
-                "SECTION: 1. INSURED TRAVELER DETAILS",
-                "Insured Person:        Bob Employee",
-                "Employee ID:           EMP-88219",
-                "Corporate Sponsor:     CBG Workforce Logistics Inc.",
-                "",
-                "SECTION: 2. POLICY & COVERAGE SPECIFICATIONS",
-                "Policy Number:         AGS-992014",
-                "Coverage Plan:         Comprehensive Medical & Emergency Evacuation",
-                "Medical Benefit Limit: $1,000,000.00 USD",
-                "Emergency SOS Care:    Uncapped 24/7 Global Air Ambulance",
-                "Effective Period:      01-JAN-2026 to 31-DEC-2026 (ACTIVE)",
-                "",
-                "SECTION: 3. ASSISTANCE & SOS HOTLINE",
-                "24/7 Global SOS Line:  +1-800-555-ALLIANZ (+1-800-555-2554)",
-                "Assistance Group ID:   CBG-ALLIANZ-EMERGENCY-01",
-                "====================================================================================================",
-                "CONFIDENTIAL - PRESENT TO MEDICAL PROVIDERS FOR DIRECT BILLING",
-                "Policy Verification:   ALLIANZ-CERT-VALIDATED-2026"
-            };
-        } else if (lower.contains("shipment") || lower.contains("waybill") || lower.contains("carnet") || lower.contains("customs")) {
-            docTitle = "FEDEX LOGISTICS / CBG CARGO OPERATIONS";
-            lines = new String[] {
-                "INTERNATIONAL CUSTOMS DECLARATION & CARGO MANIFEST",
-                "====================================================================================================",
-                "DOCUMENT TYPE: ATA CARNET & COMMERCIAL SHIPMENT MANIFEST",
-                "",
-                "SECTION: 1. SHIPMENT & SENDER DETAILS",
-                "Sender / Origin:       CBG Chicago Tech Hub (USA)",
-                "Destination Office:    CBG London Office / UK Expo Center",
-                "Consignee Contact:     Frank Logistics (+1-555-0128)",
-                "",
-                "SECTION: 2. MANIFEST & CUSTOMS SPECIFICATIONS",
-                "Waybill / Tracking ID: FX-9842019",
-                "Customs Carnet No:     ATA-Carnet-GB-8832",
-                "Cargo Description:     CBG Gen-5 Mobile Prototypes & Exhibition Equipment",
-                "Package Count / Weight: 3 Crates / 85.5 kg",
-                "Declared Value:        $45,000.00 USD (Temporary Duty Free)",
-                "",
-                "SECTION: 3. CLEARANCE & CARRIER COMPLIANCE",
-                "Logistics Carrier:     FedEx Express Freight",
-                "Customs Status:        PRE-CLEARED / PRIORITY GREEN CHANNEL",
-                "Manifest Validity:     Valid until 31-DEC-2026",
-                "====================================================================================================",
-                "CONFIDENTIAL - INTERNATIONAL CUSTOMS CARGO DECLARATION",
-                "Verification Stamp:    CUSTOMS-GB-PRECLEARED-OK-2026"
-            };
-        } else {
-            // PASSPORT / Default
-            docTitle = "CBG WORKFORCE LOGISTICS INC.";
-            lines = new String[] {
-                "OFFICIAL CORPORATE TRAVEL & IDENTIFICATION VAULT",
-                "====================================================================================================",
-                "DOCUMENT TYPE: OFFICIAL PASSPORT & CORPORATE BORDER CLEARANCE",
-                "",
-                "SECTION: 1. TRAVELER PERSONAL IDENTIFICATION",
-                "Full Legal Name:       Bob Employee",
-                "Employee ID:           EMP-88219",
-                "Department / Division: Sales & Field Operations",
-                "Corporate Email:       employee@cbg.com",
-                "Emergency Phone / SOS: +1-555-0124",
-                "",
-                "SECTION: 2. PASSPORT & BORDER CONTROL CREDENTIALS",
-                "Document Number:       P-984201948",
-                "Issuing Authority:     Government Passport Office / CBG Security Clearance",
-                "Date of Issue:         2020-08-01",
-                "Date of Expiry:        2030-07-31 (VALID & ACTIVE)",
-                "Security Clearance:    Level-3 International Overseas Deployment Authorized",
-                "",
-                "SECTION: 3. CORPORATE TRAVEL POLICY & AUTHORIZATION",
-                "Travel Auth ID:        CBG-AUTH-2026-9941",
-                "Approving Manager:     Alice Manager (Sales Director)",
-                "Global Medical Ins.:   Allianz Corporate Health Shield #AG-992014",
-                "SOS Evacuation Plan:   Active 24/7 Global Medical & Rescue Coverage",
-                "Per-Diem Allowance:    $300.00 / day (Policy Compliant)",
-                "====================================================================================================",
-                "CONFIDENTIAL - FOR AUTHORIZED WORKFORCE LOGISTICS & BORDER CONTROL USE ONLY",
-                "Digital Verification Signature: CBG-SEC-VERIFIED-VALIDATED-2026"
-            };
+        } catch (Exception e) {
+            // Fall through to generic PDF
         }
 
-        return buildValidPdf(docTitle, lines);
+        // Generic fallback PDF
+        return generateGenericPdf(filename);
     }
 
-    private static byte[] buildValidPdf(String docTitle, String[] lines) {
-        StringBuilder streamBuilder = new StringBuilder();
-        streamBuilder.append("BT\n");
-        streamBuilder.append("/F1 16 Tf 40 740 Td (").append(escapePdfText(docTitle)).append(") Tj\n");
-
-        for (String line : lines) {
-            if (line.isEmpty()) {
-                streamBuilder.append("0 -14 Td () Tj\n");
-            } else if (line.startsWith("SECTION:") || line.startsWith("DOCUMENT TYPE:")) {
-                streamBuilder.append("0 -20 Td /F1 12 Tf (").append(escapePdfText(line)).append(") Tj\n");
-            } else if (line.startsWith("==") || line.startsWith("--")) {
-                streamBuilder.append("0 -14 Td /F1 10 Tf (----------------------------------------------------------------------------------------------------) Tj\n");
-            } else {
-                streamBuilder.append("0 -14 Td /F1 10 Tf (").append(escapePdfText(line)).append(") Tj\n");
-            }
-        }
-        streamBuilder.append("ET\n");
-
-        byte[] streamBytes = streamBuilder.toString().getBytes(StandardCharsets.UTF_8);
-        int streamLength = streamBytes.length;
-
-        String header = "%PDF-1.4\n";
-        String obj1 = "1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n";
-        String obj2 = "2 0 obj<</Type/Pages/Count 1/Kids[3 0 R]>>endobj\n";
-        String obj3 = "3 0 obj<</Type/Page/MediaBox[0 0 612 792]/Parent 2 0 R/Resources<</Font<</F1 4 0 R>>>>>/Contents 5 0 R>>endobj\n";
-        String obj4 = "4 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>endobj\n";
-        String obj5Head = "5 0 obj<</Length " + streamLength + ">>stream\n";
-        String obj5Tail = "\nendstream\nendobj\n";
-
-        int offset1 = header.length();
-        int offset2 = offset1 + obj1.length();
-        int offset3 = offset2 + obj2.length();
-        int offset4 = offset3 + obj3.length();
-        int offset5 = offset4 + obj4.length();
-        int xrefOffset = offset5 + obj5Head.length() + streamLength + obj5Tail.length();
-
-        String xref = String.format(Locale.US,
-                "xref\n0 6\n" +
-                "0000000000 65535 f \n" +
-                "%010d 00000 n \n" +
-                "%010d 00000 n \n" +
-                "%010d 00000 n \n" +
-                "%010d 00000 n \n" +
-                "%010d 00000 n \n" +
-                "trailer<</Size 6/Root 1 0 R>>\n" +
-                "startxref\n%d\n%%EOF\n",
-                offset1, offset2, offset3, offset4, offset5, xrefOffset);
-
+    private byte[] generateGenericPdf(String filename) {
+        // Use OpenPDF for even generic documents
+        com.lowagie.text.Document doc = new com.lowagie.text.Document(com.lowagie.text.PageSize.A4, 40, 40, 40, 40);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
-            baos.write(header.getBytes(StandardCharsets.UTF_8));
-            baos.write(obj1.getBytes(StandardCharsets.UTF_8));
-            baos.write(obj2.getBytes(StandardCharsets.UTF_8));
-            baos.write(obj3.getBytes(StandardCharsets.UTF_8));
-            baos.write(obj4.getBytes(StandardCharsets.UTF_8));
-            baos.write(obj5Head.getBytes(StandardCharsets.UTF_8));
-            baos.write(streamBytes);
-            baos.write(obj5Tail.getBytes(StandardCharsets.UTF_8));
-            baos.write(xref.getBytes(StandardCharsets.UTF_8));
-        } catch (IOException ignored) {}
+            com.lowagie.text.pdf.PdfWriter.getInstance(doc, baos);
+            doc.open();
 
+            com.lowagie.text.Font titleFont = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA, 18, com.lowagie.text.Font.BOLD, new java.awt.Color(15, 23, 42));
+            com.lowagie.text.Font bodyFont = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA, 11, com.lowagie.text.Font.NORMAL, new java.awt.Color(51, 65, 85));
+            com.lowagie.text.Font smallFont = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA, 9, com.lowagie.text.Font.NORMAL, new java.awt.Color(100, 116, 139));
+
+            doc.add(new com.lowagie.text.Paragraph("VOYACORE ENTERPRISE", titleFont));
+            doc.add(new com.lowagie.text.Paragraph("Workforce Travel & Logistics Management System", smallFont));
+            doc.add(new com.lowagie.text.Paragraph(" "));
+            doc.add(new com.lowagie.text.Paragraph("Document: " + filename, bodyFont));
+            doc.add(new com.lowagie.text.Paragraph("Generated: " + java.time.LocalDateTime.now().toString(), smallFont));
+            doc.add(new com.lowagie.text.Paragraph(" "));
+            doc.add(new com.lowagie.text.Paragraph("This is an auto-generated document from the VoyaCore Travel Management Platform.", bodyFont));
+            doc.add(new com.lowagie.text.Paragraph("For data-driven PDF exports, use the /api/pdf/ endpoints.", smallFont));
+
+            doc.close();
+        } catch (Exception e) {
+            // Return minimal valid PDF
+            return "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Count 0/Kids[]>>endobj\nxref\n0 3\n0000000000 65535 f \n0000000009 00000 n \n0000000052 00000 n \ntrailer<</Size 3/Root 1 0 R>>\nstartxref\n101\n%%EOF".getBytes();
+        }
         return baos.toByteArray();
     }
 
-    private static String escapePdfText(String text) {
-        return text.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)");
-    }
-
-    public static byte[] generateRichReceiptImageBytes(String filename) throws IOException {
+    private byte[] generateReceiptImage(String filename) throws IOException {
         int width = 500;
         int height = 650;
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -307,39 +139,40 @@ public class FileServeController {
 
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // White receipt background
         g.setColor(new Color(250, 250, 252));
         g.fillRect(0, 0, width, height);
 
-        // Dark header bar
         g.setColor(new Color(15, 23, 42));
         g.fillRect(0, 0, width, 90);
 
         g.setColor(Color.WHITE);
         g.setFont(new Font("SansSerif", Font.BOLD, 18));
-        
+
         String title = "EXPENSE RECEIPT";
-        String vendor = "MARRIOTT HOTELS - LONDON";
+        String vendor = "MARRIOTT HOTELS";
         String amountStr = "$1500.00";
         String item = "5 Nights Deluxe King Room";
-        
-        if (filename.toLowerCase().contains("dinner")) {
+
+        if (filename.toLowerCase().contains("dinner") || filename.toLowerCase().contains("meal")) {
             vendor = "GOURMET BISTRO & GRILL";
             amountStr = "$80.00";
             item = "Client Dinner & Beverages";
-        } else if (filename.toLowerCase().contains("uber")) {
+        } else if (filename.toLowerCase().contains("uber") || filename.toLowerCase().contains("taxi")) {
             vendor = "UBER TECHNOLOGIES INC.";
             amountStr = "$65.00";
             item = "Airport Transfer Ride";
+        } else if (filename.toLowerCase().contains("flight") || filename.toLowerCase().contains("air")) {
+            vendor = "DELTA AIR LINES";
+            amountStr = "$890.00";
+            item = "Economy Plus Return Flight";
         }
 
         g.drawString(title, 30, 40);
 
         g.setFont(new Font("SansSerif", Font.PLAIN, 12));
         g.setColor(new Color(148, 163, 184));
-        g.drawString("CBG Workforce Travel & Logistics", 30, 65);
+        g.drawString("VoyaCore Travel & Logistics", 30, 65);
 
-        // Receipt Details Section
         int y = 130;
         g.setColor(new Color(15, 23, 42));
         g.setFont(new Font("SansSerif", Font.BOLD, 14));
@@ -348,13 +181,12 @@ public class FileServeController {
         y += 25;
         g.setFont(new Font("SansSerif", Font.PLAIN, 12));
         g.setColor(new Color(71, 85, 105));
-        g.drawString("Date: 2026-07-28 19:42 | TxID: #TXN-998241", 30, y);
+        g.drawString("Date: " + java.time.LocalDate.now().minusDays(1) + " | TxID: #TXN-" + Math.abs(filename.hashCode() % 999999), 30, y);
 
         y += 25;
         g.setColor(new Color(226, 232, 240));
         g.drawLine(30, y, width - 30, y);
 
-        // Table Header
         y += 30;
         g.setColor(new Color(100, 116, 139));
         g.setFont(new Font("SansSerif", Font.BOLD, 11));
@@ -365,7 +197,6 @@ public class FileServeController {
         g.setColor(new Color(226, 232, 240));
         g.drawLine(30, y, width - 30, y);
 
-        // Line Item
         y += 30;
         g.setColor(new Color(15, 23, 42));
         g.setFont(new Font("SansSerif", Font.PLAIN, 12));
@@ -376,7 +207,6 @@ public class FileServeController {
         g.setColor(new Color(226, 232, 240));
         g.drawLine(30, y, width - 30, y);
 
-        // Total
         y += 35;
         g.setFont(new Font("SansSerif", Font.BOLD, 14));
         g.drawString("TOTAL PAID:", 30, y);
@@ -384,7 +214,6 @@ public class FileServeController {
         g.setFont(new Font("SansSerif", Font.BOLD, 18));
         g.drawString(amountStr, width - 120, y);
 
-        // Payment Info & Footer
         y += 60;
         g.setColor(new Color(241, 245, 249));
         g.fillRect(30, y, width - 60, 100);
@@ -393,10 +222,9 @@ public class FileServeController {
 
         g.setFont(new Font("SansSerif", Font.PLAIN, 11));
         g.drawString("Payment Method: Corporate Visa (**** 4921)", 45, y + 30);
-        g.drawString("Cardholder: Bob Employee", 45, y + 50);
-        g.drawString("OCR Verification Status: MATCHED & AUDITED", 45, y + 75);
+        g.drawString("OCR Verification Status: MATCHED & AUDITED", 45, y + 55);
+        g.drawString("Document generated by VoyaCore Enterprise", 45, y + 80);
 
-        // Footer Barcode graphic simulation
         y += 140;
         g.setColor(new Color(15, 23, 42));
         for (int i = 50; i < width - 50; i += 6) {
@@ -408,5 +236,13 @@ public class FileServeController {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(image, "png", baos);
         return baos.toByteArray();
+    }
+
+    private void ensureDirectoryExists() {
+        try {
+            if (!Files.exists(rootLocation)) {
+                Files.createDirectories(rootLocation);
+            }
+        } catch (IOException ignored) {}
     }
 }

@@ -15,4 +15,10 @@ public class AuthResponse {
     private String email;
     private UserRole role;
     private String department;
+    private String phone;
+    private String designation;
+    private String employeeCode;
+    private String profileImageUrl;
+    private String firstName;
+    private String lastName;
 }

@@ -3,11 +3,33 @@ import React, { createContext, useContext, useState } from 'react';
 export interface User {
   id: number;
   name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   role: string;
   department: string;
   phone: string;
+  designation: string;
+  employeeCode: string;
+  profileImageUrl: string | null;
   managerId: number | null;
+  dateOfBirth: string | null;
+  gender: string | null;
+  nationality: string | null;
+  bloodGroup: string | null;
+  passportNumber: string | null;
+  passportExpiry: string | null;
+  addressLine1: string | null;
+  addressLine2: string | null;
+  city: string | null;
+  state: string | null;
+  postalCode: string | null;
+  country: string | null;
+  emergencyContactName: string | null;
+  emergencyContactPhone: string | null;
+  emergencyContactRelation: string | null;
+  joiningDate: string | null;
+  isActive: boolean;
 }
 
 export interface AuthContextType {

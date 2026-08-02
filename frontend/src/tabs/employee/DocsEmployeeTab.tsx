@@ -27,7 +27,7 @@ export default function DocsEmployeeTab() {
   const [expiryDate, setExpiryDate] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
-  const [fileUrl, setFileUrl] = useState('/uploads/passport_bob.pdf');
+  const [fileUrl, setFileUrl] = useState('/uploads/passport_doc.pdf');
   const [fileName, setFileName] = useState('');
 
   // Modal Viewer State
@@ -81,13 +81,7 @@ export default function DocsEmployeeTab() {
 
   const handleDocTypeChange = (newType: string) => {
     setDocType(newType);
-    if (newType === 'PASSPORT') {
-      setFileUrl('/uploads/passport_bob.pdf');
-    } else if (newType === 'VISA') {
-      setFileUrl('/uploads/visa_uk_bob.pdf');
-    } else {
-      setFileUrl(`/uploads/${newType.toLowerCase()}_bob.pdf`);
-    }
+    setFileUrl(`/uploads/${newType.toLowerCase()}_doc.pdf`);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {

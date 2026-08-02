@@ -20,6 +20,7 @@ public class ShipmentService {
     private final TravelRequestRepository travelRequestRepository;
     private final NotificationService notificationService;
     private final AuditLogService auditLogService;
+    private final SseService sseService;
 
     public Shipment createShipment(Shipment shipment, Long userId) {
         if (shipment.getStatus() == null) {
@@ -86,6 +87,12 @@ public class ShipmentService {
                         "SHIPMENT",
                         message
                 );
+                // Push real-time SSE update for shipment tracking
+                String json = String.format(
+                        "{\"shipmentId\":%d,\"status\":\"%s\",\"description\":\"%s\"}",
+                        shipment.getId(), shipment.getStatus(), shipment.getDescription().replace("\"", "\\\"")
+                );
+                sseService.pushEvent(req.getEmployeeId(), "SHIPMENT_UPDATE", json);
             });
         }
     }

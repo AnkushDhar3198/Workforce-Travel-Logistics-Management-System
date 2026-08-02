@@ -26,3 +26,7 @@ app:
     expiration-ms: 86400000 # 24 hours
   upload:
     dir: uploads
+  openweathermap:
+    api-key: ${OPENWEATHERMAP_API_KEY:}
+
+spring.mvc.async.request-timeout: 300000

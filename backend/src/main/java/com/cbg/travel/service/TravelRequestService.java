@@ -42,12 +42,44 @@ public class TravelRequestService {
         return saved;
     }
 
+    public TravelRequest updateDraftRequest(Long id, TravelRequest updates, User employee) {
+        TravelRequest request = travelRequestRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Travel request not found"));
+
+        if (!request.getEmployeeId().equals(employee.getId())) {
+            throw new SecurityException("Unauthorized: you can only edit your own travel requests.");
+        }
+
+        if (request.getStatus() != TravelRequestStatus.DRAFT) {
+            throw new IllegalStateException("Only DRAFT travel requests can be edited. Current status: " + request.getStatus());
+        }
+
+        // Update allowed fields
+        request.setDestination(updates.getDestination());
+        request.setStartDate(updates.getStartDate());
+        request.setEndDate(updates.getEndDate());
+        request.setPurpose(updates.getPurpose());
+        request.setEstimatedCost(updates.getEstimatedCost());
+
+        // Re-evaluate policy
+        List<String> violations = policyEngineService.evaluatePolicy(request);
+        request.setPolicyFlagsList(violations);
+
+        TravelRequest saved = travelRequestRepository.save(request);
+        auditLogService.log(employee.getId(), "UPDATE_TRAVEL_REQUEST", "TravelRequest", saved.getId());
+        return saved;
+    }
+
     public TravelRequest submitTravelRequest(Long id, User employee) {
         TravelRequest request = travelRequestRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Travel request not found"));
         
         if (!request.getEmployeeId().equals(employee.getId())) {
             throw new SecurityException("Unauthorized access to submit this travel request");
+        }
+
+        if (request.getStatus() != TravelRequestStatus.DRAFT) {
+            throw new IllegalStateException("Only DRAFT requests can be submitted. Current status: " + request.getStatus());
         }
 
         request.setStatus(TravelRequestStatus.PENDING);
@@ -61,6 +93,35 @@ public class TravelRequestService {
         
         triggerManagerNotification(saved, employee);
         
+        return saved;
+    }
+
+    public TravelRequest cancelRequest(Long id, User employee) {
+        TravelRequest request = travelRequestRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Travel request not found"));
+
+        if (!request.getEmployeeId().equals(employee.getId())) {
+            throw new SecurityException("Unauthorized: you can only cancel your own travel requests.");
+        }
+
+        if (request.getStatus() != TravelRequestStatus.DRAFT && request.getStatus() != TravelRequestStatus.PENDING) {
+            throw new IllegalStateException("Only DRAFT or PENDING requests can be cancelled. Current status: " + request.getStatus());
+        }
+
+        request.setStatus(TravelRequestStatus.CANCELLED);
+        TravelRequest saved = travelRequestRepository.save(request);
+
+        auditLogService.log(employee.getId(), "CANCEL_TRAVEL_REQUEST", "TravelRequest", saved.getId());
+
+        // Notify manager if it was pending
+        if (employee.getManagerId() != null) {
+            notificationService.sendNotification(
+                    employee.getManagerId(),
+                    "CANCELLATION",
+                    "Travel request to " + request.getDestination() + " has been cancelled by " + employee.getName() + "."
+            );
+        }
+
         return saved;
     }
 
@@ -81,8 +142,26 @@ public class TravelRequestService {
         User approver = userRepository.findById(approverId)
                 .orElseThrow(() -> new IllegalArgumentException("Approver not found"));
 
-        // Check multi-level approvals: threshold is $5000
+        // Role-based authorization for approvals
         int currentLevel = approvalRepository.findByTravelRequestId(id).size() + 1;
+
+        if (currentLevel == 1) {
+            // Level 1: only APPROVING_MANAGER can approve
+            if (approver.getRole() != UserRole.APPROVING_MANAGER && approver.getRole() != UserRole.ADMIN) {
+                throw new SecurityException("Only Approving Managers can perform Level 1 approval.");
+            }
+        } else if (currentLevel == 2) {
+            // Level 2: only FINANCE_PROCUREMENT or CORPORATE_TRAVEL_MANAGER
+            if (approver.getRole() != UserRole.FINANCE_PROCUREMENT &&
+                    approver.getRole() != UserRole.CORPORATE_TRAVEL_MANAGER &&
+                    approver.getRole() != UserRole.ADMIN) {
+                throw new SecurityException("Only Finance or Corporate Travel Manager can perform Level 2 approval.");
+            }
+        }
+
+        if (request.getStatus() != TravelRequestStatus.PENDING) {
+            throw new IllegalStateException("Only PENDING requests can be approved. Current status: " + request.getStatus());
+        }
         
         Approval approval = Approval.builder()
                 .travelRequestId(id)
@@ -132,6 +211,21 @@ public class TravelRequestService {
         TravelRequest request = travelRequestRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Travel request not found"));
 
+        User approver = userRepository.findById(approverId)
+                .orElseThrow(() -> new IllegalArgumentException("Approver not found"));
+
+        // Role-based authorization for rejections
+        if (approver.getRole() != UserRole.APPROVING_MANAGER &&
+                approver.getRole() != UserRole.FINANCE_PROCUREMENT &&
+                approver.getRole() != UserRole.CORPORATE_TRAVEL_MANAGER &&
+                approver.getRole() != UserRole.ADMIN) {
+            throw new SecurityException("You do not have permission to reject travel requests.");
+        }
+
+        if (request.getStatus() != TravelRequestStatus.PENDING) {
+            throw new IllegalStateException("Only PENDING requests can be rejected. Current status: " + request.getStatus());
+        }
+
         Approval approval = Approval.builder()
                 .travelRequestId(id)
                 .approverId(approverId)
@@ -175,6 +269,10 @@ public class TravelRequestService {
 
         auditLogService.log(userId, "CREATE_BOOKING", "Booking", saved.getId());
         return saved;
+    }
+
+    public List<Booking> getBookingsForRequest(Long travelRequestId) {
+        return bookingRepository.findByTravelRequestId(travelRequestId);
     }
 
     public List<TravelRequest> getRequestsForEmployee(Long employeeId) {

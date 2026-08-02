@@ -22,10 +22,22 @@ public class TravelRequestController {
         return ResponseEntity.ok(travelRequestService.createTravelRequest(request, user));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<TravelRequest> update(@PathVariable Long id, @RequestBody TravelRequest updates) {
+        User user = authService.getCurrentUserEntity();
+        return ResponseEntity.ok(travelRequestService.updateDraftRequest(id, updates, user));
+    }
+
     @PutMapping("/{id}/submit")
     public ResponseEntity<TravelRequest> submit(@PathVariable Long id) {
         User user = authService.getCurrentUserEntity();
         return ResponseEntity.ok(travelRequestService.submitTravelRequest(id, user));
+    }
+
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<TravelRequest> cancel(@PathVariable Long id) {
+        User user = authService.getCurrentUserEntity();
+        return ResponseEntity.ok(travelRequestService.cancelRequest(id, user));
     }
 
     @PostMapping("/{id}/approve")
@@ -44,6 +56,11 @@ public class TravelRequestController {
     public ResponseEntity<Booking> book(@PathVariable Long id, @RequestBody Booking booking) {
         User user = authService.getCurrentUserEntity();
         return ResponseEntity.ok(travelRequestService.createBooking(id, booking, user.getId()));
+    }
+
+    @GetMapping("/{id}/bookings")
+    public ResponseEntity<List<Booking>> getBookings(@PathVariable Long id) {
+        return ResponseEntity.ok(travelRequestService.getBookingsForRequest(id));
     }
 
     @GetMapping("/employee")

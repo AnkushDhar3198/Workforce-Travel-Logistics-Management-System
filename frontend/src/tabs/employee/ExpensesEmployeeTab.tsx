@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { DollarSign, CheckCircle } from 'lucide-react';
+import { DollarSign, CheckCircle, FileText, Download } from 'lucide-react';
 import { useAuth, API_BASE } from '../../context/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
@@ -20,6 +20,7 @@ export default function ExpensesEmployeeTab() {
   const [ocrResult, setOcrResult] = useState<any>(null);
   const [receiptUrl, setReceiptUrl] = useState('');
   const [expenseList, setExpenseList] = useState<any[]>([]);
+  const [currency, setCurrency] = useState('USD');
 
   const loadExpenses = async () => {
     try {
@@ -95,6 +96,7 @@ export default function ExpensesEmployeeTab() {
           travelRequestId: Number(selectedReqId),
           category,
           amount,
+          currency,
           receiptUrl
         })
       });
@@ -226,7 +228,7 @@ export default function ExpensesEmployeeTab() {
                   </Alert>
                 )}
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-400 mb-2">Category</label>
                     <select 
@@ -238,13 +240,25 @@ export default function ExpensesEmployeeTab() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-400 mb-2">Claim Amount ($)</label>
+                    <label className="block text-xs font-bold text-slate-400 mb-2">Amount</label>
                     <Input 
                       type="number" required
                       value={amount}
                       onChange={(e) => setAmount(Number(e.target.value))}
                       className="bg-slate-950 border-slate-800 text-white focus:border-cyan-500 text-xs"
                     />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 mb-2">Currency</label>
+                    <select 
+                      value={currency}
+                      onChange={(e) => setCurrency(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-xs text-white focus:outline-none"
+                    >
+                      {['USD','EUR','GBP','INR','CAD','AUD','JPY','SGD','AED','CHF'].map(c => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 

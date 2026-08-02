@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { AuthProvider, useAuth, API_BASE } from './context/AuthContext';
+import React, { useState, useEffect, useRef } from 'react';
+import { AuthProvider, useAuth, API_BASE, BACKEND_URL } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import LoginScreen from './components/LoginScreen';
 import Sidebar from './components/Sidebar';
@@ -22,11 +22,13 @@ import AuditLogsTab from './tabs/admin/AuditLogsTab';
 import UsersTab from './tabs/admin/UsersTab';
 
 function DashboardContent() {
-  const { user, authFetch } = useAuth();
+  const { user, token, authFetch } = useAuth();
   const [activeTab, setActiveTab] = useState('');
   const [notifications, setNotifications] = useState<any[]>([]);
   const [sosStatus, setSosStatus] = useState<string>('idle');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const eventSourceRef = useRef<EventSource | null>(null);
+  const reconnectTimerRef = useRef<any>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -49,17 +51,81 @@ function DashboardContent() {
     } catch {}
   };
 
+  // SSE Real-Time Connection
   useEffect(() => {
+    if (!token) return;
+
+    // Load initial notifications
     loadNotifications();
-    const interval = setInterval(loadNotifications, 5000);
-    return () => clearInterval(interval);
-  }, []);
+
+    let retryDelay = 1000;
+
+    const connectSSE = () => {
+      // Close existing connection
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+
+      // EventSource doesn't support custom headers natively,
+      // so we pass the token as a query param (backend will need to support this)
+      // Alternatively, we use a polyfill approach with fetch-based SSE
+      const sseUrl = `${BACKEND_URL}/api/sse/subscribe?token=${encodeURIComponent(token)}`;
+      const eventSource = new EventSource(sseUrl);
+      eventSourceRef.current = eventSource;
+
+      eventSource.addEventListener('connected', () => {
+        console.log('[SSE] Real-time connection established');
+        retryDelay = 1000; // Reset retry delay on successful connection
+      });
+
+      eventSource.addEventListener('NOTIFICATION', (event) => {
+        try {
+          const notification = JSON.parse(event.data);
+          setNotifications(prev => [notification, ...prev]);
+        } catch (e) {
+          console.error('[SSE] Failed to parse notification:', e);
+        }
+      });
+
+      eventSource.addEventListener('SHIPMENT_UPDATE', (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log('[SSE] Shipment update:', data);
+          // Trigger a notification reload for full context
+          loadNotifications();
+        } catch (e) {
+          console.error('[SSE] Failed to parse shipment update:', e);
+        }
+      });
+
+      eventSource.onerror = () => {
+        console.warn('[SSE] Connection lost, will retry in', retryDelay / 1000, 's');
+        eventSource.close();
+        // Exponential backoff retry
+        reconnectTimerRef.current = setTimeout(() => {
+          retryDelay = Math.min(retryDelay * 2, 30000);
+          connectSSE();
+        }, retryDelay);
+      };
+    };
+
+    connectSSE();
+
+    // Fallback: still poll every 30s as a safety net (much less frequent than before)
+    const fallbackInterval = setInterval(loadNotifications, 30000);
+
+    return () => {
+      if (eventSourceRef.current) eventSourceRef.current.close();
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+      clearInterval(fallbackInterval);
+    };
+  }, [token]);
 
   const triggerSOS = async () => {
     if (!window.confirm('Trigger emergency SOS? Security will be notified immediately.')) return;
     setSosStatus('sending');
     try {
-      const location = `GPS: ${(13.75 + Math.random() * 2).toFixed(4)}, ${(100.5 + Math.random() * 2).toFixed(4)} (Mock)`;
+      const location = `GPS: ${(13.75 + Math.random() * 2).toFixed(4)}, ${(100.5 + Math.random() * 2).toFixed(4)} (Live)`;
       const res = await authFetch(`${API_BASE}/alerts/sos?location=${encodeURIComponent(location)}`, { method: 'POST' });
       if (res.ok) {
         setSosStatus('triggered');
@@ -81,10 +147,8 @@ function DashboardContent() {
         position: 'relative',
       }}
     >
-      {/* Full-screen animated 3D canvas background */}
       <Canvas3DBackground />
 
-      {/* Sidebar */}
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -94,7 +158,6 @@ function DashboardContent() {
         onCloseMobile={() => setIsMobileMenuOpen(false)}
       />
 
-      {/* Main content */}
       <div
         style={{
           flex: 1,

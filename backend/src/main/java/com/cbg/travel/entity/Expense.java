@@ -30,6 +30,17 @@ public class Expense {
     @Column(nullable = false)
     private Double amount;
 
+    @Column(name = "currency", length = 3)
+    @Builder.Default
+    private String currency = "USD";
+
+    @Column(name = "converted_amount")
+    private Double convertedAmount;
+
+    @Column(name = "base_currency", length = 3)
+    @Builder.Default
+    private String baseCurrency = "USD";
+
     @Column(name = "receipt_url")
     private String receiptUrl;
 
@@ -38,6 +49,13 @@ public class Expense {
 
     @Column(nullable = false)
     private String status; // SUBMITTED, APPROVED, REJECTED, REIMBURSED
+
+    @Column(name = "fraud_risk_score")
+    @Builder.Default
+    private Double fraudRiskScore = 0.0;
+
+    @Column(name = "policy_violations", length = 1000)
+    private String policyViolations;
 
     @Column(name = "submitted_at", nullable = false)
     private LocalDateTime submittedAt;

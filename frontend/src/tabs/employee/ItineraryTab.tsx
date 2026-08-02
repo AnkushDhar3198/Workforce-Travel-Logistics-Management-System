@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/ca
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Alert, AlertTitle, AlertDescription } from '../../components/ui/alert';
-import { fetchLiveSatelliteWeather, resolveWeatherIconUrl, conditionTypeToEmoji } from '../../utils/liveWeather';
+import { fetchLiveSatelliteWeather, resolveWeatherIconUrl, conditionTypeToEmoji, getAqiCategory } from '../../utils/liveWeather';
 import WorldMapCatalog from '../../components/WorldMapCatalog';
 
 interface ItineraryTabProps {
@@ -455,58 +455,54 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
           {(() => {
             const ct = (weather?.conditionType || '').toUpperCase();
             const isNightAtDest = destLocalHour < 6 || destLocalHour >= 18;
-            let cardGrad = 'from-sky-950/60 via-slate-900/80 to-cyan-950/50 border-white/10';
+            let cardGrad = 'from-amber-950/60 via-slate-900/90 to-sky-950/60 border-amber-500/20 shadow-2xl';
             if (isNightAtDest) {
-              cardGrad = 'from-indigo-950/70 via-slate-950/80 to-slate-900/70 border-white/10';
+              cardGrad = 'from-indigo-950/80 via-slate-950/90 to-slate-900/80 border-indigo-500/20 shadow-2xl';
             }
 
+            const aqiVal = weather?.aqi ?? 35;
+            const aqiCat = getAqiCategory(aqiVal);
+
             return (
-              <div className={`h-full min-h-[320px] flex flex-col justify-between rounded-3xl p-6 bg-gradient-to-br ${cardGrad} border backdrop-blur-2xl ring-1 ring-white/5 shadow-2xl relative overflow-hidden`}>
+              <div className={`h-full min-h-[320px] flex flex-col justify-between rounded-3xl p-6 bg-gradient-to-br ${cardGrad} border backdrop-blur-2xl ring-1 ring-white/10 shadow-2xl relative overflow-hidden`}>
                 {/* Top status bar */}
                 <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-3">
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                    <span className="text-xs font-black uppercase tracking-widest text-sky-400 truncate">Live Weather Stream</span>
-                    <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">• {liveTime}</span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0 shadow-sm" />
+                    <span className="text-xs font-black uppercase tracking-widest text-sky-300 truncate drop-shadow-sm">Live Weather Stream</span>
+                    <span className="text-[10px] text-slate-300 font-mono hidden sm:inline">• {liveTime}</span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={handleManualWeatherRefresh}
                       disabled={isRefreshingWeather || weatherLoading}
-                      className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-white text-[10px] font-extrabold transition-all active:scale-95 disabled:opacity-40 flex items-center gap-1"
+                      className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-[10px] font-extrabold transition-all active:scale-95 disabled:opacity-40 flex items-center gap-1 shadow"
                     >
                       <RefreshCw size={10} className={isRefreshingWeather ? 'animate-spin' : ''} />
                       <span>{isRefreshingWeather ? 'Updating' : 'Refresh'}</span>
                     </button>
-                    {selectedReq && (
-                      <button
-                        onClick={() => downloadItineraryPdf(selectedReq.id)}
-                        className="px-3 py-1 rounded-full bg-sky-500 hover:bg-sky-400 text-slate-950 text-[10px] font-black transition-all active:scale-95 flex items-center gap-1 shadow-lg"
-                      >
-                        <FileText size={10} />
-                        <span>PDF</span>
-                      </button>
-                    )}
                   </div>
                 </div>
 
                 {/* Big Temperature Hero */}
-                <div className="my-4 flex items-center justify-between gap-4">
+                <div className="my-3 flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                      📍 {selectedReq?.destination || weather?.city || 'Worldwide'}
+                    <p className="text-xs font-black text-amber-300/90 uppercase tracking-wider drop-shadow-sm flex items-center gap-1">
+                      <span>📍</span> <span>{selectedReq?.destination || weather?.city || 'Worldwide'}</span>
                     </p>
-                    <h3 className="text-5xl font-black text-white mt-1 tracking-tight">
+                    <h3 className="text-5xl md:text-6xl font-black text-white mt-1 tracking-tight drop-shadow-md">
                       {weather ? `${weather.temperature ?? weather.temp}°C` : '—'}
                     </h3>
-                    <p className="text-xs font-semibold text-slate-300 mt-1 flex items-center gap-2">
-                      <span>{weather?.description ?? 'Partly Cloudy'}</span>
-                      <span className="text-slate-500">•</span>
-                      <span>{destLocalHour >= 6 && destLocalHour < 18 ? '☀️ Daylight' : '🌙 Night'}</span>
+                    <p className="text-xs font-bold text-slate-200 mt-1 flex items-center gap-2 flex-wrap">
+                      <span className="text-white font-extrabold">{weather?.description ?? 'Partly Cloudy'}</span>
+                      <span className="text-slate-400">•</span>
+                      <span className="px-2 py-0.5 rounded-full bg-white/10 border border-white/15 text-[10px]">
+                        {destLocalHour >= 6 && destLocalHour < 18 ? '☀️ Daylight' : '🌙 Night'}
+                      </span>
                     </p>
                   </div>
 
-                  <div className="w-20 h-20 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 shadow-inner backdrop-blur">
+                  <div className="w-20 h-20 rounded-3xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0 shadow-lg backdrop-blur-md">
                     {(weather?.iconUrl || resolveWeatherIconUrl(weather?.iconBaseUri)) ? (
                       <img
                         src={weather?.iconUrl || resolveWeatherIconUrl(weather?.iconBaseUri)!}
@@ -521,24 +517,30 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
                   </div>
                 </div>
 
-                {/* 4 Minimal Metric Pills */}
+                {/* 5 Minimal Metric Pills (Including Real-Time AQI) */}
                 {weather && (
-                  <div className="grid grid-cols-4 gap-2 pt-3 border-t border-white/10">
-                    <div className="bg-white/5 rounded-2xl p-2 text-center border border-white/5">
-                      <p className="text-[8.5px] text-slate-400 uppercase font-bold tracking-wider">Feels</p>
+                  <div className="grid grid-cols-5 gap-1.5 pt-3 border-t border-white/10">
+                    <div className="bg-slate-950/60 rounded-2xl p-2 text-center border border-white/10">
+                      <p className="text-[8px] text-slate-400 uppercase font-bold tracking-wider">Feels</p>
                       <p className="text-xs font-black text-white mt-0.5">{weather.feelsLike ?? '—'}°C</p>
                     </div>
-                    <div className="bg-white/5 rounded-2xl p-2 text-center border border-white/5">
-                      <p className="text-[8.5px] text-slate-400 uppercase font-bold tracking-wider">Humidity</p>
+                    <div className="bg-slate-950/60 rounded-2xl p-2 text-center border border-white/10">
+                      <p className="text-[8px] text-slate-400 uppercase font-bold tracking-wider">Humidity</p>
                       <p className="text-xs font-black text-white mt-0.5">{weather.humidity}%</p>
                     </div>
-                    <div className="bg-white/5 rounded-2xl p-2 text-center border border-white/5">
-                      <p className="text-[8.5px] text-slate-400 uppercase font-bold tracking-wider">Wind</p>
+                    <div className="bg-slate-950/60 rounded-2xl p-2 text-center border border-white/10">
+                      <p className="text-[8px] text-slate-400 uppercase font-bold tracking-wider">Wind</p>
                       <p className="text-xs font-black text-white mt-0.5">{weather.windSpeed ?? '—'} km/h</p>
                     </div>
-                    <div className="bg-white/5 rounded-2xl p-2 text-center border border-white/5">
-                      <p className="text-[8.5px] text-slate-400 uppercase font-bold tracking-wider">UV Index</p>
+                    <div className="bg-slate-950/60 rounded-2xl p-2 text-center border border-white/10">
+                      <p className="text-[8px] text-slate-400 uppercase font-bold tracking-wider">UV Index</p>
                       <p className="text-xs font-black text-white mt-0.5">{weather.uvIndex ?? '1'}</p>
+                    </div>
+                    <div className="bg-slate-950/60 rounded-2xl p-2 text-center border border-white/10">
+                      <p className="text-[8px] text-slate-400 uppercase font-bold tracking-wider">Air Quality</p>
+                      <p className={`text-xs font-black mt-0.5 ${aqiCat.textClass}`}>
+                        {aqiVal} <span className="text-[8px] font-bold block leading-none">{aqiCat.label}</span>
+                      </p>
                     </div>
                   </div>
                 )}

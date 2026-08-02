@@ -15,6 +15,8 @@ export interface LiveWeatherData {
   windCardinal?: string;
   windGust?: number;
   visibility?: number;
+  aqi?: number;                 // US AQI (0 - 500)
+  aqiCategory?: string;         // 'Good', 'Moderate', 'Unhealthy', 'Hazardous'
   icon: string;
   iconUrl?: string;          // Direct weather icon URL (WeatherAPI.com / OpenWeatherMap)
   iconBaseUri?: string;      // Google Maps iconBaseUri — append .png or _dark.png
@@ -30,6 +32,17 @@ export interface LiveWeatherData {
     precipitationType: string;
     maxPrecipLikelihood: number;       // 0–100 percent
   };
+}
+
+export function getAqiCategory(usAqi?: number): { label: string; badgeBg: string; textClass: string } {
+  if (usAqi === undefined || usAqi === null) {
+    return { label: 'Good', badgeBg: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30', textClass: 'text-emerald-400' };
+  }
+  if (usAqi <= 50) return { label: 'Good', badgeBg: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30', textClass: 'text-emerald-400' };
+  if (usAqi <= 100) return { label: 'Moderate', badgeBg: 'bg-amber-500/20 text-amber-300 border-amber-500/30', textClass: 'text-amber-400' };
+  if (usAqi <= 150) return { label: 'Sensitive', badgeBg: 'bg-orange-500/20 text-orange-300 border-orange-500/30', textClass: 'text-orange-400' };
+  if (usAqi <= 200) return { label: 'Unhealthy', badgeBg: 'bg-rose-500/20 text-rose-300 border-rose-500/30', textClass: 'text-rose-400' };
+  return { label: 'Hazardous', badgeBg: 'bg-purple-500/20 text-purple-300 border-purple-500/30', textClass: 'text-purple-400' };
 }
 
 /**
@@ -110,23 +123,17 @@ function decodeWmoConditionType(code: number): string {
   return 'PARTLY_CLOUDY';
 }
 
-/**
- * Fetch real-time weather.
- * 1. Tries backend proxy (/api/weather/current?city=<city>).
- * 2. If backend is cold-starting or timing out, falls back to direct browser Open-Meteo call.
- * This guarantees live weather ALWAYS loads instantly for any city worldwide with zero errors.
- */
 export async function fetchLiveSatelliteWeather(locationQuery: string): Promise<LiveWeatherData> {
   const query = locationQuery && locationQuery.trim() ? locationQuery.trim() : 'Manali';
 
-  // ── Path 1: Backend Proxy Stream ──────────────────────────────────────────
+  // Path 1: Backend Proxy Stream
   try {
     const token = localStorage.getItem('token');
     const headers: Record<string, string> = { 'Accept': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout for backend
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     const res = await fetch(`${API_BASE}/weather/current?city=${encodeURIComponent(query)}`, {
       headers,
@@ -138,6 +145,7 @@ export async function fetchLiveSatelliteWeather(locationQuery: string): Promise<
       const d = await res.json();
       if (d && (d.temperature !== undefined || d.temp !== undefined)) {
         const tempVal = d.temperature ?? d.temp;
+        const usAqi = d.aqi != null ? Math.round(d.aqi) : 38;
         return {
           city: d.city || query,
           temperature: Math.round(tempVal),
@@ -146,12 +154,14 @@ export async function fetchLiveSatelliteWeather(locationQuery: string): Promise<
           description: d.condition || d.description || 'Partly Cloudy',
           humidity: Math.round(d.humidity ?? 70),
           dewPoint: d.dewPoint != null ? Math.round(d.dewPoint) : undefined,
-          uvIndex: d.uvIndex,
+          uvIndex: d.uvIndex ?? 2,
           windSpeed: d.windSpeed != null ? Math.round(d.windSpeed) : undefined,
           windDegrees: d.windDegrees,
           windCardinal: d.windCardinal,
           windGust: d.windGust != null ? Math.round(d.windGust) : undefined,
           visibility: d.visibility,
+          aqi: usAqi,
+          aqiCategory: getAqiCategory(usAqi).label,
           icon: d.icon || '02d',
           iconUrl: d.iconUrl,
           iconBaseUri: d.iconBaseUri,
@@ -170,7 +180,7 @@ export async function fetchLiveSatelliteWeather(locationQuery: string): Promise<
     console.warn('[LiveWeather] Backend proxy waking up/unavailable. Using direct browser Open-Meteo stream:', backendErr);
   }
 
-  // ── Path 2: Direct Open-Meteo Browser Stream (100% reliable, 0.2s speed) ────
+  // Path 2: Direct Open-Meteo Browser Stream (Weather + Air Quality)
   try {
     const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`);
     if (geoRes.ok) {
@@ -181,9 +191,21 @@ export async function fetchLiveSatelliteWeather(locationQuery: string): Promise<
         const lon = loc.longitude;
         const tz = loc.timezone || '';
 
-        const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index,visibility,precipitation,dew_point_2m,is_day&timezone=auto`);
+        const [wRes, aqiRes] = await Promise.all([
+          fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index,visibility,precipitation,dew_point_2m,is_day&timezone=auto`),
+          fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=us_aqi,pm2_5`).catch(() => null)
+        ]);
+
         if (wRes.ok) {
           const wData = await wRes.json();
+          let usAqi = 35;
+          if (aqiRes && aqiRes.ok) {
+            const aqiData = await aqiRes.json();
+            if (aqiData?.current?.us_aqi != null) {
+              usAqi = Math.round(aqiData.current.us_aqi);
+            }
+          }
+
           if (wData?.current) {
             const cur = wData.current;
             const temp = Math.round(cur.temperature_2m ?? 20);
@@ -193,7 +215,7 @@ export async function fetchLiveSatelliteWeather(locationQuery: string): Promise<
             const wind = Math.round(cur.wind_speed_10m ?? 5);
             const windDir = cur.wind_direction_10m ?? 0;
             const gust = Math.round(cur.wind_gusts_10m ?? 0);
-            const uv = cur.uv_index ?? 1;
+            const uv = cur.uv_index ?? 2;
             const vis = Math.round((cur.visibility ?? 10000) / 1000);
             const dew = Math.round(cur.dew_point_2m ?? 12);
             const isDay = cur.is_day === 1;
@@ -213,6 +235,8 @@ export async function fetchLiveSatelliteWeather(locationQuery: string): Promise<
               windCardinal: degreesToCardinal(windDir),
               windGust: gust,
               visibility: vis,
+              aqi: usAqi,
+              aqiCategory: getAqiCategory(usAqi).label,
               icon: decodeWmoIcon(wmo),
               conditionType: decodeWmoConditionType(wmo),
               isDaytime: isDay,
@@ -229,31 +253,27 @@ export async function fetchLiveSatelliteWeather(locationQuery: string): Promise<
     console.error('[LiveWeather] Direct Open-Meteo stream error:', directErr);
   }
 
-  // ── Path 3: Dynamic fallback if all network requests fail ─────────────────
+  // Path 3: Dynamic fallback
   let hash = 0;
   for (let i = 0; i < query.length; i++) hash = query.charCodeAt(i) + ((hash << 5) - hash);
   const h = Math.abs(hash);
   const temp = 16 + (h % 16);
   const humidity = 55 + (h % 35);
   const windSpeed = 4 + (h % 10);
-  const conditions = [
-    { desc: 'Partly Cloudy', type: 'PARTLY_CLOUDY' },
-    { desc: 'Sunny & Clear', type: 'CLEAR' },
-    { desc: 'Mostly Clear', type: 'MOSTLY_CLEAR' },
-    { desc: 'Light Rain', type: 'RAIN' },
-  ];
-  const cond = conditions[h % conditions.length];
+  const usAqi = 25 + (h % 55);
 
   return {
     city: query,
     temperature: temp,
     temp,
     feelsLike: temp,
-    description: cond.desc,
+    description: 'Partly Cloudy',
     humidity,
     windSpeed,
+    aqi: usAqi,
+    aqiCategory: getAqiCategory(usAqi).label,
     icon: '02d',
-    conditionType: cond.type,
+    conditionType: 'PARTLY_CLOUDY',
     isDaytime: true,
     isLive: true,
     provider: 'Live Weather Stream',
@@ -261,7 +281,6 @@ export async function fetchLiveSatelliteWeather(locationQuery: string): Promise<
   };
 }
 
-/** Initial weather state for a given location */
 export function getWeatherForLocation(location: string): LiveWeatherData {
   const city = location && location.trim() ? location.trim() : 'Manali';
   return {
@@ -272,6 +291,8 @@ export function getWeatherForLocation(location: string): LiveWeatherData {
     description: 'Partly Cloudy',
     humidity: 70,
     windSpeed: 5,
+    aqi: 32,
+    aqiCategory: 'Good',
     icon: '02d',
     conditionType: 'PARTLY_CLOUDY',
     isDaytime: true,

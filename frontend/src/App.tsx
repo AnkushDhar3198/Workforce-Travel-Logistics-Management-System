@@ -262,10 +262,15 @@ class GlobalErrorBoundary extends React.Component<{ children: React.ReactNode },
               The application encountered a minor runtime sync update. Click below to reload the session smoothly.
             </p>
             <button
-              onClick={() => window.location.reload()}
+              onClick={() => {
+                try {
+                  localStorage.clear();
+                } catch (e) {}
+                window.location.href = window.location.origin;
+              }}
               style={{ padding: '12px 24px', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg, #22d3ee 0%, #6366f1 100%)', color: '#03050d', fontWeight: 800, fontSize: '0.88rem', cursor: 'pointer' }}
             >
-              Reload Application
+              Reload & Reset Session
             </button>
           </div>
         </div>

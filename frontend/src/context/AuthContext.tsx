@@ -64,10 +64,17 @@ export const getFileUrl = (url?: string) => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [token, setToken] = useState<string | null>(localStorage.getItem('jwt_token'));
   const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('user_details');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem('user_details');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      try {
+        localStorage.removeItem('user_details');
+        localStorage.removeItem('jwt_token');
+      } catch (err) {}
+      return null;
+    }
   });
 
   const login = (newToken: string, newUser: User) => {

@@ -18,35 +18,43 @@ window.addEventListener('mousemove', (e) => {
   glowY = e.clientY;
 
   // === Interactive card border glow — track mouse for radial gradient ===
-  const cards = document.elementsFromPoint(e.clientX, e.clientY);
-  for (const el of cards) {
-    if (el instanceof HTMLElement && (
-      el.classList.contains('v-card') ||
-      el.classList.contains('v-stat') ||
-      el.classList.contains('v-doc-card')
-    )) {
-      const rect = el.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 100;
-      const y = ((e.clientY - rect.top) / rect.height) * 100;
-      el.style.setProperty('--mouse-x', `${x}%`);
-      el.style.setProperty('--mouse-y', `${y}%`);
-      el.style.borderImage = `radial-gradient(circle at ${x}% ${y}%, var(--border-active), var(--card-border) 60%) 1`;
-      el.style.borderImageSlice = '1';
+  try {
+    if (typeof document.elementsFromPoint === 'function') {
+      const cards = document.elementsFromPoint(e.clientX, e.clientY);
+      for (const el of cards) {
+        if (el instanceof HTMLElement && (
+          el.classList.contains('v-card') ||
+          el.classList.contains('v-stat') ||
+          el.classList.contains('v-doc-card')
+        )) {
+          const rect = el.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0) {
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+            el.style.setProperty('--mouse-x', `${x}%`);
+            el.style.setProperty('--mouse-y', `${y}%`);
+            el.style.borderImage = `radial-gradient(circle at ${x}% ${y}%, var(--border-active), var(--card-border) 60%) 1`;
+            el.style.borderImageSlice = '1';
+          }
+        }
+      }
     }
-  }
+  } catch (err) {}
 }, { passive: true });
 
 // Reset border glow when mouse leaves a card
 window.addEventListener('mouseout', (e) => {
-  const target = e.target;
-  if (target instanceof HTMLElement && (
-    target.classList.contains('v-card') ||
-    target.classList.contains('v-stat') ||
-    target.classList.contains('v-doc-card')
-  )) {
-    target.style.borderImage = '';
-    target.style.borderImageSlice = '';
-  }
+  try {
+    const target = e.target;
+    if (target instanceof HTMLElement && (
+      target.classList.contains('v-card') ||
+      target.classList.contains('v-stat') ||
+      target.classList.contains('v-doc-card')
+    )) {
+      target.style.borderImage = '';
+      target.style.borderImageSlice = '';
+    }
+  } catch (err) {}
 }, { passive: true });
 
 // Smooth lerp the glow toward cursor

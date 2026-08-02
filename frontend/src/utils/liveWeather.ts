@@ -76,7 +76,15 @@ export async function fetchLiveSatelliteWeather(locationQuery: string): Promise<
   const query = locationQuery && locationQuery.trim() ? locationQuery.trim() : 'Manali';
 
   try {
-    const res = await fetch(`${API_BASE}/weather/current?city=${encodeURIComponent(query)}`);
+    const token = localStorage.getItem('token');
+    const headers: Record<string, string> = {
+      'Accept': 'application/json'
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${API_BASE}/weather/current?city=${encodeURIComponent(query)}`, { headers });
     if (res.ok) {
       const d = await res.json();
       if (d && (d.temperature !== undefined || d.temp !== undefined)) {
@@ -103,47 +111,17 @@ export async function fetchLiveSatelliteWeather(locationQuery: string): Promise<
           timezone: d.timezone,
           currentTime: d.currentTime,
           isLive: d.isLive ?? true,
-          provider: d.source || 'Google Maps Platform Weather API',
+          provider: d.source || 'Live Station Observation · wttr.in',
           lastUpdated: d.lastUpdated || new Date().toLocaleTimeString(),
           minuteForecast: d.minuteForecast,
         };
       }
     }
+    throw new Error(`Weather endpoint returned HTTP status ${res.status}`);
   } catch (err) {
-    console.warn('[LiveWeather] Backend weather API error:', err);
+    console.error('[LiveWeather] Failed to fetch live weather stream:', err);
+    throw err;
   }
-
-  // Dynamic fallback — uses city string hash for deterministic per-city values
-  let hash = 0;
-  for (let i = 0; i < query.length; i++) hash = query.charCodeAt(i) + ((hash << 5) - hash);
-  const h = Math.abs(hash);
-  const temp = 14 + (h % 18);
-  const humidity = 50 + (h % 42);
-  const windSpeed = 2 + (h % 14);
-  const conditions = [
-    { desc: 'Partly Cloudy', type: 'PARTLY_CLOUDY' },
-    { desc: 'Sunny', type: 'CLEAR' },
-    { desc: 'Mostly Clear', type: 'MOSTLY_CLEAR' },
-    { desc: 'Light Rain', type: 'RAIN_SHOWERS' },
-    { desc: 'Hazy', type: 'HAZE' },
-  ];
-  const cond = conditions[h % conditions.length];
-
-  return {
-    city: query,
-    temperature: temp,
-    temp,
-    feelsLike: temp,
-    description: cond.desc,
-    humidity,
-    windSpeed,
-    icon: '02d',
-    conditionType: cond.type,
-    isDaytime: true,
-    isLive: true,
-    provider: 'Google Maps Platform Weather API',
-    lastUpdated: new Date().toLocaleTimeString(),
-  };
 }
 
 /** Initial weather state for a given location */

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldAlert, AlertTriangle, ShieldCheck, Map, MapPin, BadgeAlert } from 'lucide-react';
+import { ShieldAlert, AlertTriangle, ShieldCheck, MapPin, BadgeAlert } from 'lucide-react';
 import { useAuth, API_BASE } from '../../context/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
+import WorldMapCatalog from '../../components/WorldMapCatalog';
 
 export default function SecurityTab() {
   const { authFetch } = useAuth();
@@ -27,53 +28,22 @@ export default function SecurityTab() {
         // Fetch live weather/advisories for active travel destinations
         const cities = Array.from(new Set(approved.map((r: any) => r.destination))).filter(Boolean);
         const feeds: { city: string; risk: string; time: string }[] = [];
-        const cityDatabase: Record<string, { temp: number; desc: string; humidity: number }> = {
-          'london': { temp: 16, desc: 'Light Rain & Breeze', humidity: 76 },
-          'tokyo': { temp: 24, desc: 'Clear Skies', humidity: 52 },
-          'new york': { temp: 26, desc: 'Partly Cloudy', humidity: 60 },
-          'singapore': { temp: 31, desc: 'Tropical Humid & Showers', humidity: 82 },
-          'dubai': { temp: 38, desc: 'Sunny & Hot', humidity: 35 },
-          'paris': { temp: 21, desc: 'Mostly Sunny', humidity: 55 },
-          'sydney': { temp: 18, desc: 'Breezy & Clear', humidity: 58 },
-          'munich': { temp: 19, desc: 'Partly Cloudy', humidity: 62 },
-          'berlin': { temp: 20, desc: 'Cloudy Spells', humidity: 64 },
-          'mumbai': { temp: 32, desc: 'Monsoonal Breeze', humidity: 85 },
-          'delhi': { temp: 36, desc: 'Hazy & Warm', humidity: 48 },
-          'toronto': { temp: 23, desc: 'Clear & Pleasant', humidity: 50 },
-          'san francisco': { temp: 17, desc: 'Coastal Fog & Cool', humidity: 75 },
-          'hong kong': { temp: 29, desc: 'Humid & Partly Cloudy', humidity: 78 },
-          'zurich': { temp: 18, desc: 'Alpine Breeze', humidity: 56 },
-          'bangkok': { temp: 33, desc: 'Tropical Heat & Humid', humidity: 79 },
-        };
 
         for (const city of cities.slice(0, 5)) {
           const cityStr = city as string;
-          let wData: any = null;
           try {
             const wRes = await authFetch(`${API_BASE}/weather/current?city=${encodeURIComponent(cityStr)}`);
-            if (wRes.ok) wData = await wRes.json();
+            if (wRes.ok) {
+              const wData = await wRes.json();
+              if (wData && (wData.temperature !== undefined || wData.temp !== undefined)) {
+                feeds.push({
+                  city: cityStr,
+                  risk: `${wData.description || 'Live Weather'}: ${wData.temperature ?? wData.temp}°C, Humidity ${wData.humidity}%`,
+                  time: 'Live'
+                });
+              }
+            }
           } catch {}
-
-          if (!wData || (!wData.temperature && !wData.temp)) {
-            const clean = cityStr.toLowerCase().trim();
-            let matched = null;
-            for (const [k, v] of Object.entries(cityDatabase)) {
-              if (clean.includes(k)) { matched = v; break; }
-            }
-            if (!matched) {
-              let hash = 0;
-              for (let i = 0; i < clean.length; i++) hash = clean.charCodeAt(i) + ((hash << 5) - hash);
-              const abs = Math.abs(hash);
-              matched = { temp: 15 + (abs % 20), desc: 'Scattered Clouds', humidity: 45 + (abs % 40) };
-            }
-            wData = matched;
-          }
-
-          feeds.push({
-            city: cityStr,
-            risk: `${wData.description ?? wData.desc ?? 'Weather Update'}: ${wData.temperature ?? wData.temp}°C, Humidity ${wData.humidity}%`,
-            time: 'Live'
-          });
         }
         if (feeds.length > 0) {
           setRiskFeeds(feeds);
@@ -183,37 +153,8 @@ export default function SecurityTab() {
       <div className="grid grid-cols-12 gap-8">
         {/* Travelers monitor list & Map - span 8 */}
         <div className="col-span-12 lg:col-span-8 space-y-6">
-          {/* Map panel */}
-          <div className="relative h-80 bg-slate-950 border border-slate-855 flex flex-col justify-end p-6 rounded-xl overflow-hidden shadow-2xl">
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:20px_20px] flex items-center justify-center">
-              <div className="text-center space-y-2 opacity-20 select-none">
-                <Map className="w-16 h-16 mx-auto text-slate-555" />
-                <div className="text-xs uppercase tracking-widest font-black text-slate-400">Live GPS Traveler Locations Catalog</div>
-              </div>
-
-              {/* Dynamic traveler map markers */}
-              {approvedRequests.map((req, i) => {
-                const topPct = 25 + (i * 20) % 55;
-                const leftPct = 20 + (i * 25) % 65;
-                return (
-                  <div key={req.id} style={{ top: `${topPct}%`, left: `${leftPct}%` }} className="absolute text-cyan-400 flex items-center gap-1.5 animate-pulse">
-                    <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping absolute -left-0"></span>
-                    <MapPin className="w-5 h-5 relative z-10" />
-                    <span className="text-[9px] font-bold bg-slate-950/80 border border-slate-850 px-2 py-0.5 rounded text-white shadow-sm shrink-0">
-                      #{req.id} — {req.destination}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="relative z-10 glass-panel p-4 rounded-xl max-w-sm border border-slate-800">
-              <h4 className="font-extrabold text-white flex items-center gap-1.5 mb-1 text-xs uppercase tracking-wider">
-                <ShieldCheck className="w-4 h-4 text-cyan-400" />
-                <span>Active Duty of Care Tracking</span>
-              </h4>
-              <p className="text-[10px] text-slate-400">All current traveling employees are plotted via real-time satellite blips.</p>
-            </div>
-          </div>
+          {/* World Map Catalog Vector Visualization */}
+          <WorldMapCatalog approvedRequests={approvedRequests} activeAlerts={activeAlerts} />
 
           {/* Active Emergency alerts list */}
           <Card className="bg-slate-900/40 border border-slate-850">

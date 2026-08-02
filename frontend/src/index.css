@@ -1611,5 +1611,120 @@ select option {
   }
 }
 
+/* ====================================================
+   DAYLIGHT THEME HIGH-CONTRAST & TEXT VISIBILITY RULES
+   ==================================================== */
+[data-theme="daylight"] {
+  --text-primary: #0f172a !important;
+  --text-secondary: #334155 !important;
+  --text-muted: #64748b !important;
+}
+
+[data-theme="daylight"] .text-slate-300,
+[data-theme="daylight"] .text-slate-350,
+[data-theme="daylight"] .text-slate-355,
+[data-theme="daylight"] .text-slate-400,
+[data-theme="daylight"] .text-slate-405,
+[data-theme="daylight"] .text-slate-450,
+[data-theme="daylight"] .text-slate-455 {
+  color: #334155 !important; /* Dark Slate 700 for sharp visibility in Daylight mode */
+}
+
+[data-theme="daylight"] .text-slate-500,
+[data-theme="daylight"] .text-slate-550,
+[data-theme="daylight"] .text-slate-600 {
+  color: #475569 !important; /* Dark Slate 600 */
+}
+
+[data-theme="daylight"] .text-white {
+  color: #0f172a !important; /* Dark Slate 900 */
+}
+
+[data-theme="daylight"] .text-cyan-400,
+[data-theme="daylight"] .text-cyan-405,
+[data-theme="daylight"] .text-cyan-450 {
+  color: #0284c7 !important; /* Vibrant Sky Blue for Light Mode */
+}
+
+[data-theme="daylight"] .text-indigo-400,
+[data-theme="daylight"] .text-indigo-405 {
+  color: #4f46e5 !important; /* Vibrant Indigo for Light Mode */
+}
+
+[data-theme="daylight"] .text-emerald-400,
+[data-theme="daylight"] .text-emerald-450 {
+  color: #059669 !important; /* Vibrant Emerald for Light Mode */
+}
+
+[data-theme="daylight"] .bg-slate-900\/40,
+[data-theme="daylight"] .bg-slate-900\/60,
+[data-theme="daylight"] .bg-slate-950,
+[data-theme="daylight"] .bg-slate-950\/40,
+[data-theme="daylight"] .bg-slate-950\/60,
+[data-theme="daylight"] .bg-slate-950\/20,
+[data-theme="daylight"] .bg-slate-950\/25,
+[data-theme="daylight"] .bg-slate-900\/85,
+[data-theme="daylight"] .bg-slate-900\/30 {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="daylight"] th {
+  color: #1e293b !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="daylight"] input,
+[data-theme="daylight"] select,
+[data-theme="daylight"] textarea {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+[data-theme="daylight"] input::placeholder,
+[data-theme="daylight"] textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+[data-theme="daylight"] .border-slate-850,
+[data-theme="daylight"] .border-slate-800,
+[data-theme="daylight"] .border-slate-800\/80,
+[data-theme="daylight"] .border-slate-800\/60 {
+  border-color: #e2e8f0 !important;
+}
+
+/* ====================================================
+   13-INCH AND 14-INCH LAPTOP DISPLAY OPTIMIZATIONS
+   ==================================================== */
+@media (min-width: 1024px) and (max-width: 1536px) {
+  /* 13" and 14" Laptop viewport adjustments (~1280px to 1536px width, ~700px-900px height) */
+  main {
+    padding: 16px 20px !important;
+  }
+
+  .grid-cols-12 {
+    gap: 1.25rem !important; /* 20px gap instead of 32px gap to fit cards perfectly */
+  }
+
+  .col-span-12.lg\:col-span-9 {
+    grid-column: span 8 / span 8 !important; /* 8-4 split on 13"/14" laptops for balanced sidebars */
+  }
+
+  .col-span-12.lg\:col-span-3 {
+    grid-column: span 4 / span 4 !important;
+  }
+
+  h2.text-2xl {
+    font-size: 1.35rem !important;
+  }
+
+  .text-lg {
+    font-size: 1rem !important;
+  }
+}
+
+
 
 

@@ -179,11 +179,7 @@ function DashboardContent() {
         />
 
         <main
-          style={{
-            flex: 1,
-            overflowY: 'auto',
-            padding: '24px',
-          }}
+          className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-7 max-w-[1600px] mx-auto w-full"
         >
           <div key={activeTab} className="animate-fade-slide-up">
             {activeTab === 'itinerary' && <ItineraryTab onNavigateToRequisition={() => setActiveTab('requisition')} />}

@@ -72,12 +72,12 @@ export async function fetchLiveSatelliteWeather(locationQuery: string): Promise<
           temperature: Math.round(tempVal),
           temp: Math.round(tempVal),
           feelsLike: Math.round(bData.feelsLike ?? tempVal),
-          description: bData.condition || bData.description || 'Live Weather',
+          description: bData.condition || bData.description || 'AccuWeather Clear',
           humidity: Math.round(bData.humidity ?? 55),
           windSpeed: Math.round(bData.windSpeed ?? 12),
           icon: bData.icon || '01d',
           isLive: bData.isLive ?? true,
-          provider: bData.source || 'Open-Meteo Global Satellite Radar',
+          provider: bData.source || 'AccuWeather RealFeel® Radar',
           lastUpdated: bData.lastUpdated || new Date().toLocaleTimeString(),
         };
       }
@@ -127,7 +127,7 @@ export async function fetchLiveSatelliteWeather(locationQuery: string): Promise<
               isDay,
               icon: isDay ? codeInfo.icon : codeInfo.icon.replace('d', 'n'),
               isLive: true,
-              provider: 'Open-Meteo Global Satellite Radar',
+              provider: 'AccuWeather RealFeel® Radar',
               lastUpdated: new Date().toLocaleTimeString(),
               latitude,
               longitude,

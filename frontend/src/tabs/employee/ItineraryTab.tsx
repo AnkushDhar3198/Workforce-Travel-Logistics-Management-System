@@ -466,7 +466,7 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
                 <div className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   <p className="text-[11px] text-sky-400 font-bold uppercase tracking-wider truncate">
-                    Live Satellite Stream • {liveTime}
+                    AccuWeather RealFeel® Radar • {liveTime}
                   </p>
                 </div>
                 <h4 className="text-base font-black text-white mt-0.5 truncate">

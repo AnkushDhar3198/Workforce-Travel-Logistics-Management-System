@@ -63,8 +63,13 @@ function applyThemeToDom(t: ThemeId) {
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<ThemeId>(() => {
-    const saved = localStorage.getItem('voyacore_theme') as ThemeId | null;
-    return saved || 'midnight';
+    try {
+      const validIds: ThemeId[] = ['midnight', 'aurora', 'daylight', 'ember'];
+      const saved = localStorage.getItem('voyacore_theme') as ThemeId | null;
+      return (saved && validIds.includes(saved)) ? saved : 'midnight';
+    } catch (e) {
+      return 'midnight';
+    }
   });
 
   // Apply saved theme on first mount

@@ -63,50 +63,44 @@ function DashboardContent() {
     const connectSSE = () => {
       // Close existing connection
       if (eventSourceRef.current) {
-        eventSourceRef.current.close();
+        try { eventSourceRef.current.close(); } catch (e) {}
       }
 
-      // EventSource doesn't support custom headers natively,
-      // so we pass the token as a query param (backend will need to support this)
-      // Alternatively, we use a polyfill approach with fetch-based SSE
-      const sseUrl = `${BACKEND_URL}/api/sse/subscribe?token=${encodeURIComponent(token)}`;
-      const eventSource = new EventSource(sseUrl);
-      eventSourceRef.current = eventSource;
+      try {
+        if (typeof window !== 'undefined' && 'EventSource' in window) {
+          const sseUrl = `${BACKEND_URL}/api/sse/subscribe?token=${encodeURIComponent(token)}`;
+          const eventSource = new EventSource(sseUrl);
+          eventSourceRef.current = eventSource;
 
-      eventSource.addEventListener('connected', () => {
-        console.log('[SSE] Real-time connection established');
-        retryDelay = 1000; // Reset retry delay on successful connection
-      });
+          eventSource.addEventListener('connected', () => {
+            console.log('[SSE] Real-time connection established');
+            retryDelay = 1000;
+          });
 
-      eventSource.addEventListener('NOTIFICATION', (event) => {
-        try {
-          const notification = JSON.parse(event.data);
-          setNotifications(prev => [notification, ...prev]);
-        } catch (e) {
-          console.error('[SSE] Failed to parse notification:', e);
+          eventSource.addEventListener('NOTIFICATION', (event) => {
+            try {
+              const notification = JSON.parse(event.data);
+              setNotifications(prev => [notification, ...prev]);
+            } catch (e) {}
+          });
+
+          eventSource.addEventListener('SHIPMENT_UPDATE', (event) => {
+            try {
+              loadNotifications();
+            } catch (e) {}
+          });
+
+          eventSource.onerror = () => {
+            try { eventSource.close(); } catch (e) {}
+            reconnectTimerRef.current = setTimeout(() => {
+              retryDelay = Math.min(retryDelay * 2, 30000);
+              connectSSE();
+            }, retryDelay);
+          };
         }
-      });
-
-      eventSource.addEventListener('SHIPMENT_UPDATE', (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          console.log('[SSE] Shipment update:', data);
-          // Trigger a notification reload for full context
-          loadNotifications();
-        } catch (e) {
-          console.error('[SSE] Failed to parse shipment update:', e);
-        }
-      });
-
-      eventSource.onerror = () => {
-        console.warn('[SSE] Connection lost, will retry in', retryDelay / 1000, 's');
-        eventSource.close();
-        // Exponential backoff retry
-        reconnectTimerRef.current = setTimeout(() => {
-          retryDelay = Math.min(retryDelay * 2, 30000);
-          connectSSE();
-        }, retryDelay);
-      };
+      } catch (err) {
+        console.warn('[SSE] EventSource unavailable on this environment:', err);
+      }
     };
 
     connectSSE();
@@ -258,9 +252,19 @@ class GlobalErrorBoundary extends React.Component<{ children: React.ReactNode },
               ⚡
             </div>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 900, marginBottom: '8px', color: '#fff' }}>VoyaCore Enterprise Recovery</h2>
-            <p style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '20px', lineHeight: 1.5 }}>
-              The application encountered a minor runtime sync update. Click below to reload the session smoothly.
+            <p style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '16px', lineHeight: 1.5 }}>
+              The application encountered a runtime synchronization event. Click below to reload cleanly.
             </p>
+
+            {this.state.error && (
+              <details style={{ textAlign: 'left', marginBottom: '20px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '10px', padding: '8px 12px', fontSize: '10px', color: '#fca5a5' }}>
+                <summary style={{ cursor: 'pointer', fontWeight: 700 }}>Diagnostic Details</summary>
+                <div style={{ marginTop: '6px', fontFamily: 'monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-all', maxHeight: '120px', overflowY: 'auto' }}>
+                  {String(this.state.error?.message || this.state.error)}
+                </div>
+              </details>
+            )}
+
             <button
               onClick={() => {
                 try {

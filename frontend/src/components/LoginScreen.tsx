@@ -794,21 +794,26 @@ export default function LoginScreen() {
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex" style={{ alignItems: 'center', gap: '24px' }}>
-          <div onMouseEnter={() => handleMouseEnterDropdown('solutions')} onMouseLeave={handleMouseLeaveDropdown} style={{ position: 'relative', padding: '8px 0', cursor: 'pointer' }}>
+        <nav className="voyacore-nav-desktop">
+          <div
+            onClick={() => setActiveDropdown(curr => curr === 'solutions' ? null : 'solutions')}
+            onMouseEnter={() => handleMouseEnterDropdown('solutions')}
+            onMouseLeave={handleMouseLeaveDropdown}
+            style={{ position: 'relative', padding: '8px 0', cursor: 'pointer' }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: 700, color: activeDropdown === 'solutions' ? 'var(--accent-primary)' : 'var(--text-secondary)', transition: 'color 0.2s' }}>
               <span>Solutions Suite</span>
               <ChevronDown size={14} style={{ transform: activeDropdown === 'solutions' ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
             </div>
             {activeDropdown === 'solutions' && (
-              <div style={{ position: 'absolute', top: '100%', left: '-20px', width: '520px', padding: '18px', borderRadius: '20px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', boxShadow: '0 20px 60px rgba(0,0,0,0.35)', backdropFilter: 'blur(28px) saturate(180%)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', zIndex: 50, animation: 'fadeSlideUp 0.2s ease both' }}>
+              <div style={{ position: 'absolute', top: '100%', left: '-20px', width: '520px', padding: '18px', borderRadius: '20px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', boxShadow: '0 20px 60px rgba(0,0,0,0.45)', backdropFilter: 'blur(28px) saturate(180%)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', zIndex: 1000, animation: 'fadeSlideUp 0.2s ease both' }}>
                 {[
                   { icon: Plane, color: '#38bdf8', bg: 'rgba(56,189,248,0.15)', title: 'Travel Management', desc: 'Real-time booking engine & itinerary sync.' },
                   { icon: Truck, color: '#818cf8', bg: 'rgba(129,140,248,0.15)', title: 'Logistics Manifest', desc: 'Customs clearance & prototype cargo tracking.' },
                   { icon: DollarSign, color: '#facc15', bg: 'rgba(250,204,21,0.15)', title: 'Expense Auditing', desc: 'AI receipt OCR & multi-currency claim routing.' },
                   { icon: ShieldAlert, color: '#f87171', bg: 'rgba(248,113,113,0.15)', title: 'Duty of Care Security', desc: 'GPS traveler heatmap & SOS emergency alerts.' },
                 ].map((item, i) => (
-                  <div key={i} onClick={openLogin} style={{ padding: '12px', borderRadius: '14px', background: 'var(--nav-hover-bg)', border: '1px solid var(--border-subtle)', cursor: 'pointer', transition: 'all 0.2s' }}>
+                  <div key={i} onClick={(e) => { e.stopPropagation(); setActiveDropdown(null); openLogin(); }} style={{ padding: '12px', borderRadius: '14px', background: 'var(--nav-hover-bg)', border: '1px solid var(--border-subtle)', cursor: 'pointer', transition: 'all 0.2s' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                       <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: item.bg, color: item.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><item.icon size={14} /></div>
                       <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-primary)' }}>{item.title}</span>
@@ -820,20 +825,25 @@ export default function LoginScreen() {
             )}
           </div>
 
-          <div onMouseEnter={() => handleMouseEnterDropdown('autonomy')} onMouseLeave={handleMouseLeaveDropdown} style={{ position: 'relative', padding: '8px 0', cursor: 'pointer' }}>
+          <div
+            onClick={() => setActiveDropdown(curr => curr === 'autonomy' ? null : 'autonomy')}
+            onMouseEnter={() => handleMouseEnterDropdown('autonomy')}
+            onMouseLeave={handleMouseLeaveDropdown}
+            style={{ position: 'relative', padding: '8px 0', cursor: 'pointer' }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: 700, color: activeDropdown === 'autonomy' ? 'var(--accent-primary)' : 'var(--text-secondary)', transition: 'color 0.2s' }}>
               <span>Platform Autonomy</span>
               <ChevronDown size={14} style={{ transform: activeDropdown === 'autonomy' ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
             </div>
             {activeDropdown === 'autonomy' && (
-              <div style={{ position: 'absolute', top: '100%', left: '-20px', width: '520px', padding: '18px', borderRadius: '20px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', boxShadow: '0 20px 60px rgba(0,0,0,0.35)', backdropFilter: 'blur(28px) saturate(180%)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', zIndex: 50, animation: 'fadeSlideUp 0.2s ease both' }}>
+              <div style={{ position: 'absolute', top: '100%', left: '-20px', width: '520px', padding: '18px', borderRadius: '20px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', boxShadow: '0 20px 60px rgba(0,0,0,0.45)', backdropFilter: 'blur(28px) saturate(180%)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', zIndex: 1000, animation: 'fadeSlideUp 0.2s ease both' }}>
                 {[
                   { icon: Sparkles, color: '#34d399', bg: 'rgba(52,211,153,0.15)', title: 'Level 5 AI Engine', desc: 'Autonomous rebooking & smart policy enforcement.' },
                   { icon: Shield, color: '#f87171', bg: 'rgba(248,113,113,0.15)', title: 'Duty of Care GPS', desc: 'Traveler heatmap & 24/7 emergency dispatch.' },
                   { icon: Lock, color: '#94a3b8', bg: 'rgba(148,163,184,0.15)', title: 'Audit & Governance', desc: 'Security event logs & corporate RBAC.' },
                   { icon: BarChart3, color: '#3b82f6', bg: 'rgba(59,130,246,0.15)', title: 'Spend Analytics', desc: 'Executive budget & discount analytics.' },
                 ].map((item, i) => (
-                  <div key={i} onClick={openLogin} style={{ padding: '12px', borderRadius: '14px', background: 'var(--nav-hover-bg)', border: '1px solid var(--border-subtle)', cursor: 'pointer', transition: 'all 0.2s' }}>
+                  <div key={i} onClick={(e) => { e.stopPropagation(); setActiveDropdown(null); openLogin(); }} style={{ padding: '12px', borderRadius: '14px', background: 'var(--nav-hover-bg)', border: '1px solid var(--border-subtle)', cursor: 'pointer', transition: 'all 0.2s' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                       <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: item.bg, color: item.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><item.icon size={14} /></div>
                       <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-primary)' }}>{item.title}</span>
@@ -851,7 +861,7 @@ export default function LoginScreen() {
 
         {/* Right Side */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div className="hidden sm:flex" style={{ alignItems: 'center', gap: '3px', marginRight: '4px' }}>
+          <div className="voyacore-theme-picker">
             {THEMES.map(t => (
               <button key={t.id} onClick={() => setTheme(t.id as ThemeId)} title={t.name}
                 style={{ padding: '4px 7px', borderRadius: '100px', border: '1px solid', borderColor: theme === t.id ? 'var(--border-active)' : 'transparent', background: theme === t.id ? 'var(--nav-active-bg)' : 'transparent', color: theme === t.id ? 'var(--accent-primary)' : 'var(--text-muted)', fontSize: '11px', cursor: 'pointer', transition: 'all 0.2s ease' }}>
@@ -861,7 +871,7 @@ export default function LoginScreen() {
           </div>
           <button onClick={openLogin} style={{ padding: '8px 15px', borderRadius: '100px', border: '1px solid var(--border-default)', background: 'var(--nav-hover-bg)', color: 'var(--text-primary)', fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s ease', backdropFilter: 'blur(12px)', whiteSpace: 'nowrap' }}>Log In</button>
           <button onClick={openSignUp} style={{ padding: '8px 16px', borderRadius: '100px', border: 'none', background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s ease', boxShadow: '0 4px 16px var(--accent-glow)', whiteSpace: 'nowrap' }}>Sign Up</button>
-          <button onClick={() => setIsMobileNavOpen(v => !v)} className="flex lg:hidden"
+          <button onClick={() => setIsMobileNavOpen(v => !v)} className="voyacore-nav-mobile-btn"
             style={{ padding: '8px', borderRadius: '10px', border: '1px solid var(--border-default)', background: 'var(--nav-hover-bg)', color: 'var(--text-primary)', cursor: 'pointer' }}>
             {isMobileNavOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
@@ -870,7 +880,7 @@ export default function LoginScreen() {
 
       {/* Mobile Nav Drawer */}
       {isMobileNavOpen && (
-        <div className="lg:hidden" style={{ position: 'fixed', top: '56px', left: 0, right: 0, zIndex: 35, padding: '20px', background: 'var(--card-bg)', borderBottom: '1px solid var(--card-border)', backdropFilter: 'blur(32px) saturate(180%)', display: 'flex', flexDirection: 'column', gap: '16px', boxShadow: '0 12px 32px rgba(0,0,0,0.4)', animation: 'fadeSlideDown 0.25s ease both' }}>
+        <div style={{ position: 'fixed', top: '56px', left: 0, right: 0, zIndex: 900, padding: '20px', background: 'var(--card-bg)', borderBottom: '1px solid var(--card-border)', backdropFilter: 'blur(32px) saturate(180%)', display: 'flex', flexDirection: 'column', gap: '16px', boxShadow: '0 12px 32px rgba(0,0,0,0.4)', animation: 'fadeSlideDown 0.25s ease both' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '12px', borderBottom: '1px solid var(--border-subtle)' }}>
             <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)' }}>Select Theme</span>
             <div style={{ display: 'flex', gap: '6px' }}>
@@ -1012,6 +1022,68 @@ export default function LoginScreen() {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      {/* FEATURE MODALS */}
+      {featureModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(16px)', animation: 'fadeIn 0.2s ease both' }}
+          onClick={() => setFeatureModal(null)}>
+          <div style={{ width: 'calc(100vw - 32px)', maxWidth: '560px', borderRadius: '24px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', boxShadow: '0 24px 80px rgba(0,0,0,0.6)', padding: '24px', position: 'relative', animation: 'popIn 0.25s cubic-bezier(0.22,1,0.36,1) both' }}
+            onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid var(--border-subtle)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: featureModal === 'duty' ? 'rgba(248,113,113,0.15)' : 'rgba(129,140,248,0.15)', color: featureModal === 'duty' ? '#f87171' : '#818cf8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {featureModal === 'duty' ? <ShieldAlert size={18} /> : <Truck size={18} />}
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                    {featureModal === 'duty' ? 'Duty of Care & Security Suite' : 'Enterprise Logistics Cargo Manifest'}
+                  </h3>
+                  <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>VoyaCore Real-Time Enterprise Protocol</span>
+                </div>
+              </div>
+              <button onClick={() => setFeatureModal(null)} style={{ padding: '6px', borderRadius: '8px', border: 'none', background: 'var(--nav-hover-bg)', color: 'var(--text-muted)', cursor: 'pointer' }}><X size={16} /></button>
+            </div>
+
+            {featureModal === 'duty' ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                <p style={{ margin: 0 }}>
+                  VoyaCore Duty of Care provides 24/7 global risk monitoring, automated weather advisories, GPS traveler heatmaps, and one-click SOS emergency dispatch.
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <div style={{ padding: '12px', borderRadius: '12px', background: 'var(--nav-hover-bg)', border: '1px solid var(--border-subtle)' }}>
+                    <strong style={{ color: 'var(--text-primary)', display: 'block', fontSize: '12px' }}>🛰️ Live Heatmap</strong>
+                    Real-time location ping & crisis area radius overlay.
+                  </div>
+                  <div style={{ padding: '12px', borderRadius: '12px', background: 'var(--nav-hover-bg)', border: '1px solid var(--border-subtle)' }}>
+                    <strong style={{ color: 'var(--text-primary)', display: 'block', fontSize: '12px' }}>🚨 Instant SOS Protocol</strong>
+                    Direct satellite line to corporate security & local responders.
+                  </div>
+                </div>
+                <button onClick={() => { setFeatureModal(null); openLogin(); }} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)', fontWeight: 800, cursor: 'pointer', marginTop: '6px' }}>
+                  Access Security Portal
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                <p style={{ margin: 0 }}>
+                  Manage corporate prototype cargo, customs clearance documents, waybill serial numbers, and equipment transport manifests in real-time.
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <div style={{ padding: '12px', borderRadius: '12px', background: 'var(--nav-hover-bg)', border: '1px solid var(--border-subtle)' }}>
+                    <strong style={{ color: 'var(--text-primary)', display: 'block', fontSize: '12px' }}>📦 Waybill Tracking</strong>
+                    Automated barcode & customs clearance declaration.
+                  </div>
+                  <div style={{ padding: '12px', borderRadius: '12px', background: 'var(--nav-hover-bg)', border: '1px solid var(--border-subtle)' }}>
+                    <strong style={{ color: 'var(--text-primary)', display: 'block', fontSize: '12px' }}>🔒 High-Value Cargo</strong>
+                    Encrypted chain of custody & serial number verification.
+                  </div>
+                </div>
+                <button onClick={() => { setFeatureModal(null); openLogin(); }} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)', fontWeight: 800, cursor: 'pointer', marginTop: '6px' }}>
+                  Open Logistics Dashboard
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

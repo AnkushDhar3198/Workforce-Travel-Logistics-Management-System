@@ -1583,15 +1583,33 @@ select option {
   }
 }
 
-/* Compact Mobile Screens (iPhone SE, small smartphones) */
-@media (max-width: 480px) {
-  .v-page-header {
-    padding-bottom: 10px !important;
-  }
+/* Custom Responsive Navbar utilities */
+.voyacore-nav-desktop {
+  display: flex !important;
+  align-items: center;
+  gap: 24px;
+}
+.voyacore-nav-mobile-btn {
+  display: none !important;
+}
+.voyacore-theme-picker {
+  display: flex !important;
+  align-items: center;
+  gap: 4px;
+  margin-right: 4px;
+}
 
-  .v-stat .v-stat-value {
-    font-size: 1.15rem !important;
+@media (max-width: 991px) {
+  .voyacore-nav-desktop {
+    display: none !important;
+  }
+  .voyacore-nav-mobile-btn {
+    display: flex !important;
+  }
+  .voyacore-theme-picker {
+    display: none !important;
   }
 }
+
 
 

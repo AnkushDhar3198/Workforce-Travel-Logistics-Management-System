@@ -1,9 +1,15 @@
--- Automatic DDL Schema Migration for PostgreSQL database on Render / Neon
--- Ensures all required columns exist on startup BEFORE Hibernate initializes
+-- Complete Automatic DDL Schema Migration for PostgreSQL database on Render / Neon
+-- Ensures all 30 user entity columns exist on startup BEFORE Hibernate initializes
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS employee_code VARCHAR(255);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name VARCHAR(255);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS last_name VARCHAR(255);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(50);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS department VARCHAR(255);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS designation VARCHAR(255);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(255);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS date_of_birth DATE;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS gender VARCHAR(10);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS nationality VARCHAR(255);

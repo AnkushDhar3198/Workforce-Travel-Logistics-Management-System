@@ -451,34 +451,34 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
           </CardContent>
         </Card>
 
-        {/* Live Satellite Weather Stat Card */}
+        {/* Live Google Weather Stat Card */}
         <Card className="hover-elevate hover-glow bg-gradient-to-r from-sky-950/40 to-cyan-950/30 border border-sky-800/40 relative overflow-hidden">
           <CardContent className="p-4 flex flex-col gap-2.5">
-            {/* Top Header Row: Live Pulse, AccuWeather Title & Actions */}
+            {/* Top Header Row: Live Pulse, Google Weather Title & Actions */}
             <div className="flex items-center justify-between gap-2 border-b border-sky-800/30 pb-2">
               <div className="flex items-center gap-1.5 min-w-0">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
                 <p className="text-[11px] text-sky-300 font-extrabold uppercase tracking-wider truncate">
-                  AccuWeather RealFeel® • {liveTime}
+                  Google Weather Live Stream • {liveTime}
                 </p>
               </div>
 
               <div className="flex items-center gap-1.5 shrink-0">
                 <a
-                  href={weather?.accuWeatherUrl || `https://www.accuweather.com/en/search-locations?query=${encodeURIComponent(selectedReq?.destination || 'Switzerland')}`}
+                  href={weather?.googleUrl || `https://www.google.com/search?q=${encodeURIComponent(selectedReq?.destination || 'Kashmir')}+weather`}
                   target="_blank"
                   rel="noreferrer"
-                  title="Open AccuWeather.com Forecast"
-                  className="px-2 py-0.5 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-[9.5px] font-black flex items-center gap-1 transition-all cursor-pointer"
+                  title="Open Google Weather"
+                  className="px-2.5 py-0.5 rounded-lg border border-blue-500/40 bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 text-[9.5px] font-black flex items-center gap-1 transition-all cursor-pointer shadow-sm"
                 >
-                  <span>AccuWeather.com</span>
+                  <span>Google Weather</span>
                   <span className="text-[10px]">↗</span>
                 </a>
 
                 <button
                   onClick={handleManualWeatherRefresh}
                   disabled={isRefreshingWeather}
-                  title="Re-fetch AccuWeather Data"
+                  title="Re-fetch Google Weather Data"
                   className="p-1.5 rounded-lg border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 transition-all cursor-pointer shrink-0 active:scale-95 disabled:opacity-50"
                 >
                   <RefreshCw size={13} className={isRefreshingWeather ? 'animate-spin text-cyan-400' : ''} />
@@ -498,13 +498,13 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
 
               <div className="min-w-0 flex-1">
                 <h4 className="text-base sm:text-lg font-black text-white leading-tight">
-                  {weather ? `${weather.temperature ?? weather.temp}°C — ${weather.description ?? 'Sunny & Clear'}` : '18°C — Live'}
+                  {weather ? `${weather.temperature ?? weather.temp}°C — ${weather.description ?? 'Partly cloudy'}` : '17°C — Live'}
                 </h4>
                 <p className="text-xs font-bold text-slate-200 mt-0.5">
-                  📍 {selectedReq?.destination || weather?.city || 'Switzerland'} • RealFeel® {weather?.feelsLike ?? (weather?.temp ?? 18)}°C
+                  📍 {weather?.city || selectedReq?.destination || 'Jammu and Kashmir'}
                 </p>
                 <p className="text-[10.5px] font-semibold text-slate-400 mt-0.5">
-                  Humidity: {weather?.humidity ?? 55}% • Wind: {weather?.windSpeed ?? 12} km/h • {weather?.provider || 'AccuWeather RealFeel® Radar'}
+                  Humidity: {weather?.humidity ?? 92}% • Wind: {weather?.windSpeed ?? 2} km/h • {weather?.provider || 'Google Weather'}
                 </p>
                 {weatherNotice && (
                   <p className="text-[10px] font-bold text-cyan-300 animate-fade-in mt-1">

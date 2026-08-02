@@ -1172,7 +1172,7 @@ export default function LoginScreen() {
         <div style={{ maxWidth: '840px', width: '100%', margin: '0 auto' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '100px', background: 'var(--nav-active-bg)', border: '1px solid var(--nav-active-border)', color: 'var(--accent-primary)', fontSize: '10px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '16px', maxWidth: '90vw', animation: 'fadeSlideDown 0.6s ease both' }}>
             <Sparkles size={13} />
-            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>NEXT-GEN WORKFORCE TRAVEL & LOGISTICS</span>
+            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>ELEVATING EVERY CORPORATE JOURNEY</span>
           </div>
           <h1 style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: 'clamp(1.75rem, 5vw, 3.2rem)', letterSpacing: '-0.04em', color: 'var(--text-primary)', margin: '0 0 14px', lineHeight: 1.12, wordBreak: 'break-word' }}>
             Next-Gen Workforce Travel & Logistics Management

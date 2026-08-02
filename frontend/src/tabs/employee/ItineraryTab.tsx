@@ -37,7 +37,6 @@ const CITY_CLIMATE_DATABASE: Record<string, { temp: number; desc: string; humidi
   'canada': { temp: 23, desc: 'Clear & Pleasant', humidity: 50, icon: '01d' },
   'san francisco': { temp: 17, desc: 'Coastal Fog & Cool', humidity: 75, icon: '03d' },
   'hong kong': { temp: 29, desc: 'Humid & Partly Cloudy', humidity: 78, icon: '02d' },
-  'zurich': { temp: 18, desc: 'Alpine Breeze', humidity: 56, icon: '01d' },
   'bangkok': { temp: 33, desc: 'Tropical Heat & Humid', humidity: 79, icon: '10d' },
   'thailand': { temp: 33, desc: 'Tropical Heat & Humid', humidity: 79, icon: '10d' },
 };

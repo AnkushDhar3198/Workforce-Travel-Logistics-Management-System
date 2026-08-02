@@ -78,20 +78,27 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
   const [bookings, setBookings] = useState<any[]>([]);
   const [shipments, setShipments] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [weather, setWeather] = useState<any>(() => getWeatherForLocation(selectedReq?.destination || 'Manali'));
+  const [weather, setWeather] = useState<any>(null);
+  const [weatherLoading, setWeatherLoading] = useState(false);
   const [liveTime, setLiveTime] = useState<string>(() => new Date().toLocaleTimeString());
   const [isRefreshingWeather, setIsRefreshingWeather] = useState(false);
   const [weatherNotice, setWeatherNotice] = useState<string | null>(null);
 
   const handleManualWeatherRefresh = async () => {
+    if (!selectedReq?.destination) return;
     setIsRefreshingWeather(true);
-    const dest = selectedReq?.destination || 'Manali';
+    setWeather(null);
+    setWeatherLoading(true);
+    const dest = selectedReq.destination;
     try {
       const liveData = await fetchLiveSatelliteWeather(dest);
       setWeather(liveData);
-      setWeatherNotice(`Google Weather Stream Refreshed: ${liveData.temperature}°C in ${liveData.city}`);
+      setWeatherLoading(false);
+      setWeatherNotice(`Updated: ${liveData.temperature}°C in ${liveData.city}`);
       setTimeout(() => setWeatherNotice(null), 4000);
-    } catch (e) {}
+    } catch (e) {
+      setWeatherLoading(false);
+    }
     setIsRefreshingWeather(false);
   };
 
@@ -136,42 +143,58 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
     loadItineraries();
   }, []);
 
-  // Continuous 15-second live Google Weather auto-refresh polling loop & req details loader
+  // Immediately fetch fresh weather whenever the selected trip destination changes
   useEffect(() => {
-    if (selectedReq) {
-      const dest = selectedReq.destination || 'Manali';
-
-      const updateWeather = async () => {
-        const liveData = await fetchLiveSatelliteWeather(dest);
-        setWeather(liveData);
-      };
-
-      updateWeather();
-      const weatherInterval = setInterval(updateWeather, 15000);
-
-      const fetchReqDetails = async () => {
-        try {
-          // Fetch real bookings from API
-          const bRes = await authFetch(`${API_BASE}/travel/${selectedReq.id}/bookings`);
-          if (bRes.ok) {
-            setBookings(await bRes.json());
-          } else {
-            setBookings([]);
-          }
-
-          // Fetch shipments
-          const sRes = await authFetch(`${API_BASE}/shipments/employee`);
-          if (sRes.ok) {
-            const sList = await sRes.json();
-            setShipments(sList.filter((s: any) => s.linkedTravelRequestId === selectedReq.id));
-          }
-        } catch (err) {}
-      };
-      fetchReqDetails();
-
-      return () => clearInterval(weatherInterval);
+    const dest = selectedReq?.destination;
+    if (!dest) {
+      setWeather(null);
+      return;
     }
+
+    // Reset weather immediately so stale data from the previous city is never shown
+    setWeather(null);
+    setWeatherLoading(true);
+
+    let cancelled = false;
+    let intervalId: ReturnType<typeof setInterval>;
+
+    const fetchWeather = async () => {
+      try {
+        const liveData = await fetchLiveSatelliteWeather(dest);
+        if (!cancelled) {
+          setWeather(liveData);
+          setWeatherLoading(false);
+        }
+      } catch (_) {
+        if (!cancelled) setWeatherLoading(false);
+      }
+    };
+
+    fetchWeather();
+    intervalId = setInterval(fetchWeather, 15000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+    };
   }, [selectedReq?.id, selectedReq?.destination]);
+
+  // Fetch bookings + shipments when selected request changes
+  useEffect(() => {
+    if (!selectedReq) return;
+    const fetchReqDetails = async () => {
+      try {
+        const bRes = await authFetch(`${API_BASE}/travel/${selectedReq.id}/bookings`);
+        setBookings(bRes.ok ? await bRes.json() : []);
+        const sRes = await authFetch(`${API_BASE}/shipments/employee`);
+        if (sRes.ok) {
+          const sList = await sRes.json();
+          setShipments(sList.filter((s: any) => s.linkedTravelRequestId === selectedReq.id));
+        }
+      } catch (_) {}
+    };
+    fetchReqDetails();
+  }, [selectedReq?.id]);
 
   const downloadItineraryPdf = async (requestId: number) => {
     try {
@@ -475,36 +498,56 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
             </div>
 
             {/* Main Weather Details Row */}
-            <div className="flex items-center gap-3.5 pt-0.5">
-              <div className="p-2.5 rounded-xl bg-sky-500/10 text-sky-400 text-3xl shrink-0 flex items-center justify-center">
-                {weather?.icon === '01d' || weather?.icon === '01n' ? '☀️' :
-                 weather?.icon?.startsWith('02') ? '⛅' :
-                 weather?.icon?.startsWith('03') || weather?.icon?.startsWith('04') ? '☁️' :
-                 weather?.icon?.startsWith('09') || weather?.icon?.startsWith('10') ? '🌧️' :
-                 weather?.icon?.startsWith('13') ? '❄️' :
-                 weather?.icon?.startsWith('50') ? '🌫️' : '🌤️'}
-              </div>
+            <div className="flex items-center gap-3.5 pt-0.5 min-h-[56px]">
+              {weatherLoading ? (
+                /* Loading skeleton — shown while fetching for new destination */
+                <div className="flex items-center gap-3 w-full animate-pulse">
+                  <div className="w-12 h-12 rounded-xl bg-sky-500/10 shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-sky-500/10 rounded w-2/3" />
+                    <div className="h-3 bg-slate-700/40 rounded w-1/2" />
+                    <div className="h-3 bg-slate-700/30 rounded w-3/4" />
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="p-2.5 rounded-xl bg-sky-500/10 text-sky-400 text-3xl shrink-0 flex items-center justify-center">
+                    {weather?.icon === '01d' || weather?.icon === '01n' ? '☀️' :
+                     weather?.icon?.startsWith('02') ? '⛅' :
+                     weather?.icon?.startsWith('03') || weather?.icon?.startsWith('04') ? '☁️' :
+                     weather?.icon?.startsWith('09') || weather?.icon?.startsWith('10') ? '🌧️' :
+                     weather?.icon?.startsWith('13') ? '❄️' :
+                     weather?.icon?.startsWith('50') ? '🌫️' : '🌤️'}
+                  </div>
 
-              <div className="min-w-0 flex-1">
-                <h4 className="text-base sm:text-lg font-black text-white leading-tight">
-                  {weather ? `${weather.temperature ?? weather.temp}°C — ${weather.description ?? 'Partly cloudy'}` : '—'}
-                </h4>
-                <p className="text-xs font-bold text-slate-200 mt-0.5">
-                  📍 {selectedReq?.destination || weather?.city || 'Manali'}
-                </p>
-                <p className="text-[10.5px] font-semibold text-slate-400 mt-0.5">
-                  Feels {weather?.feelsLike ?? '—'}°C • Humidity {weather?.humidity ?? '—'}% • Wind {weather?.windSpeed ?? '—'} km/h
-                  {weather?.uvIndex != null ? ` • UV ${weather.uvIndex}` : ''}
-                </p>
-                <p className="text-[10px] font-medium text-sky-500/80 mt-0.5">
-                  {weather?.provider || 'Google Maps Platform Weather API'}
-                </p>
-                {weatherNotice && (
-                  <p className="text-[10px] font-bold text-cyan-300 animate-fade-in mt-1">
-                    ✨ {weatherNotice}
-                  </p>
-                )}
-              </div>
+                  <div className="min-w-0 flex-1">
+                    <h4 className="text-base sm:text-lg font-black text-white leading-tight">
+                      {weather
+                        ? `${weather.temperature ?? weather.temp}°C — ${weather.description ?? 'Partly cloudy'}`
+                        : 'Fetching weather…'}
+                    </h4>
+                    <p className="text-xs font-bold text-slate-200 mt-0.5">
+                      📍 {selectedReq?.destination || weather?.city || 'Manali'}
+                    </p>
+                    {weather && (
+                      <>
+                        <p className="text-[10.5px] font-semibold text-slate-400 mt-0.5">
+                          Feels {weather.feelsLike ?? '—'}°C • Humidity {weather.humidity}% • Wind {weather.windSpeed} km/h
+                          {weather.uvIndex != null ? ` • UV ${weather.uvIndex}` : ''}
+                        </p>
+                        <p className="text-[10px] font-medium text-sky-500/80 mt-0.5">
+                          {weather.provider || 'Google Maps Platform Weather API'}
+                        </p>
+                      </>
+                    )}
+                    {weatherNotice && (
+                      <p className="text-[10px] font-bold text-cyan-300 animate-fade-in mt-1">
+                        ✨ {weatherNotice}
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           </CardContent>
         </Card>

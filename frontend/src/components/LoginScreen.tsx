@@ -28,6 +28,57 @@ const GENDERS = ['MALE', 'FEMALE', 'OTHER'];
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 const RELATIONSHIPS = ['Spouse', 'Parent', 'Sibling', 'Friend', 'Other'];
 
+const DEFAULT_COUNTRIES = [
+  { name: 'Afghanistan', code: 'AF' }, { name: 'Albania', code: 'AL' }, { name: 'Algeria', code: 'DZ' },
+  { name: 'Andorra', code: 'AD' }, { name: 'Angola', code: 'AO' }, { name: 'Argentina', code: 'AR' },
+  { name: 'Armenia', code: 'AM' }, { name: 'Australia', code: 'AU' }, { name: 'Austria', code: 'AT' },
+  { name: 'Azerbaijan', code: 'AZ' }, { name: 'Bahamas', code: 'BS' }, { name: 'Bahrain', code: 'BH' },
+  { name: 'Bangladesh', code: 'BD' }, { name: 'Barbados', code: 'BB' }, { name: 'Belarus', code: 'BY' },
+  { name: 'Belgium', code: 'BE' }, { name: 'Belize', code: 'BZ' }, { name: 'Benin', code: 'BJ' },
+  { name: 'Bhutan', code: 'BT' }, { name: 'Bolivia', code: 'BO' }, { name: 'Bosnia and Herzegovina', code: 'BA' },
+  { name: 'Botswana', code: 'BW' }, { name: 'Brazil', code: 'BR' }, { name: 'Brunei', code: 'BN' },
+  { name: 'Bulgaria', code: 'BG' }, { name: 'Burkina Faso', code: 'BF' }, { name: 'Burundi', code: 'BI' },
+  { name: 'Cambodia', code: 'KH' }, { name: 'Cameroon', code: 'CM' }, { name: 'Canada', code: 'CA' },
+  { name: 'Chile', code: 'CL' }, { name: 'China', code: 'CN' }, { name: 'Colombia', code: 'CO' },
+  { name: 'Costa Rica', code: 'CR' }, { name: 'Croatia', code: 'HR' }, { name: 'Cuba', code: 'CU' },
+  { name: 'Cyprus', code: 'CY' }, { name: 'Czech Republic', code: 'CZ' }, { name: 'Denmark', code: 'DK' },
+  { name: 'Dominican Republic', code: 'DO' }, { name: 'Ecuador', code: 'EC' }, { name: 'Egypt', code: 'EG' },
+  { name: 'El Salvador', code: 'SV' }, { name: 'Estonia', code: 'EE' }, { name: 'Ethiopia', code: 'ET' },
+  { name: 'Fiji', code: 'FJ' }, { name: 'Finland', code: 'FI' }, { name: 'France', code: 'FR' },
+  { name: 'Georgia', code: 'GE' }, { name: 'Germany', code: 'DE' }, { name: 'Ghana', code: 'GH' },
+  { name: 'Greece', code: 'GR' }, { name: 'Guatemala', code: 'GT' }, { name: 'Honduras', code: 'HN' },
+  { name: 'Hungary', code: 'HU' }, { name: 'Iceland', code: 'IS' }, { name: 'India', code: 'IN' },
+  { name: 'Indonesia', code: 'ID' }, { name: 'Iran', code: 'IR' }, { name: 'Iraq', code: 'IQ' },
+  { name: 'Ireland', code: 'IE' }, { name: 'Israel', code: 'IL' }, { name: 'Italy', code: 'IT' },
+  { name: 'Jamaica', code: 'JM' }, { name: 'Japan', code: 'JP' }, { name: 'Jordan', code: 'JO' },
+  { name: 'Kazakhstan', code: 'KZ' }, { name: 'Kenya', code: 'KE' }, { name: 'Kuwait', code: 'KW' },
+  { name: 'Kyrgyzstan', code: 'KG' }, { name: 'Laos', code: 'LA' }, { name: 'Latvia', code: 'LV' },
+  { name: 'Lebanon', code: 'LB' }, { name: 'Libya', code: 'LY' }, { name: 'Liechtenstein', code: 'LI' },
+  { name: 'Lithuania', code: 'LT' }, { name: 'Luxembourg', code: 'LU' }, { name: 'Madagascar', code: 'MG' },
+  { name: 'Malaysia', code: 'MY' }, { name: 'Maldives', code: 'MV' }, { name: 'Mali', code: 'ML' },
+  { name: 'Malta', code: 'MT' }, { name: 'Mexico', code: 'MX' }, { name: 'Moldova', code: 'MD' },
+  { name: 'Monaco', code: 'MC' }, { name: 'Mongolia', code: 'MN' }, { name: 'Montenegro', code: 'ME' },
+  { name: 'Morocco', code: 'MA' }, { name: 'Mozambique', code: 'MZ' }, { name: 'Myanmar', code: 'MM' },
+  { name: 'Namibia', code: 'NA' }, { name: 'Nepal', code: 'NP' }, { name: 'Netherlands', code: 'NL' },
+  { name: 'New Zealand', code: 'NZ' }, { name: 'Nicaragua', code: 'NI' }, { name: 'Nigeria', code: 'NG' },
+  { name: 'North Macedonia', code: 'MK' }, { name: 'Norway', code: 'NO' }, { name: 'Oman', code: 'OM' },
+  { name: 'Pakistan', code: 'PK' }, { name: 'Panama', code: 'PA' }, { name: 'Paraguay', code: 'PY' },
+  { name: 'Peru', code: 'PE' }, { name: 'Philippines', code: 'PH' }, { name: 'Poland', code: 'PL' },
+  { name: 'Portugal', code: 'PT' }, { name: 'Qatar', code: 'QA' }, { name: 'Romania', code: 'RO' },
+  { name: 'Russia', code: 'RU' }, { name: 'Rwanda', code: 'RW' }, { name: 'Saudi Arabia', code: 'SA' },
+  { name: 'Senegal', code: 'SN' }, { name: 'Serbia', code: 'RS' }, { name: 'Singapore', code: 'SG' },
+  { name: 'Slovakia', code: 'SK' }, { name: 'Slovenia', code: 'SI' }, { name: 'South Africa', code: 'ZA' },
+  { name: 'South Korea', code: 'KR' }, { name: 'Spain', code: 'ES' }, { name: 'Sri Lanka', code: 'LK' },
+  { name: 'Sudan', code: 'SD' }, { name: 'Suriname', code: 'SR' }, { name: 'Sweden', code: 'SE' },
+  { name: 'Switzerland', code: 'CH' }, { name: 'Taiwan', code: 'TW' }, { name: 'Tajikistan', code: 'TJ' },
+  { name: 'Tanzania', code: 'TZ' }, { name: 'Thailand', code: 'TH' }, { name: 'Tunisia', code: 'TN' },
+  { name: 'Turkey', code: 'TR' }, { name: 'Uganda', code: 'UG' }, { name: 'Ukraine', code: 'UA' },
+  { name: 'United Arab Emirates', code: 'AE' }, { name: 'United Kingdom', code: 'GB' },
+  { name: 'United States', code: 'US' }, { name: 'Uruguay', code: 'UY' }, { name: 'Uzbekistan', code: 'UZ' },
+  { name: 'Venezuela', code: 'VE' }, { name: 'Vietnam', code: 'VN' }, { name: 'Yemen', code: 'YE' },
+  { name: 'Zambia', code: 'ZM' }, { name: 'Zimbabwe', code: 'ZW' }
+];
+
 const REG_STEPS = [
   { label: 'Personal', icon: User },
   { label: 'Corporate', icon: Building2 },
@@ -47,6 +98,12 @@ const selectStyle: React.CSSProperties = {
   ...inputStyle, appearance: 'none', WebkitAppearance: 'none', cursor: 'pointer',
   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
   backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center',
+};
+
+const optionStyle: React.CSSProperties = {
+  background: '#0f172a',
+  color: '#f8fafc',
+  fontSize: '13px',
 };
 
 const labelStyle: React.CSSProperties = {
@@ -79,8 +136,8 @@ export default function LoginScreen() {
     password: '', confirmPassword: '',
   });
 
-  // Countries from API
-  const [countries, setCountries] = useState<{ name: string; code: string }[]>([]);
+  // Pre-populated countries state (updated dynamically via API)
+  const [countries, setCountries] = useState<{ name: string; code: string }[]>(DEFAULT_COUNTRIES);
 
   // Navbar state
   const [activeDropdown, setActiveDropdown] = useState<'solutions' | 'autonomy' | null>(null);
@@ -88,25 +145,16 @@ export default function LoginScreen() {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const dropdownTimerRef = useRef<any>(null);
 
-  // Fetch countries on mount
+  // Fetch live countries from API on mount
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/public/countries`)
       .then(r => r.ok ? r.json() : [])
       .then(data => {
-        if (Array.isArray(data)) {
+        if (Array.isArray(data) && data.length > 0) {
           setCountries(data.sort((a: any, b: any) => a.name.localeCompare(b.name)));
         }
       })
-      .catch(() => {
-        // Fallback countries if API not available yet
-        setCountries([
-          { name: 'India', code: 'IN' }, { name: 'United States', code: 'US' },
-          { name: 'United Kingdom', code: 'GB' }, { name: 'Germany', code: 'DE' },
-          { name: 'France', code: 'FR' }, { name: 'Australia', code: 'AU' },
-          { name: 'Canada', code: 'CA' }, { name: 'Japan', code: 'JP' },
-          { name: 'Singapore', code: 'SG' }, { name: 'United Arab Emirates', code: 'AE' },
-        ]);
-      });
+      .catch(() => {});
   }, []);
 
   const updateReg = (field: string, value: string) => setReg(prev => ({ ...prev, [field]: value }));
@@ -284,23 +332,23 @@ export default function LoginScreen() {
             <div>
               <label style={labelStyle}>Gender *</label>
               <select style={selectStyle} value={reg.gender} onChange={e => updateReg('gender', e.target.value)}>
-                <option value="">Select...</option>
-                {GENDERS.map(g => <option key={g} value={g}>{g.charAt(0) + g.slice(1).toLowerCase()}</option>)}
+                <option value="" style={optionStyle}>Select...</option>
+                {GENDERS.map(g => <option key={g} value={g} style={optionStyle}>{g.charAt(0) + g.slice(1).toLowerCase()}</option>)}
               </select>
             </div>
             <div>
               <label style={labelStyle}>Blood Group</label>
               <select style={selectStyle} value={reg.bloodGroup} onChange={e => updateReg('bloodGroup', e.target.value)}>
-                <option value="">Select...</option>
-                {BLOOD_GROUPS.map(b => <option key={b} value={b}>{b}</option>)}
+                <option value="" style={optionStyle}>Select...</option>
+                {BLOOD_GROUPS.map(b => <option key={b} value={b} style={optionStyle}>{b}</option>)}
               </select>
             </div>
           </div>
           <div>
             <label style={labelStyle}>Nationality *</label>
             <select style={selectStyle} value={reg.nationality} onChange={e => updateReg('nationality', e.target.value)}>
-              <option value="">Select Country...</option>
-              {countries.map(c => <option key={c.code} value={c.name}>{c.name}</option>)}
+              <option value="" style={optionStyle}>Select Country / Nationality...</option>
+              {countries.map(c => <option key={c.code} value={c.name} style={optionStyle}>{c.name}</option>)}
             </select>
           </div>
         </div>
@@ -315,14 +363,14 @@ export default function LoginScreen() {
             <div>
               <label style={labelStyle}>Department *</label>
               <select style={selectStyle} value={reg.department} onChange={e => updateReg('department', e.target.value)}>
-                <option value="">Select...</option>
-                {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
+                <option value="" style={optionStyle}>Select...</option>
+                {DEPARTMENTS.map(d => <option key={d} value={d} style={optionStyle}>{d}</option>)}
               </select>
             </div>
             <div>
               <label style={labelStyle}>Role *</label>
               <select style={selectStyle} value={reg.role} onChange={e => updateReg('role', e.target.value)}>
-                {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                {ROLES.map(r => <option key={r.value} value={r.value} style={optionStyle}>{r.label}</option>)}
               </select>
             </div>
           </div>
@@ -368,8 +416,8 @@ export default function LoginScreen() {
             <div>
               <label style={labelStyle}>Country *</label>
               <select style={selectStyle} value={reg.country} onChange={e => updateReg('country', e.target.value)}>
-                <option value="">Select...</option>
-                {countries.map(c => <option key={c.code} value={c.name}>{c.name}</option>)}
+                <option value="" style={optionStyle}>Select Country...</option>
+                {countries.map(c => <option key={c.code} value={c.name} style={optionStyle}>{c.name}</option>)}
               </select>
             </div>
           </div>

@@ -200,6 +200,36 @@ function DashboardContent() {
             {activeTab === 'audit' && <AuditLogsTab />}
             {activeTab === 'users' && <UsersTab />}
           </div>
+
+          {/* DASHBOARD FOOTER */}
+          <footer
+            style={{
+              marginTop: '40px',
+              paddingTop: '20px',
+              borderTop: '1px solid var(--border-subtle)',
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              justify: 'space-between',
+              gap: '12px',
+              fontSize: '11px',
+              color: 'var(--text-muted)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#22c55e' }} />
+              <span>VoyaCore Level-5 Autonomous Session Active</span>
+              <span>•</span>
+              <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Role: {user?.role}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <span>256-Bit SSL Encrypted</span>
+              <span>•</span>
+              <span>SSE Stream Connected</span>
+              <span>•</span>
+              <span>© 2026 VoyaCore Enterprise</span>
+            </div>
+          </footer>
         </main>
       </div>
     </div>

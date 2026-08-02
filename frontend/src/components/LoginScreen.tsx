@@ -1083,10 +1083,10 @@ export default function LoginScreen() {
             Log In
           </button>
 
-          {/* Smartphone Hamburger Drawer Toggle */}
+          {/* Smartphone Hamburger Drawer Toggle (Hidden on Desktop) */}
           <button
             onClick={() => setIsMobileNavOpen(v => !v)}
-            className="p-1.5 rounded-xl border border-slate-700 bg-slate-800/80 text-white cursor-pointer active:scale-95 transition-transform"
+            className="md:hidden p-1.5 rounded-xl border border-slate-700 bg-slate-800/80 text-white cursor-pointer active:scale-95 transition-transform"
           >
             {isMobileNavOpen ? <X size={18} /> : <Menu size={18} />}
           </button>

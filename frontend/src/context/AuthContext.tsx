@@ -48,7 +48,8 @@ export const useAuth = () => {
   return context;
 };
 
-export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 
+  (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' ? window.location.origin : 'http://localhost:8080');
 export const API_BASE = `${BACKEND_URL}/api`;
 
 export const getFileUrl = (url?: string) => {

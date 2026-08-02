@@ -11,65 +11,7 @@ interface ItineraryTabProps {
   onNavigateToRequisition?: () => void;
 }
 
-const CITY_CLIMATE_DATABASE: Record<string, { temp: number; desc: string; humidity: number; icon: string }> = {
-  'switzerland': { temp: 18, desc: 'Alpine Breeze & Clear', humidity: 56, icon: '01d' },
-  'zurich': { temp: 18, desc: 'Alpine Breeze & Clear', humidity: 56, icon: '01d' },
-  'geneva': { temp: 19, desc: 'Pleasant & Clear', humidity: 54, icon: '01d' },
-  'london': { temp: 16, desc: 'Light Rain & Breeze', humidity: 76, icon: '09d' },
-  'tokyo': { temp: 24, desc: 'Clear Skies', humidity: 52, icon: '01d' },
-  'japan': { temp: 24, desc: 'Clear Skies', humidity: 52, icon: '01d' },
-  'new york': { temp: 26, desc: 'Partly Cloudy', humidity: 60, icon: '02d' },
-  'usa': { temp: 26, desc: 'Partly Cloudy', humidity: 60, icon: '02d' },
-  'singapore': { temp: 31, desc: 'Tropical Humid & Showers', humidity: 82, icon: '10d' },
-  'dubai': { temp: 38, desc: 'Sunny & Hot', humidity: 35, icon: '01d' },
-  'uae': { temp: 38, desc: 'Sunny & Hot', humidity: 35, icon: '01d' },
-  'paris': { temp: 21, desc: 'Mostly Sunny', humidity: 55, icon: '02d' },
-  'france': { temp: 21, desc: 'Mostly Sunny', humidity: 55, icon: '02d' },
-  'sydney': { temp: 18, desc: 'Breezy & Clear', humidity: 58, icon: '01d' },
-  'australia': { temp: 18, desc: 'Breezy & Clear', humidity: 58, icon: '01d' },
-  'munich': { temp: 19, desc: 'Partly Cloudy', humidity: 62, icon: '02d' },
-  'berlin': { temp: 20, desc: 'Cloudy Spells', humidity: 64, icon: '03d' },
-  'germany': { temp: 19, desc: 'Partly Cloudy', humidity: 62, icon: '02d' },
-  'mumbai': { temp: 32, desc: 'Monsoonal Breeze', humidity: 85, icon: '10d' },
-  'delhi': { temp: 36, desc: 'Hazy & Warm', humidity: 48, icon: '01d' },
-  'india': { temp: 32, desc: 'Warm & Tropical', humidity: 65, icon: '01d' },
-  'toronto': { temp: 23, desc: 'Clear & Pleasant', humidity: 50, icon: '01d' },
-  'canada': { temp: 23, desc: 'Clear & Pleasant', humidity: 50, icon: '01d' },
-  'san francisco': { temp: 17, desc: 'Coastal Fog & Cool', humidity: 75, icon: '03d' },
-  'hong kong': { temp: 29, desc: 'Humid & Partly Cloudy', humidity: 78, icon: '02d' },
-  'bangkok': { temp: 33, desc: 'Tropical Heat & Humid', humidity: 79, icon: '10d' },
-  'thailand': { temp: 33, desc: 'Tropical Heat & Humid', humidity: 79, icon: '10d' },
-};
 
-const getWeatherForLocation = (cityStr: string) => {
-  if (!cityStr) {
-    return { temperature: 22, temp: 22, description: 'Clear', humidity: 55, icon: '01d' };
-  }
-  const cleanCity = cityStr.toLowerCase().trim();
-  for (const [key, val] of Object.entries(CITY_CLIMATE_DATABASE)) {
-    if (cleanCity.includes(key)) {
-      return { temperature: val.temp, temp: val.temp, description: val.desc, humidity: val.humidity, icon: val.icon };
-    }
-  }
-
-  // Deterministic location hash calculation
-  let hash = 0;
-  for (let i = 0; i < cleanCity.length; i++) {
-    hash = cleanCity.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const absHash = Math.abs(hash);
-  const temp = 14 + (absHash % 22); // 14°C to 35°C
-  const humidity = 40 + (absHash % 45); // 40% to 85%
-  const conditions = [
-    { desc: 'Clear & Sunny', icon: '01d' },
-    { desc: 'Partly Cloudy', icon: '02d' },
-    { desc: 'Scattered Clouds', icon: '03d' },
-    { desc: 'Light Rain & Mist', icon: '09d' },
-    { desc: 'Passing Showers', icon: '10d' },
-  ];
-  const cond = conditions[absHash % conditions.length];
-  return { temperature: temp, temp, description: cond.desc, humidity, icon: cond.icon };
-};
 
 export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabProps) {
   const { authFetch } = useAuth();

@@ -53,44 +53,54 @@ public class WeatherService {
     public Map<String, Object> getCurrentWeather(String cityQuery) {
         String city = (cityQuery == null || cityQuery.isBlank()) ? "Manali" : cityQuery.trim();
 
-        // 1. ENGINE 1: WeatherAPI.com Real-time Worldwide Weather API
-        Map<String, Object> weatherApiData = fetchWeatherApiCom(city);
-        if (weatherApiData != null && weatherApiData.containsKey("temperature")) {
-            log.info("[Weather] Live weather fetched from WeatherAPI.com for '{}'", city);
-            return weatherApiData;
-        }
-
-        // 2. ENGINE 2: OpenWeatherMap Current Weather API
-        Map<String, Object> openWeatherData = fetchOpenWeatherMap(city);
-        if (openWeatherData != null && openWeatherData.containsKey("temperature")) {
-            log.info("[Weather] Live weather fetched from OpenWeatherMap for '{}'", city);
-            return openWeatherData;
-        }
-
-        // Geocode city → lat/lon for Google Maps & Open-Meteo
+        // Step 1: Geocode city → lat/lon (Open-Meteo Geocoding — free, keyless, worldwide)
         double[] latLon = geocodeCity(city);
         double lat = latLon != null ? latLon[0] : 32.2432;
         double lon = latLon != null ? latLon[1] : 77.1892;
+        // Resolved city name from geocoding
+        String resolvedCity = latLon != null ? city : "Manali";
 
-        // 3. ENGINE 3: Google Maps Platform Weather API
-        Map<String, Object> googleData = fetchGoogleMapsCurrentConditions(city, lat, lon);
-        if (googleData != null && googleData.containsKey("temperature")) {
-            Map<String, Object> minuteData = fetchGoogleMapsMinuteForecast(lat, lon);
-            if (minuteData != null) {
-                googleData.put("minuteForecast", minuteData);
-            }
-            log.info("[Weather] Live weather fetched from Google Maps Weather API for '{}'", city);
-            return googleData;
-        }
-
-        // 4. ENGINE 4: Open-Meteo Global Satellite & Meteorological Network (No Key Required)
-        Map<String, Object> openMeteoData = fetchOpenMeteoWeather(city, lat, lon);
+        // ═══════════════════════════════════════════════════════════════
+        // ENGINE 1 (PRIMARY): Open-Meteo Global Meteorological Network
+        // 100% free, NO API key, real-time satellite+station data
+        // Covers every city, town, and village on Earth
+        // ═══════════════════════════════════════════════════════════════
+        Map<String, Object> openMeteoData = fetchOpenMeteoWeather(resolvedCity, lat, lon);
         if (openMeteoData != null && openMeteoData.containsKey("temperature")) {
-            log.info("[Weather] Live weather fetched from Open-Meteo for '{}'", city);
+            log.info("[Weather] ENGINE 1 (Open-Meteo): Live weather for '{}' [{}, {}]", resolvedCity, lat, lon);
             return openMeteoData;
         }
 
-        // 5. ENGINE 5: Location-Specific Deterministic Engine
+        // ═══════════════════════════════════════════════════════════════
+        // ENGINE 2 (OPTIONAL): WeatherAPI.com — requires WEATHER_API_KEY env var
+        // ═══════════════════════════════════════════════════════════════
+        Map<String, Object> weatherApiData = fetchWeatherApiCom(city);
+        if (weatherApiData != null && weatherApiData.containsKey("temperature")) {
+            log.info("[Weather] ENGINE 2 (WeatherAPI.com): Live weather for '{}'", city);
+            return weatherApiData;
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // ENGINE 3 (OPTIONAL): OpenWeatherMap — requires OPENWEATHER_API_KEY env var
+        // ═══════════════════════════════════════════════════════════════
+        Map<String, Object> openWeatherData = fetchOpenWeatherMap(city);
+        if (openWeatherData != null && openWeatherData.containsKey("temperature")) {
+            log.info("[Weather] ENGINE 3 (OpenWeatherMap): Live weather for '{}'", city);
+            return openWeatherData;
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // ENGINE 4 (OPTIONAL): Google Maps Platform Weather API — requires GOOGLE_WEATHER_API_KEY env var
+        // ═══════════════════════════════════════════════════════════════
+        Map<String, Object> googleData = fetchGoogleMapsCurrentConditions(city, lat, lon);
+        if (googleData != null && googleData.containsKey("temperature")) {
+            Map<String, Object> minuteData = fetchGoogleMapsMinuteForecast(lat, lon);
+            if (minuteData != null) googleData.put("minuteForecast", minuteData);
+            log.info("[Weather] ENGINE 4 (Google Maps): Live weather for '{}'", city);
+            return googleData;
+        }
+
+        // ENGINE 5: Deterministic fallback (should never reach here)
         return getDynamicFallback(city);
     }
 
@@ -436,7 +446,7 @@ public class WeatherService {
                             .path("/forecast")
                             .queryParam("latitude", lat)
                             .queryParam("longitude", lon)
-                            .queryParam("current", "temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,uv_index,visibility,precipitation")
+                            .queryParam("current", "temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index,visibility,precipitation,surface_pressure,dew_point_2m,is_day")
                             .queryParam("timezone", "auto")
                             .build())
                     .retrieve()
@@ -451,32 +461,42 @@ public class WeatherService {
                 int wmo = ((Number) cur.get("weather_code")).intValue();
                 double windSpeed = ((Number) cur.get("wind_speed_10m")).doubleValue();
                 int windDir = cur.get("wind_direction_10m") != null ? ((Number) cur.get("wind_direction_10m")).intValue() : 0;
-                double uv = cur.get("uv_index") != null ? ((Number) cur.get("uv_index")).doubleValue() : 2;
+                double windGust = cur.get("wind_gusts_10m") != null ? ((Number) cur.get("wind_gusts_10m")).doubleValue() : 0;
+                double uv = cur.get("uv_index") != null ? ((Number) cur.get("uv_index")).doubleValue() : 0;
                 double vis = cur.get("visibility") != null ? ((Number) cur.get("visibility")).doubleValue() / 1000.0 : 10;
+                double dewPoint = cur.get("dew_point_2m") != null ? ((Number) cur.get("dew_point_2m")).doubleValue() : 0;
+                int isDay = cur.get("is_day") != null ? ((Number) cur.get("is_day")).intValue() : 1;
                 String condition = decodeWmoCode(wmo);
+
+                // Extract timezone from Open-Meteo response metadata
+                String timezone = resp.get("timezone") != null ? resp.get("timezone").toString() : "";
 
                 Map<String, Object> result = new LinkedHashMap<>();
                 result.put("city", city);
-                result.put("source", "Open-Meteo Satellite Weather Engine");
+                result.put("source", "Live Weather \u00b7 Open-Meteo");
                 result.put("temperature", (int) Math.round(temp));
                 result.put("temp", (int) Math.round(temp));
                 result.put("feelsLike", (int) Math.round(feelsLike));
                 result.put("humidity", humidity);
+                result.put("dewPoint", (int) Math.round(dewPoint));
                 result.put("uvIndex", (int) Math.round(uv));
                 result.put("visibility", (int) Math.round(vis));
                 result.put("windSpeed", (int) Math.round(windSpeed));
                 result.put("windDegrees", windDir);
                 result.put("windCardinal", degreesToCardinal(windDir));
+                result.put("windGust", (int) Math.round(windGust));
                 result.put("condition", condition);
                 result.put("description", condition);
                 result.put("conditionType", decodeWmoToConditionType(wmo));
                 result.put("icon", decodeWmoIcon(wmo));
+                result.put("isDaytime", isDay == 1);
+                result.put("timezone", timezone);
                 result.put("isLive", true);
                 result.put("lastUpdated", new SimpleDateFormat("HH:mm:ss").format(new Date()));
                 return result;
             }
         } catch (Exception e) {
-            log.warn("[Weather] Open-Meteo fallback failed for '{}': {}", city, e.getMessage());
+            log.warn("[Weather] Open-Meteo fetch failed for '{}' [{}, {}]: {}", city, lat, lon, e.getMessage());
         }
         return null;
     }

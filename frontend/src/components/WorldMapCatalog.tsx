@@ -304,7 +304,7 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [], c
         {/* Pill 1: Left Info Pill */}
         <div className="pointer-events-auto flex items-center gap-1 border border-white/20 backdrop-blur-2xl px-2 py-0.5 rounded-full shadow-lg shrink-0 whitespace-nowrap" style={{ background: 'rgba(15, 23, 42, 0.92)' }}>
           <Globe className="w-3 h-3 text-sky-400 animate-spin-slow shrink-0" />
-          <span className="text-[9px] font-black tracking-tight text-white shrink-0">Live GPS</span>
+          <span className="text-[9px] font-black tracking-tight text-white shrink-0">Live GPS Catalog</span>
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
           <span className="text-[8.5px] font-bold text-sky-400 shrink-0">{displayRequests.length} Active</span>
         </div>

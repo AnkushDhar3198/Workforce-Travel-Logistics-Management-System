@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/ca
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Alert, AlertTitle, AlertDescription } from '../../components/ui/alert';
+import { fetchLiveSatelliteWeather } from '../../utils/liveWeather';
 
 interface ItineraryTabProps {
   onNavigateToRequisition?: () => void;
@@ -116,10 +117,13 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
   useEffect(() => {
     if (selectedReq) {
       const dest = selectedReq.destination || 'Switzerland';
-      setWeather(getWeatherForLocation(dest));
-
+      
       const fetchReqDetails = async () => {
         try {
+          // Fetch real-time satellite weather for location
+          const liveData = await fetchLiveSatelliteWeather(dest);
+          setWeather(liveData);
+
           // Fetch real bookings from API
           const bRes = await authFetch(`${API_BASE}/travel/${selectedReq.id}/bookings`);
           if (bRes.ok) {
@@ -133,19 +137,6 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
           if (sRes.ok) {
             const sList = await sRes.json();
             setShipments(sList.filter((s: any) => s.linkedTravelRequestId === selectedReq.id));
-          }
-
-          // Fetch destination weather from API
-          if (selectedReq.destination) {
-            try {
-              const wRes = await authFetch(`${API_BASE}/weather/current?city=${encodeURIComponent(selectedReq.destination)}`);
-              if (wRes.ok) {
-                const live = await wRes.json();
-                if (live && (live.temperature || live.temp)) {
-                  setWeather(live);
-                }
-              }
-            } catch {}
           }
         } catch (err) {}
       };
@@ -431,7 +422,7 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
           </CardContent>
         </Card>
 
-        {/* Live Weather Stat Card */}
+        {/* Live Satellite Weather Stat Card */}
         <Card className="hover-elevate hover-glow bg-gradient-to-r from-sky-950/40 to-cyan-950/30 border border-sky-800/40">
           <CardContent className="p-4 flex items-center gap-3.5">
             <div className="p-2.5 rounded-xl bg-sky-500/10 text-sky-400 text-2xl shrink-0">
@@ -442,12 +433,15 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
                weather?.icon?.startsWith('13') ? '❄️' : '🌤️'}
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] text-sky-400 font-bold uppercase tracking-wider truncate">Live Destination Weather</p>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <p className="text-[11px] text-sky-400 font-bold uppercase tracking-wider truncate">Live Satellite Weather</p>
+              </div>
               <h4 className="text-base font-black text-white mt-0.5 truncate">
                 {weather ? `${weather.temperature ?? weather.temp}°C — ${weather.description ?? 'Clear'}` : '18°C — Live'}
               </h4>
               <p className="text-[10px] text-slate-400 truncate">
-                {selectedReq?.destination || 'Switzerland'} • Humidity: {weather?.humidity ?? 55}%
+                {selectedReq?.destination || 'Switzerland'} • Humidity: {weather?.humidity ?? 55}%{weather?.windSpeed ? ` • Wind: ${weather.windSpeed}km/h` : ''}
               </p>
             </div>
           </CardContent>

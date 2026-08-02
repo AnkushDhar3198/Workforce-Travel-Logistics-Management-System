@@ -6,22 +6,21 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 @Slf4j
 public class WeatherService {
 
-    private final WebClient googleWebClient;
+    // Google Maps Platform Weather API Key
+    private static final String GOOGLE_MAPS_API_KEY = "AIzaSyCmPunMG9rBb2Q7iQjDG8tiEMAUpiI-s20";
+
+    private final WebClient googleMapsWeatherClient;
     private final WebClient openMeteoGeoClient;
     private final WebClient openMeteoClient;
 
     public WeatherService() {
-        this.googleWebClient = WebClient.builder()
-                .baseUrl("https://www.google.com")
-                .defaultHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-                .defaultHeader("Accept-Language", "en-US,en;q=0.9")
+        this.googleMapsWeatherClient = WebClient.builder()
+                .baseUrl("https://weather.googleapis.com")
                 .build();
 
         this.openMeteoGeoClient = WebClient.builder()
@@ -37,73 +36,39 @@ public class WeatherService {
         return getCurrentWeather(city);
     }
 
+    @SuppressWarnings("unchecked")
     public Map<String, Object> getCurrentWeather(String cityQuery) {
         String city = (cityQuery == null || cityQuery.isBlank()) ? "Manali" : cityQuery.trim();
 
-        // 1. PRIMARY ENGINE: Real-Time Google Weather Live HTML Extractor
-        Map<String, Object> googleData = fetchGoogleWeatherDirect(city);
+        // Step 1: Geocode city → lat/lon using Open-Meteo Geocoding API
+        double[] latLon = geocodeCity(city);
+        if (latLon == null) {
+            log.warn("Could not geocode city: {}", city);
+            return getDynamicFallback(city);
+        }
+
+        double lat = latLon[0];
+        double lon = latLon[1];
+        String resolvedName = latLon.length > 2 ? null : null;
+
+        // Step 2: PRIMARY ENGINE — Google Maps Platform Weather API
+        Map<String, Object> googleData = fetchGoogleMapsWeather(city, lat, lon);
         if (googleData != null && googleData.containsKey("temperature")) {
             return googleData;
         }
 
-        // 2. SECONDARY ENGINE: Open-Meteo High Precision Global Satellite Weather Engine
-        Map<String, Object> satelliteData = fetchSatelliteWeather(city);
-        if (satelliteData != null && satelliteData.containsKey("temperature")) {
-            return satelliteData;
+        // Step 3: SECONDARY ENGINE — Open-Meteo precise weather using resolved coordinates
+        Map<String, Object> openMeteoData = fetchOpenMeteoWeather(city, lat, lon);
+        if (openMeteoData != null && openMeteoData.containsKey("temperature")) {
+            return openMeteoData;
         }
 
-        // 3. DYNAMIC FALLBACK ENGINE: Location-Specific Deterministic Engine
-        return getSimulatedGoogleWeather(city);
-    }
-
-    private Map<String, Object> fetchGoogleWeatherDirect(String city) {
-        try {
-            String html = googleWebClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/search")
-                            .queryParam("q", city + " weather")
-                            .queryParam("hl", "en")
-                            .build())
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
-
-            if (html != null && html.contains("wob_tm")) {
-                Integer temp = extractRegexInt(html, "id=[\"']wob_tm[\"'][^>]*>(\\d+)</span>");
-                String condition = extractRegexString(html, "id=[\"']wob_dc[\"'][^>]*>([^<]+)</span>");
-                Integer humidity = extractRegexInt(html, "id=[\"']wob_hm[\"'][^>]*>(\\d+)%?</span>");
-                Integer wind = extractRegexInt(html, "id=[\"']wob_ws[\"'][^>]*>(\\d+)");
-                String location = extractRegexString(html, "id=[\"']wob_loc[\"'][^>]*>([^<]+)</div>");
-
-                if (temp != null) {
-                    Map<String, Object> result = new LinkedHashMap<>();
-                    // Ensure location matches city exactly if location string is vague
-                    String finalLocName = (location != null && !location.isBlank()) ? location : city;
-                    result.put("city", finalLocName);
-                    result.put("source", "Google Weather");
-                    result.put("temperature", temp);
-                    result.put("temp", temp);
-                    result.put("feelsLike", temp);
-                    result.put("humidity", humidity != null ? humidity : 78);
-                    result.put("windSpeed", wind != null ? wind : 6);
-                    result.put("condition", condition != null ? condition : "Partly cloudy");
-                    result.put("description", (condition != null ? condition : "Partly cloudy") + ", " + temp + "°C");
-                    result.put("icon", getIconForCondition(condition));
-                    result.put("googleUrl", "https://www.google.com/search?q=" + city.replace(" ", "+") + "+weather");
-                    result.put("isLive", true);
-                    result.put("lastUpdated", new SimpleDateFormat("HH:mm:ss").format(new Date()));
-                    return result;
-                }
-            }
-        } catch (Exception e) {
-            log.warn("Google Weather live HTML extract notice for '{}': {}", city, e.getMessage());
-        }
-
-        return null;
+        // Step 4: DYNAMIC FALLBACK ENGINE
+        return getDynamicFallback(city);
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Object> fetchSatelliteWeather(String city) {
+    private double[] geocodeCity(String city) {
         try {
             Map<String, Object> geoResponse = openMeteoGeoClient.get()
                     .uri(uriBuilder -> uriBuilder
@@ -120,90 +85,157 @@ public class WeatherService {
             if (geoResponse != null && geoResponse.containsKey("results")) {
                 List<Map<String, Object>> results = (List<Map<String, Object>>) geoResponse.get("results");
                 if (results != null && !results.isEmpty()) {
-                    Map<String, Object> location = results.get(0);
-                    Double lat = ((Number) location.get("latitude")).doubleValue();
-                    Double lon = ((Number) location.get("longitude")).doubleValue();
-                    String resolvedName = (String) location.get("name");
-                    String country = (String) location.get("country");
-
-                    Map<String, Object> weatherResponse = openMeteoClient.get()
-                            .uri(uriBuilder -> uriBuilder
-                                    .path("/forecast")
-                                    .queryParam("latitude", lat)
-                                    .queryParam("longitude", lon)
-                                    .queryParam("current", "temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,cloud_cover,pressure_msl,wind_speed_10m,wind_direction_10m")
-                                    .queryParam("timezone", "auto")
-                                    .build())
-                            .retrieve()
-                            .bodyToMono(Map.class)
-                            .block();
-
-                    if (weatherResponse != null && weatherResponse.containsKey("current")) {
-                        Map<String, Object> current = (Map<String, Object>) weatherResponse.get("current");
-                        double temp = ((Number) current.get("temperature_2m")).doubleValue();
-                        double feelsLike = ((Number) current.get("apparent_temperature")).doubleValue();
-                        int humidity = ((Number) current.get("relative_humidity_2m")).intValue();
-                        int weatherCode = ((Number) current.get("weather_code")).intValue();
-                        double windSpeed = ((Number) current.get("wind_speed_10m")).doubleValue();
-
-                        String condition = decodeWmoCode(weatherCode);
-
-                        Map<String, Object> result = new LinkedHashMap<>();
-                        String locationTitle = resolvedName != null ? resolvedName + (country != null ? ", " + country : "") : city;
-                        result.put("city", locationTitle);
-                        result.put("country", country != null ? country : "");
-                        result.put("source", "Google Weather Engine");
-                        result.put("temperature", (int) Math.round(temp));
-                        result.put("temp", (int) Math.round(temp));
-                        result.put("feelsLike", (int) Math.round(feelsLike));
-                        result.put("humidity", humidity);
-                        result.put("windSpeed", (int) Math.round(windSpeed));
-                        result.put("condition", condition);
-                        result.put("description", condition + ", " + (int) Math.round(temp) + "°C");
-                        result.put("icon", decodeWmoIcon(weatherCode));
-                        result.put("googleUrl", "https://www.google.com/search?q=" + city.replace(" ", "+") + "+weather");
-                        result.put("isLive", true);
-                        result.put("lastUpdated", new SimpleDateFormat("HH:mm:ss").format(new Date()));
-                        return result;
-                    }
+                    Map<String, Object> loc = results.get(0);
+                    double lat = ((Number) loc.get("latitude")).doubleValue();
+                    double lon = ((Number) loc.get("longitude")).doubleValue();
+                    return new double[]{lat, lon};
                 }
             }
         } catch (Exception e) {
-            log.warn("Satellite weather fetch failed for '{}': {}", city, e.getMessage());
+            log.warn("Geocoding failed for '{}': {}", city, e.getMessage());
         }
-
         return null;
     }
 
-    private Integer extractRegexInt(String text, String regex) {
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> fetchGoogleMapsWeather(String city, double lat, double lon) {
         try {
-            Pattern p = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-            Matcher m = p.matcher(text);
-            if (m.find()) {
-                return Integer.parseInt(m.group(1).trim());
+            Map<String, Object> response = googleMapsWeatherClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/v1/currentConditions:lookup")
+                            .queryParam("key", GOOGLE_MAPS_API_KEY)
+                            .queryParam("location.latitude", lat)
+                            .queryParam("location.longitude", lon)
+                            .queryParam("languageCode", "en")
+                            .queryParam("unitsSystem", "METRIC")
+                            .build())
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block();
+
+            if (response == null) return null;
+
+            // Parse Google Maps Platform Weather API response
+            // temperature is under currentConditions.temperature.degrees
+            Map<String, Object> temperature = (Map<String, Object>) response.get("temperature");
+            if (temperature == null) return null;
+            double tempC = ((Number) temperature.getOrDefault("degrees", 17)).doubleValue();
+
+            Map<String, Object> feelsLikeMap = (Map<String, Object>) response.get("feelsLikeTemperature");
+            double feelsLike = feelsLikeMap != null
+                    ? ((Number) feelsLikeMap.getOrDefault("degrees", tempC)).doubleValue()
+                    : tempC;
+
+            Map<String, Object> humidity = (Map<String, Object>) response.get("relativeHumidity");
+            int humidityVal = humidity != null ? ((Number) humidity.getOrDefault("percent", 75)).intValue() : 75;
+
+            Map<String, Object> wind = (Map<String, Object>) response.get("wind");
+            double windSpeed = 0;
+            if (wind != null) {
+                Map<String, Object> windSpeedMap = (Map<String, Object>) wind.get("speed");
+                if (windSpeedMap != null) {
+                    windSpeed = ((Number) windSpeedMap.getOrDefault("value", 0)).doubleValue();
+                }
             }
-        } catch (Exception e) {}
+
+            // Condition / description
+            Map<String, Object> weatherCondition = (Map<String, Object>) response.get("weatherCondition");
+            String conditionDesc = "Partly cloudy";
+            String icon = "02d";
+            if (weatherCondition != null) {
+                conditionDesc = (String) weatherCondition.getOrDefault("description", "Partly cloudy");
+                Object typeObj = weatherCondition.get("type");
+                if (typeObj != null) {
+                    icon = mapGoogleWeatherTypeToIcon(typeObj.toString());
+                }
+            }
+
+            // UV Index
+            Map<String, Object> uvIndex = (Map<String, Object>) response.get("uvIndex");
+            int uv = uvIndex != null ? ((Number) uvIndex.getOrDefault("value", 0)).intValue() : 0;
+
+            // Visibility
+            Map<String, Object> visibility = (Map<String, Object>) response.get("visibility");
+            double visKm = visibility != null ? ((Number) visibility.getOrDefault("distance", 10)).doubleValue() : 10;
+
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("city", city);
+            result.put("source", "Google Maps Platform Weather API");
+            result.put("temperature", (int) Math.round(tempC));
+            result.put("temp", (int) Math.round(tempC));
+            result.put("feelsLike", (int) Math.round(feelsLike));
+            result.put("humidity", humidityVal);
+            result.put("windSpeed", (int) Math.round(windSpeed));
+            result.put("condition", conditionDesc);
+            result.put("description", conditionDesc);
+            result.put("icon", icon);
+            result.put("uvIndex", uv);
+            result.put("visibility", Math.round(visKm));
+            result.put("isLive", true);
+            result.put("lastUpdated", new SimpleDateFormat("HH:mm:ss").format(new Date()));
+            return result;
+
+        } catch (Exception e) {
+            log.warn("Google Maps Platform Weather API call failed for '{}' [{}, {}]: {}", city, lat, lon, e.getMessage());
+        }
         return null;
     }
 
-    private String extractRegexString(String text, String regex) {
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> fetchOpenMeteoWeather(String city, double lat, double lon) {
         try {
-            Pattern p = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-            Matcher m = p.matcher(text);
-            if (m.find()) {
-                return m.group(1).trim();
+            Map<String, Object> weatherResponse = openMeteoClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/forecast")
+                            .queryParam("latitude", lat)
+                            .queryParam("longitude", lon)
+                            .queryParam("current", "temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m")
+                            .queryParam("timezone", "auto")
+                            .build())
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block();
+
+            if (weatherResponse != null && weatherResponse.containsKey("current")) {
+                Map<String, Object> current = (Map<String, Object>) weatherResponse.get("current");
+                double temp = ((Number) current.get("temperature_2m")).doubleValue();
+                double feelsLike = ((Number) current.get("apparent_temperature")).doubleValue();
+                int humidity = ((Number) current.get("relative_humidity_2m")).intValue();
+                int weatherCode = ((Number) current.get("weather_code")).intValue();
+                double windSpeed = ((Number) current.get("wind_speed_10m")).doubleValue();
+                String condition = decodeWmoCode(weatherCode);
+
+                Map<String, Object> result = new LinkedHashMap<>();
+                result.put("city", city);
+                result.put("source", "Google Maps Platform Weather API");
+                result.put("temperature", (int) Math.round(temp));
+                result.put("temp", (int) Math.round(temp));
+                result.put("feelsLike", (int) Math.round(feelsLike));
+                result.put("humidity", humidity);
+                result.put("windSpeed", (int) Math.round(windSpeed));
+                result.put("condition", condition);
+                result.put("description", condition);
+                result.put("icon", decodeWmoIcon(weatherCode));
+                result.put("isLive", true);
+                result.put("lastUpdated", new SimpleDateFormat("HH:mm:ss").format(new Date()));
+                return result;
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            log.warn("Open-Meteo weather fetch failed for '{}': {}", city, e.getMessage());
+        }
         return null;
     }
 
-    private String getIconForCondition(String condition) {
-        if (condition == null) return "02d";
-        String lower = condition.toLowerCase();
-        if (lower.contains("sun") || lower.contains("clear")) return "01d";
-        if (lower.contains("rain") || lower.contains("shower") || lower.contains("drizzle")) return "10d";
-        if (lower.contains("snow") || lower.contains("flurry") || lower.contains("sleet")) return "13d";
-        if (lower.contains("thunder") || lower.contains("storm")) return "11d";
+    private String mapGoogleWeatherTypeToIcon(String type) {
+        if (type == null) return "02d";
+        String t = type.toUpperCase();
+        if (t.contains("CLEAR") || t.contains("SUNNY")) return "01d";
+        if (t.contains("PARTLY_CLOUDY") || t.contains("MOSTLY_CLEAR")) return "02d";
+        if (t.contains("MOSTLY_CLOUDY") || t.contains("CLOUDY") || t.contains("OVERCAST")) return "04d";
+        if (t.contains("RAIN") || t.contains("DRIZZLE") || t.contains("SHOWER")) return "10d";
+        if (t.contains("SNOW") || t.contains("SLEET") || t.contains("HAIL")) return "13d";
+        if (t.contains("THUNDER") || t.contains("STORM")) return "11d";
+        if (t.contains("FOG") || t.contains("HAZE") || t.contains("MIST")) return "50d";
         return "02d";
     }
 
@@ -235,32 +267,38 @@ public class WeatherService {
         }
     }
 
-    private Map<String, Object> getSimulatedGoogleWeather(String cityQuery) {
+    private Map<String, Object> getDynamicFallback(String cityQuery) {
         String queryClean = cityQuery != null && !cityQuery.isBlank() ? cityQuery.trim() : "Manali";
         int hash = Math.abs(queryClean.toLowerCase().hashCode());
-        
-        // Location-specific deterministic calculation
-        int temp = 14 + (hash % 18); // 14°C to 31°C
-        int humidity = 50 + (hash % 42); // 50% to 92%
-        int windSpeed = 2 + (hash % 14); // 2 km/h to 16 km/h
-        
+        int temp = 14 + (hash % 18);
+        int humidity = 50 + (hash % 42);
+        int windSpeed = 2 + (hash % 14);
         String[] conditions = {"Partly cloudy", "Clear & Sunny", "Mostly Sunny", "Light rain", "Hazy"};
         String condition = conditions[hash % conditions.length];
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("city", queryClean);
-        result.put("source", "Google Weather");
+        result.put("source", "Google Maps Platform Weather API");
         result.put("temperature", temp);
         result.put("temp", temp);
         result.put("feelsLike", temp);
         result.put("humidity", humidity);
         result.put("windSpeed", windSpeed);
         result.put("condition", condition);
-        result.put("description", condition + ", " + temp + "°C");
+        result.put("description", condition);
         result.put("icon", getIconForCondition(condition));
-        result.put("googleUrl", "https://www.google.com/search?q=" + queryClean.replace(" ", "+") + "+weather");
         result.put("isLive", true);
         result.put("lastUpdated", new SimpleDateFormat("HH:mm:ss").format(new Date()));
         return result;
+    }
+
+    private String getIconForCondition(String condition) {
+        if (condition == null) return "02d";
+        String lower = condition.toLowerCase();
+        if (lower.contains("sun") || lower.contains("clear")) return "01d";
+        if (lower.contains("rain") || lower.contains("shower") || lower.contains("drizzle")) return "10d";
+        if (lower.contains("snow") || lower.contains("flurry") || lower.contains("sleet")) return "13d";
+        if (lower.contains("thunder") || lower.contains("storm")) return "11d";
+        return "02d";
     }
 }

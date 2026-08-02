@@ -451,39 +451,27 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
           </CardContent>
         </Card>
 
-        {/* Live Google Weather Stat Card */}
+        {/* Live Google Maps Platform Weather API Card */}
         <Card className="hover-elevate hover-glow bg-gradient-to-r from-sky-950/40 to-cyan-950/30 border border-sky-800/40 relative overflow-hidden">
           <CardContent className="p-4 flex flex-col gap-2.5">
-            {/* Top Header Row: Live Pulse, Google Weather Title & Actions */}
+            {/* Top Header Row: Live Pulse, Title & Refresh Button */}
             <div className="flex items-center justify-between gap-2 border-b border-sky-800/30 pb-2">
               <div className="flex items-center gap-1.5 min-w-0">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
                 <p className="text-[11px] text-sky-300 font-extrabold uppercase tracking-wider truncate">
-                  Google Weather Live Stream • {liveTime}
+                  Google Maps Weather • {liveTime}
                 </p>
               </div>
 
-              <div className="flex items-center gap-1.5 shrink-0">
-                <a
-                  href={weather?.googleUrl || `https://www.google.com/search?q=${encodeURIComponent(selectedReq?.destination || 'Kashmir')}+weather`}
-                  target="_blank"
-                  rel="noreferrer"
-                  title="Open Google Weather"
-                  className="px-2.5 py-0.5 rounded-lg border border-blue-500/40 bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 text-[9.5px] font-black flex items-center gap-1 transition-all cursor-pointer shadow-sm"
-                >
-                  <span>Google Weather</span>
-                  <span className="text-[10px]">↗</span>
-                </a>
-
-                <button
-                  onClick={handleManualWeatherRefresh}
-                  disabled={isRefreshingWeather}
-                  title="Re-fetch Google Weather Data"
-                  className="p-1.5 rounded-lg border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 transition-all cursor-pointer shrink-0 active:scale-95 disabled:opacity-50"
-                >
-                  <RefreshCw size={13} className={isRefreshingWeather ? 'animate-spin text-cyan-400' : ''} />
-                </button>
-              </div>
+              <button
+                onClick={handleManualWeatherRefresh}
+                disabled={isRefreshingWeather}
+                title="Refresh real-time weather data"
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-sky-500/40 bg-sky-500/10 hover:bg-sky-500/25 text-sky-300 text-[9.5px] font-bold transition-all cursor-pointer shrink-0 active:scale-95 disabled:opacity-50"
+              >
+                <RefreshCw size={11} className={isRefreshingWeather ? 'animate-spin text-cyan-300' : ''} />
+                <span>{isRefreshingWeather ? 'Updating…' : 'Refresh'}</span>
+              </button>
             </div>
 
             {/* Main Weather Details Row */}
@@ -493,18 +481,23 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
                  weather?.icon?.startsWith('02') ? '⛅' :
                  weather?.icon?.startsWith('03') || weather?.icon?.startsWith('04') ? '☁️' :
                  weather?.icon?.startsWith('09') || weather?.icon?.startsWith('10') ? '🌧️' :
-                 weather?.icon?.startsWith('13') ? '❄️' : '🌤️'}
+                 weather?.icon?.startsWith('13') ? '❄️' :
+                 weather?.icon?.startsWith('50') ? '🌫️' : '🌤️'}
               </div>
 
               <div className="min-w-0 flex-1">
                 <h4 className="text-base sm:text-lg font-black text-white leading-tight">
-                  {weather ? `${weather.temperature ?? weather.temp}°C — ${weather.description ?? 'Partly cloudy'}` : '17°C — Live'}
+                  {weather ? `${weather.temperature ?? weather.temp}°C — ${weather.description ?? 'Partly cloudy'}` : '—'}
                 </h4>
                 <p className="text-xs font-bold text-slate-200 mt-0.5">
                   📍 {selectedReq?.destination || weather?.city || 'Manali'}
                 </p>
                 <p className="text-[10.5px] font-semibold text-slate-400 mt-0.5">
-                  Humidity: {weather?.humidity ?? 92}% • Wind: {weather?.windSpeed ?? 2} km/h • {weather?.provider || 'Google Weather'}
+                  Feels {weather?.feelsLike ?? '—'}°C • Humidity {weather?.humidity ?? '—'}% • Wind {weather?.windSpeed ?? '—'} km/h
+                  {weather?.uvIndex != null ? ` • UV ${weather.uvIndex}` : ''}
+                </p>
+                <p className="text-[10px] font-medium text-sky-500/80 mt-0.5">
+                  {weather?.provider || 'Google Maps Platform Weather API'}
                 </p>
                 {weatherNotice && (
                   <p className="text-[10px] font-bold text-cyan-300 animate-fade-in mt-1">

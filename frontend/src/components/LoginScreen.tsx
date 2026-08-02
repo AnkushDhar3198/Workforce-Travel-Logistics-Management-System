@@ -1083,23 +1083,23 @@ export default function LoginScreen() {
       )}
 
       {/* HERO */}
-      <main style={{ position: 'relative', zIndex: 10, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px 40px', boxSizing: 'border-box', textAlign: 'center' }}>
-        <div style={{ maxWidth: '820px', width: '100%', margin: 'auto 0' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '100px', background: 'var(--nav-active-bg)', border: '1px solid var(--nav-active-border)', color: 'var(--accent-primary)', fontSize: '10px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '18px', maxWidth: '90vw', animation: 'fadeSlideDown 0.6s ease both' }}>
+      <main style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 20px 24px', boxSizing: 'border-box', textAlign: 'center' }}>
+        <div style={{ maxWidth: '840px', width: '100%', margin: '0 auto' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '100px', background: 'var(--nav-active-bg)', border: '1px solid var(--nav-active-border)', color: 'var(--accent-primary)', fontSize: '10px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '16px', maxWidth: '90vw', animation: 'fadeSlideDown 0.6s ease both' }}>
             <Sparkles size={13} />
             <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>LEVEL 5 HUMAN + AI AUTONOMY MODEL</span>
           </div>
-          <h1 style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: 'clamp(1.75rem, 5.5vw, 3.4rem)', letterSpacing: '-0.04em', color: 'var(--text-primary)', margin: '0 0 16px', lineHeight: 1.12, wordBreak: 'break-word' }}>
+          <h1 style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: 'clamp(1.75rem, 5vw, 3.2rem)', letterSpacing: '-0.04em', color: 'var(--text-primary)', margin: '0 0 14px', lineHeight: 1.12, wordBreak: 'break-word' }}>
             Next-Gen Workforce Travel & Logistics Management
           </h1>
-          <p style={{ fontSize: 'clamp(0.9rem, 2vw, 1.15rem)', color: 'var(--text-secondary)', margin: '0 auto 28px', maxWidth: '680px', lineHeight: 1.5 }}>
+          <p style={{ fontSize: 'clamp(0.88rem, 1.8vw, 1.1rem)', color: 'var(--text-secondary)', margin: '0 auto 24px', maxWidth: '680px', lineHeight: 1.5 }}>
             Unified enterprise platform for real-time travel itineraries, border control clearance, automated expense auditing, custom logistics manifests, and duty-of-care security.
           </p>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', width: '100%' }}>
-            <button onClick={openLogin} style={{ padding: '13px 28px', borderRadius: '100px', border: 'none', background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 8px 32px var(--accent-glow-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.22s ease', minWidth: '200px' }}>
+            <button onClick={openLogin} style={{ padding: '12px 28px', borderRadius: '100px', border: 'none', background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.92rem', cursor: 'pointer', boxShadow: '0 8px 32px var(--accent-glow-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.22s ease', minWidth: '190px' }}>
               <span>Sign In to Portal</span><ArrowRight size={17} />
             </button>
-            <button onClick={openSignUp} style={{ padding: '13px 26px', borderRadius: '100px', border: '1px solid var(--border-default)', background: 'var(--nav-hover-bg)', color: 'var(--text-primary)', fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', backdropFilter: 'blur(16px)', transition: 'all 0.22s ease', minWidth: '180px' }}>
+            <button onClick={openSignUp} style={{ padding: '12px 26px', borderRadius: '100px', border: '1px solid var(--border-default)', background: 'var(--nav-hover-bg)', color: 'var(--text-primary)', fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: '0.92rem', cursor: 'pointer', backdropFilter: 'blur(16px)', transition: 'all 0.22s ease', minWidth: '170px' }}>
               Create Account
             </button>
           </div>
@@ -1391,17 +1391,17 @@ export default function LoginScreen() {
           background: 'var(--card-bg)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          padding: '40px 24px 48px',
-          marginTop: '40px',
+          padding: '24px 24px 32px',
+          marginTop: '20px',
           fontSize: '11px',
           color: 'var(--text-secondary)',
           lineHeight: 1.6,
         }}
       >
-        <div style={{ maxWidth: '980px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '1040px', margin: '0 auto' }}>
           {/* Apple-style Footnotes / Disclaimers */}
-          <div style={{ paddingBottom: '16px', borderBottom: '1px solid var(--border-subtle)', marginBottom: '20px', color: 'var(--text-muted)', fontSize: '10.5px' }}>
-            <p style={{ margin: '0 0 6px' }}>1. VoyaCore Level-5 Autonomous Travel Protocol provides real-time destination risk monitoring, preferred rate locking, and automated expense auditing across 140+ international enterprise corridors.</p>
+          <div style={{ paddingBottom: '14px', borderBottom: '1px solid var(--border-subtle)', marginBottom: '18px', color: 'var(--text-muted)', fontSize: '10.5px' }}>
+            <p style={{ margin: '0 0 4px' }}>1. VoyaCore Level-5 Autonomous Travel Protocol provides real-time destination risk monitoring, preferred rate locking, and automated expense auditing across 140+ international enterprise corridors.</p>
             <p style={{ margin: 0 }}>2. Emergency SOS satellite dispatch operates 24/7 with encrypted location pings. Duty-of-care compliance requires real-time traveler profile authorization.</p>
           </div>
 

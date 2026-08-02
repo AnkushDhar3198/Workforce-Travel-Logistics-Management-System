@@ -95,36 +95,43 @@ public class DatabaseSeeder implements CommandLineRunner {
     }
 
     private void createOfficialAccount(String email, String firstName, String lastName, UserRole role, String department, String designation, String phone, String empCode, String passwordHash) {
-        if (userRepository.findByEmail(email).isPresent()) return;
-        
-        User user = User.builder()
-                .email(email)
-                .name(firstName + " " + lastName)
-                .firstName(firstName)
-                .lastName(lastName)
-                .passwordHash(passwordHash)
-                .role(role)
-                .department(department)
-                .designation(designation)
-                .phone(phone)
-                .employeeCode(empCode)
-                .gender("MALE")
-                .nationality("United States")
-                .addressLine1("100 Corporate Plaza, Suite 500")
-                .city("New York")
-                .state("NY")
-                .postalCode("10001")
-                .country("United States")
-                .emergencyContactName("Corporate Security Desk")
-                .emergencyContactPhone("+1 800-555-9111")
-                .emergencyContactRelation("Other")
-                .joiningDate(LocalDate.of(2024, 1, 15))
-                .isActive(true)
-                .createdAt(LocalDateTime.now())
-                .build();
+        String cleanEmail = email.trim().toLowerCase();
 
-        userRepository.save(user);
-        System.out.println("Seeded official corporate account: " + email + " (" + role + ")");
+        userRepository.findByEmail(cleanEmail).ifPresentOrElse(existingUser -> {
+            existingUser.setPasswordHash(passwordHash);
+            existingUser.setIsActive(true);
+            userRepository.save(existingUser);
+            System.out.println("Updated password hash for official account: " + cleanEmail);
+        }, () -> {
+            User user = User.builder()
+                    .email(cleanEmail)
+                    .name(firstName + " " + lastName)
+                    .firstName(firstName)
+                    .lastName(lastName)
+                    .passwordHash(passwordHash)
+                    .role(role)
+                    .department(department)
+                    .designation(designation)
+                    .phone(phone)
+                    .employeeCode(empCode)
+                    .gender("MALE")
+                    .nationality("United States")
+                    .addressLine1("100 Corporate Plaza, Suite 500")
+                    .city("New York")
+                    .state("NY")
+                    .postalCode("10001")
+                    .country("United States")
+                    .emergencyContactName("Corporate Security Desk")
+                    .emergencyContactPhone("+1 800-555-9111")
+                    .emergencyContactRelation("Other")
+                    .joiningDate(LocalDate.of(2024, 1, 15))
+                    .isActive(true)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+
+            userRepository.save(user);
+            System.out.println("Seeded official corporate account: " + cleanEmail + " (" + role + ")");
+        });
     }
 
     private void seedVendors() {

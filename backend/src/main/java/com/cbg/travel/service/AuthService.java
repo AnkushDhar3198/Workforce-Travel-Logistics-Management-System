@@ -27,8 +27,10 @@ public class AuthService {
     private final AuditLogService auditLogService;
 
     public AuthResponse register(RegisterRequest request) {
+        String cleanEmail = request.getEmail() != null ? request.getEmail().trim().toLowerCase() : "";
+
         // Check for duplicate email
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+        if (userRepository.findByEmail(cleanEmail).isPresent()) {
             throw new IllegalArgumentException("An account with this email already exists.");
         }
 
@@ -40,7 +42,7 @@ public class AuthService {
                 .name(fullName)
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
-                .email(request.getEmail())
+                .email(cleanEmail)
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
                 .department(request.getDepartment())
@@ -81,14 +83,16 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
+        String cleanEmail = request.getEmail() != null ? request.getEmail().trim().toLowerCase() : "";
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
+                        cleanEmail,
                         request.getPassword()
                 )
         );
 
-        User user = userRepository.findByEmail(request.getEmail())
+        User user = userRepository.findByEmail(cleanEmail)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
 
         if (!Boolean.TRUE.equals(user.getIsActive())) {

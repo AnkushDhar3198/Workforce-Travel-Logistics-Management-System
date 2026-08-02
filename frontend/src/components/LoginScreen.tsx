@@ -925,7 +925,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <div style={{ position: 'relative', width: '100vw', minHeight: '100vh', overflowY: 'auto', overflowX: 'hidden', display: 'flex', flexDirection: 'column', background: 'var(--bg-gradient)', fontFamily: 'Inter, system-ui, sans-serif' }}>
+    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', overflowX: 'hidden', display: 'flex', flexDirection: 'column', background: 'var(--bg-gradient)', fontFamily: 'Inter, system-ui, sans-serif' }}>
       <Canvas3DBackground />
 
       {/* HEADER */}
@@ -1049,7 +1049,7 @@ export default function LoginScreen() {
       )}
 
       {/* HERO */}
-      <main style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px 40px', boxSizing: 'border-box', textAlign: 'center' }}>
+      <main style={{ position: 'relative', zIndex: 10, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px 40px', boxSizing: 'border-box', textAlign: 'center' }}>
         <div style={{ maxWidth: '820px', width: '100%', margin: 'auto 0' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '100px', background: 'var(--nav-active-bg)', border: '1px solid var(--nav-active-border)', color: 'var(--accent-primary)', fontSize: '10px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '18px', maxWidth: '90vw', animation: 'fadeSlideDown 0.6s ease both' }}>
             <Sparkles size={13} />
@@ -1351,12 +1351,13 @@ export default function LoginScreen() {
       {/* APPLE-STYLE MINIMAL LANDING PAGE FOOTER */}
       <footer
         style={{
+          flexShrink: 0,
           width: '100%',
           borderTop: '1px solid var(--border-subtle)',
           background: 'var(--card-bg)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          padding: '32px 24px 24px',
+          padding: '40px 24px 48px',
           marginTop: '40px',
           fontSize: '11px',
           color: 'var(--text-secondary)',

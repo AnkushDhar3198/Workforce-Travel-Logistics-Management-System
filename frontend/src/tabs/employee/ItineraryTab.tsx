@@ -568,16 +568,16 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
                     <div className="flex items-center gap-3 pt-0.5">
                       {/* Icon — official Google iconBaseUri .png, fall back to emoji */}
                       <div className="w-14 h-14 rounded-xl bg-white/5 shrink-0 flex items-center justify-center ring-1 ring-white/10">
-                        {resolveWeatherIconUrl(weather?.iconBaseUri) ? (
+                        {(weather?.iconUrl || resolveWeatherIconUrl(weather?.iconBaseUri)) ? (
                           <img
-                            src={resolveWeatherIconUrl(weather?.iconBaseUri)!}
+                            src={weather?.iconUrl || resolveWeatherIconUrl(weather?.iconBaseUri)!}
                             alt={weather?.description || 'weather'}
                             className="w-10 h-10 object-contain drop-shadow"
                             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                           />
                         ) : (
                           <span className="text-3xl leading-none select-none">
-                            {conditionTypeToEmoji(weather?.conditionType, weather?.isDaytime !== false)}
+                            {conditionTypeToEmoji(weather?.conditionType || weather?.icon, weather?.isDaytime !== false)}
                           </span>
                         )}
                       </div>

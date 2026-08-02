@@ -16,6 +16,7 @@ export interface LiveWeatherData {
   windGust?: number;
   visibility?: number;
   icon: string;
+  iconUrl?: string;          // Direct weather icon URL (WeatherAPI.com / OpenWeatherMap)
   iconBaseUri?: string;      // Google Maps iconBaseUri — append .png or _dark.png
   conditionType?: string;    // Google Maps condition type e.g. CLEAR, PARTLY_CLOUDY
   isDaytime?: boolean;
@@ -95,6 +96,7 @@ export async function fetchLiveSatelliteWeather(locationQuery: string): Promise<
           windGust: d.windGust != null ? Math.round(d.windGust) : undefined,
           visibility: d.visibility,
           icon: d.icon || '02d',
+          iconUrl: d.iconUrl,
           iconBaseUri: d.iconBaseUri,
           conditionType: d.conditionType,
           isDaytime: d.isDaytime !== undefined ? d.isDaytime : true,

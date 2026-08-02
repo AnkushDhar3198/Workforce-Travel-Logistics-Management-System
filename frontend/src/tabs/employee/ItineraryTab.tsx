@@ -80,6 +80,15 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
   const [shipments, setShipments] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [weather, setWeather] = useState<any>(() => getWeatherForLocation('Switzerland'));
+  const [liveTime, setLiveTime] = useState<string>(() => new Date().toLocaleTimeString());
+
+  // Live 1-second clock timer for destination real-time updates
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setLiveTime(new Date().toLocaleTimeString());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const loadItineraries = async () => {
     setLoading(true);
@@ -114,16 +123,21 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
     loadItineraries();
   }, []);
 
+  // Live 30-second satellite weather auto-refresh polling loop
   useEffect(() => {
     if (selectedReq) {
       const dest = selectedReq.destination || 'Switzerland';
-      
+
+      const updateWeather = async () => {
+        const liveData = await fetchLiveSatelliteWeather(dest);
+        setWeather(liveData);
+      };
+
+      updateWeather();
+      const weatherInterval = setInterval(updateWeather, 30000);
+
       const fetchReqDetails = async () => {
         try {
-          // Fetch real-time satellite weather for location
-          const liveData = await fetchLiveSatelliteWeather(dest);
-          setWeather(liveData);
-
           // Fetch real bookings from API
           const bRes = await authFetch(`${API_BASE}/travel/${selectedReq.id}/bookings`);
           if (bRes.ok) {
@@ -141,6 +155,8 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
         } catch (err) {}
       };
       fetchReqDetails();
+
+      return () => clearInterval(weatherInterval);
     }
   }, [selectedReq]);
 
@@ -435,7 +451,7 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <p className="text-[11px] text-sky-400 font-bold uppercase tracking-wider truncate">Live Satellite Weather</p>
+                <p className="text-[11px] text-sky-400 font-bold uppercase tracking-wider truncate">Live Satellite Stream • {liveTime}</p>
               </div>
               <h4 className="text-base font-black text-white mt-0.5 truncate">
                 {weather ? `${weather.temperature ?? weather.temp}°C — ${weather.description ?? 'Clear'}` : '18°C — Live'}

@@ -1049,7 +1049,7 @@ export default function LoginScreen() {
       )}
 
       {/* HERO */}
-      <main style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '100px 20px 80px', boxSizing: 'border-box', textAlign: 'center', minHeight: 'calc(100vh - 120px)' }}>
+      <main style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px 40px', boxSizing: 'border-box', textAlign: 'center' }}>
         <div style={{ maxWidth: '820px', width: '100%', margin: 'auto 0' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '100px', background: 'var(--nav-active-bg)', border: '1px solid var(--nav-active-border)', color: 'var(--accent-primary)', fontSize: '10px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '18px', maxWidth: '90vw', animation: 'fadeSlideDown 0.6s ease both' }}>
             <Sparkles size={13} />
@@ -1357,7 +1357,7 @@ export default function LoginScreen() {
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           padding: '32px 24px 24px',
-          marginTop: '120px',
+          marginTop: '40px',
           fontSize: '11px',
           color: 'var(--text-secondary)',
           lineHeight: 1.6,

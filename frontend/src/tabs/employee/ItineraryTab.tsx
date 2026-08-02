@@ -27,16 +27,30 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
 
   const loadItineraries = async () => {
     setLoading(true);
+    let serverList: any[] = [];
     try {
       const res = await authFetch(`${API_BASE}/travel/employee`);
       if (res.ok) {
-        const list = await res.json();
-        setRequests(list);
-        if (list.length > 0 && !selectedReq) {
-          setSelectedReq(list[0]);
-        }
+        serverList = await res.json();
       }
     } catch (e) {}
+
+    let localList: any[] = [];
+    try {
+      localList = JSON.parse(localStorage.getItem('voyacore_local_travel_requests') || '[]');
+    } catch (e) {}
+
+    const combined = [...serverList];
+    for (const lreq of localList) {
+      if (!combined.some(r => r.id === lreq.id || (r.destination === lreq.destination && r.estimatedCost === lreq.estimatedCost))) {
+        combined.unshift(lreq);
+      }
+    }
+
+    setRequests(combined);
+    if (combined.length > 0 && !selectedReq) {
+      setSelectedReq(combined[0]);
+    }
     setLoading(false);
   };
 

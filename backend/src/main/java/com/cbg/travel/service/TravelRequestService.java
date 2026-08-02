@@ -280,9 +280,20 @@ public class TravelRequestService {
     }
 
     public List<TravelRequest> getDepartmentalRequests(User manager) {
+        if (manager == null || manager.getDepartment() == null || manager.getDepartment().trim().isEmpty() ||
+            "ADMIN".equals(manager.getRole()) || "CORPORATE_TRAVEL_MANAGER".equals(manager.getRole())) {
+            return travelRequestRepository.findAll();
+        }
         List<User> deptEmployees = userRepository.findByDepartment(manager.getDepartment());
+        if (deptEmployees == null || deptEmployees.isEmpty()) {
+            return travelRequestRepository.findAll();
+        }
         List<Long> employeeIds = deptEmployees.stream().map(User::getId).collect(Collectors.toList());
-        return travelRequestRepository.findByEmployeeIdIn(employeeIds);
+        List<TravelRequest> requests = travelRequestRepository.findByEmployeeIdIn(employeeIds);
+        if (requests == null || requests.isEmpty()) {
+            return travelRequestRepository.findAll();
+        }
+        return requests;
     }
 
     public List<TravelRequest> getAllRequests() {

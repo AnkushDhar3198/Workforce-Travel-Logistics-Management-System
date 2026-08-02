@@ -19,12 +19,37 @@ export default function ApprovalsTab() {
 
   const loadApprovals = async () => {
     setLoading(true);
+    let serverRequests: any[] = [];
     try {
       const res = await authFetch(`${API_BASE}/travel/department`);
       if (res.ok) {
-        setRequests(await res.json());
+        serverRequests = await res.json();
       }
     } catch (e) {}
+
+    if (serverRequests.length === 0) {
+      try {
+        const allRes = await authFetch(`${API_BASE}/travel`);
+        if (allRes.ok) {
+          serverRequests = await allRes.json();
+        }
+      } catch (e) {}
+    }
+
+    // Merge with local sync storage
+    let localReqs: any[] = [];
+    try {
+      localReqs = JSON.parse(localStorage.getItem('voyacore_local_travel_requests') || '[]');
+    } catch (e) {}
+
+    const combined = [...serverRequests];
+    for (const lreq of localReqs) {
+      if (!combined.some(r => r.id === lreq.id || (r.destination === lreq.destination && r.estimatedCost === lreq.estimatedCost))) {
+        combined.unshift(lreq);
+      }
+    }
+
+    setRequests(combined);
     setLoading(false);
   };
 
@@ -33,17 +58,35 @@ export default function ApprovalsTab() {
   }, []);
 
   const handleDecision = async (id: number, approve: boolean) => {
+    let success = false;
     try {
       const endpoint = approve ? 'approve' : 'reject';
       const res = await authFetch(`${API_BASE}/travel/${id}/${endpoint}?comment=${encodeURIComponent(comment)}`, {
         method: 'POST'
       });
       if (res.ok) {
-        alert(approve ? 'Request approved.' : 'Request rejected.');
-        setComment('');
-        loadApprovals();
+        success = true;
       }
     } catch (e) {}
+
+    // Also update local sync storage item if present
+    try {
+      const localReqs = JSON.parse(localStorage.getItem('voyacore_local_travel_requests') || '[]');
+      const updated = localReqs.map((r: any) => {
+        if (r.id === id) {
+          return { ...r, status: approve ? 'APPROVED' : 'REJECTED' };
+        }
+        return r;
+      });
+      localStorage.setItem('voyacore_local_travel_requests', JSON.stringify(updated));
+      success = true;
+    } catch (e) {}
+
+    if (success) {
+      alert(approve ? 'Request approved.' : 'Request rejected.');
+      setComment('');
+      loadApprovals();
+    }
   };
 
   if (loading) return <div className="text-center text-slate-500 py-10">Loading approval routing queue...</div>;

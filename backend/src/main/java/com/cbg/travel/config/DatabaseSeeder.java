@@ -4,6 +4,7 @@ import com.cbg.travel.entity.*;
 import com.cbg.travel.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import java.util.Arrays;
 
@@ -13,13 +14,57 @@ public class DatabaseSeeder implements CommandLineRunner {
 
     private final VendorRepository vendorRepository;
     private final PolicyRuleRepository policyRuleRepository;
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     public void run(String... args) throws Exception {
+        migrateUserTableSchema();
         ensureUploadDirectoryExists();
         seedVendors();
         seedPolicyRules();
         System.out.println("System configuration seeding completed.");
+    }
+
+    private void migrateUserTableSchema() {
+        try {
+            System.out.println("Executing automatic schema migration for users table...");
+            String[] alterQueries = {
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS employee_code VARCHAR(255)",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name VARCHAR(255)",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_name VARCHAR(255)",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS date_of_birth DATE",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS gender VARCHAR(10)",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS nationality VARCHAR(255)",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS blood_group VARCHAR(5)",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS passport_number VARCHAR(255)",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS passport_expiry DATE",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS address_line1 VARCHAR(255)",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS address_line2 VARCHAR(255)",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS city VARCHAR(255)",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS state VARCHAR(255)",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS postal_code VARCHAR(20)",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS country VARCHAR(255)",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS emergency_contact_name VARCHAR(255)",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS emergency_contact_phone VARCHAR(255)",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS emergency_contact_relation VARCHAR(255)",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS manager_id BIGINT",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS joining_date DATE",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_image_url VARCHAR(255)",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+            };
+
+            for (String query : alterQueries) {
+                try {
+                    jdbcTemplate.execute(query);
+                } catch (Exception ex) {
+                    System.out.println("Schema migration query note: " + ex.getMessage());
+                }
+            }
+            System.out.println("Users table schema migration completed successfully.");
+        } catch (Exception e) {
+            System.err.println("Users table schema migration warning: " + e.getMessage());
+        }
     }
 
     private void seedVendors() {

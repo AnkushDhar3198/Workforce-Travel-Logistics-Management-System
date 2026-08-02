@@ -23,10 +23,10 @@ public class User {
     @Column(name = "employee_code", unique = true)
     private String employeeCode;
 
-    @Column(name = "first_name", nullable = false)
+    @Column(name = "first_name")
     private String firstName;
 
-    @Column(name = "last_name", nullable = false)
+    @Column(name = "last_name")
     private String lastName;
 
     @Column(nullable = false, unique = true)

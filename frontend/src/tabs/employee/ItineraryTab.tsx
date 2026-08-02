@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Info, Plane, Hotel, Truck, AlertTriangle, CheckCircle, FileText } from 'lucide-react';
+import { Calendar, Info, Plane, Hotel, Truck, AlertTriangle, CheckCircle, FileText, RefreshCw } from 'lucide-react';
 import { useAuth, API_BASE } from '../../context/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
@@ -123,7 +123,7 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
     loadItineraries();
   }, []);
 
-  // Live 30-second satellite weather auto-refresh polling loop
+  // Continuous 15-second live satellite weather auto-refresh polling loop
   useEffect(() => {
     if (selectedReq) {
       const dest = selectedReq.destination || 'Switzerland';
@@ -134,7 +134,7 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
       };
 
       updateWeather();
-      const weatherInterval = setInterval(updateWeather, 30000);
+      const weatherInterval = setInterval(updateWeather, 15000);
 
       const fetchReqDetails = async () => {
         try {
@@ -439,27 +439,44 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
         </Card>
 
         {/* Live Satellite Weather Stat Card */}
-        <Card className="hover-elevate hover-glow bg-gradient-to-r from-sky-950/40 to-cyan-950/30 border border-sky-800/40">
-          <CardContent className="p-4 flex items-center gap-3.5">
-            <div className="p-2.5 rounded-xl bg-sky-500/10 text-sky-400 text-2xl shrink-0">
-              {weather?.icon === '01d' || weather?.icon === '01n' ? '☀️' :
-               weather?.icon?.startsWith('02') ? '⛅' :
-               weather?.icon?.startsWith('03') || weather?.icon?.startsWith('04') ? '☁️' :
-               weather?.icon?.startsWith('09') || weather?.icon?.startsWith('10') ? '🌧️' :
-               weather?.icon?.startsWith('13') ? '❄️' : '🌤️'}
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <p className="text-[11px] text-sky-400 font-bold uppercase tracking-wider truncate">Live Satellite Stream • {liveTime}</p>
+        <Card className="hover-elevate hover-glow bg-gradient-to-r from-sky-950/40 to-cyan-950/30 border border-sky-800/40 relative overflow-hidden">
+          <CardContent className="p-4 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div className="p-2.5 rounded-xl bg-sky-500/10 text-sky-400 text-2xl shrink-0">
+                {weather?.icon === '01d' || weather?.icon === '01n' ? '☀️' :
+                 weather?.icon?.startsWith('02') ? '⛅' :
+                 weather?.icon?.startsWith('03') || weather?.icon?.startsWith('04') ? '☁️' :
+                 weather?.icon?.startsWith('09') || weather?.icon?.startsWith('10') ? '🌧️' :
+                 weather?.icon?.startsWith('13') ? '❄️' : '🌤️'}
               </div>
-              <h4 className="text-base font-black text-white mt-0.5 truncate">
-                {weather ? `${weather.temperature ?? weather.temp}°C — ${weather.description ?? 'Clear'}` : '18°C — Live'}
-              </h4>
-              <p className="text-[10px] text-slate-400 truncate">
-                {selectedReq?.destination || 'Switzerland'} • Humidity: {weather?.humidity ?? 55}%{weather?.windSpeed ? ` • Wind: ${weather.windSpeed}km/h` : ''}
-              </p>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <p className="text-[11px] text-sky-400 font-bold uppercase tracking-wider truncate">
+                    Live Satellite Stream • {liveTime}
+                  </p>
+                </div>
+                <h4 className="text-base font-black text-white mt-0.5 truncate">
+                  {weather ? `${weather.temperature ?? weather.temp}°C — ${weather.description ?? 'Clear'}` : '18°C — Live'}
+                </h4>
+                <p className="text-[10px] text-slate-400 truncate">
+                  {selectedReq?.destination || weather?.city || 'Switzerland'} • Feels: {weather?.feelsLike ?? (weather?.temp ?? 18)}°C • Humidity: {weather?.humidity ?? 55}%{weather?.windSpeed ? ` • Wind: ${weather.windSpeed}km/h` : ''}
+                </p>
+              </div>
             </div>
+
+            {/* Manual 1-Tap Refresh Button */}
+            <button
+              onClick={async () => {
+                const dest = selectedReq?.destination || 'Switzerland';
+                const liveData = await fetchLiveSatelliteWeather(dest);
+                setWeather(liveData);
+              }}
+              title="Re-fetch Live Satellite Weather"
+              className="p-2 rounded-xl border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 transition-all cursor-pointer shrink-0 active:scale-95"
+            >
+              <RefreshCw size={14} className="hover:rotate-180 transition-transform duration-500" />
+            </button>
           </CardContent>
         </Card>
 

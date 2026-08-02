@@ -23,6 +23,9 @@ public class User {
     @Column(name = "employee_code", unique = true)
     private String employeeCode;
 
+    @Column(name = "name")
+    private String name;
+
     @Column(name = "first_name")
     private String firstName;
 
@@ -115,9 +118,8 @@ public class User {
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    // --- Backward compatibility: computed 'name' ---
-    @Transient
     public String getName() {
+        if (name != null && !name.isBlank()) return name;
         if (firstName == null && lastName == null) return "";
         if (lastName == null || lastName.isBlank()) return firstName != null ? firstName : "";
         if (firstName == null || firstName.isBlank()) return lastName;

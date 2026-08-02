@@ -33,9 +33,11 @@ public class AuthService {
         }
 
         String initialEmpCode = String.format("EMP-%05d", (userRepository.count() + 1) * 100 + (long)(Math.random() * 99));
+        String fullName = (request.getFirstName() + " " + request.getLastName()).trim();
 
         User user = User.builder()
                 .employeeCode(initialEmpCode)
+                .name(fullName)
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .email(request.getEmail())

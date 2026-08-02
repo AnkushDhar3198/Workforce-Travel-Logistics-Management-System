@@ -1,5 +1,8 @@
 -- Complete Automatic DDL Schema Migration for PostgreSQL database on Render / Neon
--- Ensures all 30 user entity columns exist on startup BEFORE Hibernate initializes
+-- Ensures all user entity columns exist on startup BEFORE Hibernate initializes
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS name VARCHAR(255);
+ALTER TABLE users ALTER COLUMN name DROP NOT NULL;
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS employee_code VARCHAR(255);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name VARCHAR(255);

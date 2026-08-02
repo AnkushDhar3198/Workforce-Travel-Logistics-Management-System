@@ -29,6 +29,8 @@ public class DatabaseSeeder implements CommandLineRunner {
         try {
             System.out.println("Executing automatic schema migration for users table...");
             String[] alterQueries = {
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS name VARCHAR(255)",
+                "ALTER TABLE users ALTER COLUMN name DROP NOT NULL",
                 "ALTER TABLE users ADD COLUMN IF NOT EXISTS employee_code VARCHAR(255)",
                 "ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name VARCHAR(255)",
                 "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_name VARCHAR(255)",

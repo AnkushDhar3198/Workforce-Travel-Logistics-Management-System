@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Globe, Layers, Navigation, Radio, RotateCcw, ShieldCheck, ZoomIn, ZoomOut, Search, MapPin } from 'lucide-react';
+import { Globe, Navigation, RotateCcw, ShieldCheck, ZoomIn, ZoomOut, Search, MapPin, List } from 'lucide-react';
 
 interface TravelerRequest {
   id: number;
@@ -16,9 +16,9 @@ interface TravelerRequest {
 interface WorldMapCatalogProps {
   approvedRequests: TravelerRequest[];
   activeAlerts?: any[];
+  compact?: boolean;
 }
 
-/** Comprehensive Global City Coordinate Geocoding Database */
 const GLOBAL_COORDINATES_DB: Record<string, { lat: number; lon: number; country: string; region: string }> = {
   'richmond': { lat: 37.5407, lon: -77.4360, country: 'United States', region: 'Virginia' },
   'virginia': { lat: 37.5407, lon: -77.4360, country: 'United States', region: 'Virginia' },
@@ -89,7 +89,7 @@ function geocodeCityToCoords(cityName: string): { lat: number; lon: number; coun
 
 type MapLayerType = 'dark' | 'satellite' | 'street';
 
-export default function WorldMapCatalog({ approvedRequests, activeAlerts = [] }: WorldMapCatalogProps) {
+export default function WorldMapCatalog({ approvedRequests, activeAlerts = [], compact = false }: WorldMapCatalogProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
@@ -98,11 +98,12 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [] }:
   const [activeLayer, setActiveLayer] = useState<MapLayerType>('dark');
   const [selectedTraveler, setSelectedTraveler] = useState<TravelerRequest | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [showRosterOverlay, setShowRosterOverlay] = useState<boolean>(false);
 
   const displayRequests = approvedRequests.length > 0 ? approvedRequests : [
-    { id: 101, employeeId: 489, destination: 'Richmond, USA', purpose: 'Corporate Logistics Review', startDate: '2026-08-18', endDate: '2026-08-28' },
-    { id: 102, employeeId: 302, destination: 'Zurich, Switzerland', purpose: 'Financial Audit & Treasury', startDate: '2026-08-15', endDate: '2026-08-22' },
-    { id: 103, employeeId: 512, destination: 'Tokyo, Japan', purpose: 'APAC Regional Summit', startDate: '2026-08-20', endDate: '2026-08-30' },
+    { id: 101, employeeId: 489, destination: 'Richmond, USA', purpose: 'Corporate Logistics Review' },
+    { id: 102, employeeId: 302, destination: 'Zurich, Switzerland', purpose: 'Financial Audit & Treasury' },
+    { id: 103, employeeId: 512, destination: 'Tokyo, Japan', purpose: 'APAC Regional Summit' },
   ];
 
   const filteredRequests = displayRequests.filter(r =>
@@ -111,26 +112,23 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [] }:
     String(r.id).includes(searchQuery)
   );
 
-  // Initialize Leaflet Map
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
     if (!mapInstanceRef.current) {
       const map = L.map(mapContainerRef.current, {
-        center: [25, 10],
+        center: [22, 10],
         zoom: 2,
         minZoom: 2,
         maxZoom: 18,
         zoomControl: false,
         attributionControl: false,
       });
-
       mapInstanceRef.current = map;
     }
 
     const map = mapInstanceRef.current;
 
-    // Change map tile provider dynamically
     if (tileLayerRef.current) {
       map.removeLayer(tileLayerRef.current);
     }
@@ -153,7 +151,6 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [] }:
 
     tileLayerRef.current = newTileLayer;
 
-    // Render Pin Markers
     markersRef.current.forEach(m => map.removeLayer(m));
     markersRef.current = [];
 
@@ -165,34 +162,33 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [] }:
       bounds.push(latLng);
 
       const customIcon = L.divIcon({
-        className: 'custom-leaflet-pin',
+        className: 'apple-leaflet-pin',
         html: `
           <div style="position: relative; display: flex; align-items: center; justify-content: center;">
-            <div style="position: absolute; width: 28px; height: 28px; border-radius: 50%; background: rgba(56, 189, 248, 0.25); border: 1.5px solid rgba(56, 189, 248, 0.6); animation: ping 2s infinite;"></div>
-            <div style="position: relative; background: #0f172a; border: 1.5px solid #38bdf8; border-radius: 50%; padding: 5px; color: #38bdf8; box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <div style="position: absolute; width: 26px; height: 26px; border-radius: 50%; background: rgba(56, 189, 248, 0.25); border: 1.5px solid rgba(56, 189, 248, 0.5); animation: ping 2s infinite;"></div>
+            <div style="position: relative; background: #0f172a; border: 1.5px solid #38bdf8; border-radius: 50%; padding: 4px; color: #38bdf8; box-shadow: 0 4px 12px rgba(0,0,0,0.6);">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
                 <circle cx="12" cy="10" r="3"/>
               </svg>
             </div>
-            <div style="position: absolute; top: 22px; white-space: nowrap; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(56, 189, 248, 0.5); padding: 2px 6px; border-radius: 4px; color: #e2e8f0; font-size: 9px; font-weight: 800; font-family: monospace; box-shadow: 0 2px 6px rgba(0,0,0,0.5);">
-              #${req.id} ${req.destination}
+            <div style="position: absolute; top: 20px; white-space: nowrap; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.15); padding: 2px 7px; border-radius: 10px; color: #fff; font-size: 9px; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.4);">
+              ${req.destination}
             </div>
           </div>
         `,
-        iconSize: [30, 30],
-        iconAnchor: [15, 15],
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
       });
 
       const popupHtml = `
-        <div style="font-family: system-ui, sans-serif; color: #fff; background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid #38bdf8; min-width: 180px;">
-          <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: #38bdf8; margin-bottom: 4px;">📍 Duty of Care Satellite Ping</div>
-          <div style="font-size: 13px; font-weight: 900; margin-bottom: 4px; color: #fff;">${req.destination}</div>
-          <div style="font-size: 10px; color: #94a3b8; line-height: 1.4;">
+        <div style="font-family: system-ui, -apple-system, sans-serif; color: #fff; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); padding: 10px 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.15); min-width: 170px;">
+          <div style="font-size: 9px; font-weight: 800; text-transform: uppercase; tracking: 0.1em; color: #38bdf8; margin-bottom: 3px;">📍 Live GPS Signal</div>
+          <div style="font-size: 12px; font-weight: 800; color: #fff; margin-bottom: 4px;">${req.destination}</div>
+          <div style="font-size: 9.5px; color: #94a3b8; line-height: 1.4;">
             <div><b>Employee ID:</b> #${req.employeeId || req.id}</div>
-            <div><b>Purpose:</b> ${req.purpose || 'Corporate Travel'}</div>
-            <div><b>Coordinates:</b> ${geo.lat.toFixed(4)}°, ${geo.lon.toFixed(4)}°</div>
-            <div><b>Country:</b> ${geo.country} (${geo.region})</div>
+            <div><b>Coordinates:</b> ${geo.lat.toFixed(2)}°, ${geo.lon.toFixed(2)}°</div>
+            <div><b>Region:</b> ${geo.country}</div>
           </div>
         </div>
       `;
@@ -209,11 +205,10 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [] }:
     });
 
     if (bounds.length > 0) {
-      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 6 });
+      map.fitBounds(bounds, { padding: [30, 30], maxZoom: 5 });
     }
 
     return () => {
-      // Clean up map instance on unmount
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
@@ -223,172 +218,169 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [] }:
 
   const handleFlyTo = (req: TravelerRequest) => {
     setSelectedTraveler(req);
+    setShowRosterOverlay(false);
     if (mapInstanceRef.current) {
       const geo = geocodeCityToCoords(req.destination);
-      mapInstanceRef.current.flyTo([geo.lat, geo.lon], 6, { duration: 1.5 });
+      mapInstanceRef.current.flyTo([geo.lat, geo.lon], 6, { duration: 1.2 });
     }
   };
 
   const handleResetMap = () => {
     setSelectedTraveler(null);
     if (mapInstanceRef.current) {
-      mapInstanceRef.current.flyTo([25, 10], 2, { duration: 1.2 });
+      mapInstanceRef.current.flyTo([22, 10], 2, { duration: 1 });
     }
   };
 
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-2xl flex flex-col select-none">
-      {/* ── Top Control Bar ─────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 bg-slate-900/95 border-b border-slate-800 backdrop-blur z-20">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-            <Globe className="w-5 h-5 animate-spin-slow" />
-          </div>
-          <div>
-            <h3 className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2">
-              <span>Live GPS Traveler Locations Catalog</span>
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            </h3>
-            <p className="text-[10px] text-slate-400 font-medium">
-              Real World Map Cartography • {displayRequests.length} Locations Plotted
-            </p>
-          </div>
+    <div className="relative w-full rounded-3xl overflow-hidden bg-slate-950/80 border border-white/10 ring-1 ring-white/5 shadow-2xl flex flex-col select-none backdrop-blur-xl">
+      {/* ── Apple Floating Control Bar Overlay ─────────────────────── */}
+      <div className="absolute top-3 left-3 right-3 z-30 flex items-center justify-between pointer-events-none">
+        {/* Left Floating Info Pill */}
+        <div className="pointer-events-auto flex items-center gap-2 bg-slate-900/70 border border-white/10 backdrop-blur-xl px-3 py-1.5 rounded-full shadow-lg">
+          <Globe className="w-3.5 h-3.5 text-sky-400 animate-spin-slow" />
+          <span className="text-[10.5px] font-extrabold text-white">Live GPS World Catalog</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span className="text-[9.5px] font-medium text-slate-400 hidden sm:inline">• {displayRequests.length} Locations</span>
         </div>
 
-        {/* Map Controls */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Layer Selector */}
-          <div className="flex items-center bg-slate-800/80 rounded-lg border border-slate-700 p-0.5">
+        {/* Right Floating Controls */}
+        <div className="pointer-events-auto flex items-center gap-2">
+          {/* Layer Selector Frosted Pill */}
+          <div className="flex items-center bg-slate-900/70 border border-white/10 backdrop-blur-xl p-0.5 rounded-full shadow-lg">
             <button
               onClick={() => setActiveLayer('dark')}
-              className={`px-2.5 py-1 rounded-md text-[10px] font-extrabold transition-all ${
-                activeLayer === 'dark' ? 'bg-cyan-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
+              className={`px-2.5 py-1 rounded-full text-[9.5px] font-black transition-all ${
+                activeLayer === 'dark' ? 'bg-sky-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
               }`}
             >
-              Dark Vector
+              Dark
             </button>
             <button
               onClick={() => setActiveLayer('satellite')}
-              className={`px-2.5 py-1 rounded-md text-[10px] font-extrabold transition-all ${
-                activeLayer === 'satellite' ? 'bg-cyan-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
+              className={`px-2.5 py-1 rounded-md text-[9.5px] font-black transition-all ${
+                activeLayer === 'satellite' ? 'bg-sky-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
               }`}
             >
               Satellite
             </button>
             <button
               onClick={() => setActiveLayer('street')}
-              className={`px-2.5 py-1 rounded-md text-[10px] font-extrabold transition-all ${
-                activeLayer === 'street' ? 'bg-cyan-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
+              className={`px-2.5 py-1 rounded-full text-[9.5px] font-black transition-all ${
+                activeLayer === 'street' ? 'bg-sky-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
               }`}
             >
-              Street Map
+              Street
             </button>
           </div>
 
-          <div className="flex items-center bg-slate-800/80 rounded-lg border border-slate-700 p-0.5">
+          {/* Toggle Roster Button */}
+          <button
+            onClick={() => setShowRosterOverlay(!showRosterOverlay)}
+            className={`px-3 py-1.5 rounded-full text-[10px] font-extrabold flex items-center gap-1.5 transition-all shadow-lg border backdrop-blur-xl ${
+              showRosterOverlay
+                ? 'bg-sky-500 text-slate-950 border-sky-400'
+                : 'bg-slate-900/70 border-white/10 text-slate-300 hover:text-white'
+            }`}
+          >
+            <List size={12} />
+            <span>Roster ({displayRequests.length})</span>
+          </button>
+
+          {/* Zoom Controls */}
+          <div className="flex items-center bg-slate-900/70 border border-white/10 backdrop-blur-xl p-0.5 rounded-full shadow-lg">
             <button
               onClick={() => mapInstanceRef.current?.zoomIn()}
-              className="p-1.5 text-slate-300 hover:text-white hover:bg-slate-700 rounded transition"
+              className="p-1.5 text-slate-300 hover:text-white rounded-full transition"
               title="Zoom In"
             >
-              <ZoomIn size={14} />
+              <ZoomIn size={12} />
             </button>
             <button
               onClick={() => mapInstanceRef.current?.zoomOut()}
-              className="p-1.5 text-slate-300 hover:text-white hover:bg-slate-700 rounded transition"
+              className="p-1.5 text-slate-300 hover:text-white rounded-full transition"
               title="Zoom Out"
             >
-              <ZoomOut size={14} />
+              <ZoomOut size={12} />
             </button>
             <button
               onClick={handleResetMap}
-              className="p-1.5 text-slate-300 hover:text-white hover:bg-slate-700 rounded transition"
+              className="p-1.5 text-slate-300 hover:text-white rounded-full transition"
               title="Reset View"
             >
-              <RotateCcw size={14} />
+              <RotateCcw size={12} />
             </button>
           </div>
         </div>
       </div>
 
-      {/* ── Main Map + Traveler Catalog Sidebar ────────────────────── */}
-      <div className="relative w-full h-[400px] md:h-[460px] flex">
-        {/* Real Leaflet Map Container */}
+      {/* ── Leaflet Map Container (Compact Height) ────────────────── */}
+      <div className="relative w-full h-[310px] md:h-[340px] flex">
         <div ref={mapContainerRef} className="w-full h-full z-10 bg-slate-950"></div>
 
-        {/* Floating Duty of Care Traveler List Overlay */}
-        <div className="absolute top-4 right-4 z-20 w-64 md:w-72 bg-slate-900/90 border border-slate-800 backdrop-blur-md rounded-xl p-3 shadow-2xl space-y-2 hidden sm:block max-h-[380px] overflow-y-auto custom-scrollbar">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-            <span className="text-[10.5px] font-black uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
-              <Navigation size={12} /> Active Duty of Care Roster
-            </span>
-            <span className="text-[9px] bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-1.5 py-0.5 rounded font-mono font-bold">
-              {filteredRequests.length} Active
-            </span>
-          </div>
+        {/* Slide-over Apple Frosted Roster Drawer */}
+        {showRosterOverlay && (
+          <div className="absolute top-14 right-3 z-30 w-64 bg-slate-900/90 border border-white/15 backdrop-blur-2xl rounded-2xl p-3 shadow-2xl space-y-2 animate-fade-in max-h-[260px] overflow-y-auto custom-scrollbar">
+            <div className="flex items-center justify-between border-b border-white/10 pb-1.5">
+              <span className="text-[10px] font-black uppercase tracking-wider text-sky-400 flex items-center gap-1">
+                <Navigation size={11} /> Duty of Care Roster
+              </span>
+              <span className="text-[9px] text-slate-400 font-mono font-semibold">{filteredRequests.length} active</span>
+            </div>
 
-          {/* Quick Search */}
-          <div className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-500" />
-            <input
-              type="text"
-              placeholder="Search destination or ID..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-950/80 border border-slate-800 rounded-lg pl-8 pr-3 py-1 text-[10.5px] text-white focus:outline-none focus:border-cyan-500 placeholder:text-slate-600"
-            />
-          </div>
+            <div className="relative">
+              <Search className="w-3 h-3 absolute left-2.5 top-2 text-slate-500" />
+              <input
+                type="text"
+                placeholder="Filter destination..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-slate-950/80 border border-white/10 rounded-lg pl-7 pr-2 py-1 text-[10px] text-white focus:outline-none focus:border-sky-500 placeholder:text-slate-600"
+              />
+            </div>
 
-          {/* Location Cards */}
-          <div className="space-y-1.5 pt-1">
-            {filteredRequests.map((req) => {
-              const geo = geocodeCityToCoords(req.destination);
-              const isSelected = selectedTraveler?.id === req.id;
-              return (
-                <div
-                  key={req.id}
-                  onClick={() => handleFlyTo(req)}
-                  className={`p-2 rounded-lg border transition-all cursor-pointer ${
-                    isSelected
-                      ? 'bg-cyan-500/20 border-cyan-500 text-white shadow-md'
-                      : 'bg-slate-950/60 border-slate-800/80 text-slate-300 hover:bg-slate-800/60 hover:text-white'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-white flex items-center gap-1">
-                      <MapPin size={11} className="text-cyan-400" />
-                      <span>{req.destination}</span>
-                    </span>
-                    <span className="text-[9px] font-mono text-cyan-400 font-bold">#{req.id}</span>
+            <div className="space-y-1 pt-0.5">
+              {filteredRequests.map((req) => {
+                const geo = geocodeCityToCoords(req.destination);
+                const isSelected = selectedTraveler?.id === req.id;
+                return (
+                  <div
+                    key={req.id}
+                    onClick={() => handleFlyTo(req)}
+                    className={`p-2 rounded-xl border transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-sky-500/20 border-sky-400 text-white shadow'
+                        : 'bg-slate-950/50 border-white/5 text-slate-300 hover:bg-slate-800/60 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-white flex items-center gap-1">
+                        <MapPin size={10} className="text-sky-400" />
+                        <span>{req.destination}</span>
+                      </span>
+                      <span className="text-[8.5px] font-mono text-sky-400 font-bold">#{req.id}</span>
+                    </div>
+                    <div className="text-[9px] text-slate-400 mt-0.5 flex items-center justify-between">
+                      <span>{geo.country}</span>
+                      <span className="text-slate-500 font-mono">{geo.lat.toFixed(1)}°, {geo.lon.toFixed(1)}°</span>
+                    </div>
                   </div>
-                  <div className="text-[9.5px] text-slate-400 mt-1 flex items-center justify-between">
-                    <span>{geo.country}</span>
-                    <span className="text-slate-500 font-mono">{geo.lat.toFixed(1)}°, {geo.lon.toFixed(1)}°</span>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* ── Bottom Telemetry Status Ribbon ──────────────────────────── */}
-      <div className="px-5 py-2.5 bg-slate-900/95 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-[10.5px] text-slate-400 z-20">
-        <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1 text-cyan-400 font-bold">
-            <ShieldCheck size={13} /> Authentic World Cartography (OpenStreetMap & Esri GIS)
-          </span>
-          <span className="hidden md:inline">•</span>
-          <span className="hidden md:inline text-slate-300 font-medium">
-            Live Duty of Care GPS Telemetry Active
-          </span>
+      {/* ── Apple-Style Minimal Footer Ribbon ─────────────────────────── */}
+      <div className="px-4 py-2 bg-slate-900/90 border-t border-white/10 flex items-center justify-between text-[10px] text-slate-400 z-20 backdrop-blur-xl">
+        <div className="flex items-center gap-2">
+          <ShieldCheck size={12} className="text-sky-400" />
+          <span className="font-semibold text-slate-300">WGS84 Satellite Telemetry</span>
         </div>
-
-        <div className="flex items-center gap-4 text-xs font-mono font-bold text-slate-200">
-          <span className="text-emerald-400 flex items-center gap-1">
-            <Navigation size={12} /> {displayRequests.length} Locations Plotted
-          </span>
-          <span>Coverage: 100% Global</span>
+        <div className="flex items-center gap-3 font-mono text-[9.5px]">
+          <span className="text-emerald-400 font-extrabold">● Active Signal</span>
+          <span className="text-slate-500">100% Global Coverage</span>
         </div>
       </div>
     </div>

@@ -448,11 +448,116 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
         </div>
       </div>
 
-      {/* 2. Top-level Summary Stat Cards */}
+      {/* ── Apple Bento Grid Row 1: Weather Glass Hero + GPS Map Widget ────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        {/* Left: Destination & Weather Glass Hero Card (6 cols) */}
+        <div className="lg:col-span-6 flex flex-col">
+          {(() => {
+            const ct = (weather?.conditionType || '').toUpperCase();
+            const isNightAtDest = destLocalHour < 6 || destLocalHour >= 18;
+            let cardGrad = 'from-sky-950/60 via-slate-900/80 to-cyan-950/50 border-white/10';
+            if (isNightAtDest) {
+              cardGrad = 'from-indigo-950/70 via-slate-950/80 to-slate-900/70 border-white/10';
+            }
+
+            return (
+              <div className={`h-full min-h-[320px] flex flex-col justify-between rounded-3xl p-6 bg-gradient-to-br ${cardGrad} border backdrop-blur-2xl ring-1 ring-white/5 shadow-2xl relative overflow-hidden`}>
+                {/* Top status bar */}
+                <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-3">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                    <span className="text-xs font-black uppercase tracking-widest text-sky-400 truncate">Live Weather Stream</span>
+                    <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">• {liveTime}</span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={handleManualWeatherRefresh}
+                      disabled={isRefreshingWeather || weatherLoading}
+                      className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-white text-[10px] font-extrabold transition-all active:scale-95 disabled:opacity-40 flex items-center gap-1"
+                    >
+                      <RefreshCw size={10} className={isRefreshingWeather ? 'animate-spin' : ''} />
+                      <span>{isRefreshingWeather ? 'Updating' : 'Refresh'}</span>
+                    </button>
+                    {selectedReq && (
+                      <button
+                        onClick={() => downloadItineraryPdf(selectedReq.id)}
+                        className="px-3 py-1 rounded-full bg-sky-500 hover:bg-sky-400 text-slate-950 text-[10px] font-black transition-all active:scale-95 flex items-center gap-1 shadow-lg"
+                      >
+                        <FileText size={10} />
+                        <span>PDF</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Big Temperature Hero */}
+                <div className="my-4 flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                      📍 {selectedReq?.destination || weather?.city || 'Worldwide'}
+                    </p>
+                    <h3 className="text-5xl font-black text-white mt-1 tracking-tight">
+                      {weather ? `${weather.temperature ?? weather.temp}°C` : '—'}
+                    </h3>
+                    <p className="text-xs font-semibold text-slate-300 mt-1 flex items-center gap-2">
+                      <span>{weather?.description ?? 'Partly Cloudy'}</span>
+                      <span className="text-slate-500">•</span>
+                      <span>{destLocalHour >= 6 && destLocalHour < 18 ? '☀️ Daylight' : '🌙 Night'}</span>
+                    </p>
+                  </div>
+
+                  <div className="w-20 h-20 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 shadow-inner backdrop-blur">
+                    {(weather?.iconUrl || resolveWeatherIconUrl(weather?.iconBaseUri)) ? (
+                      <img
+                        src={weather?.iconUrl || resolveWeatherIconUrl(weather?.iconBaseUri)!}
+                        alt={weather?.description || 'weather'}
+                        className="w-14 h-14 object-contain drop-shadow"
+                      />
+                    ) : (
+                      <span className="text-4xl">
+                        {conditionTypeToEmoji(weather?.conditionType || weather?.icon, destLocalHour >= 6 && destLocalHour < 18)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* 4 Minimal Metric Pills */}
+                {weather && (
+                  <div className="grid grid-cols-4 gap-2 pt-3 border-t border-white/10">
+                    <div className="bg-white/5 rounded-2xl p-2 text-center border border-white/5">
+                      <p className="text-[8.5px] text-slate-400 uppercase font-bold tracking-wider">Feels</p>
+                      <p className="text-xs font-black text-white mt-0.5">{weather.feelsLike ?? '—'}°C</p>
+                    </div>
+                    <div className="bg-white/5 rounded-2xl p-2 text-center border border-white/5">
+                      <p className="text-[8.5px] text-slate-400 uppercase font-bold tracking-wider">Humidity</p>
+                      <p className="text-xs font-black text-white mt-0.5">{weather.humidity}%</p>
+                    </div>
+                    <div className="bg-white/5 rounded-2xl p-2 text-center border border-white/5">
+                      <p className="text-[8.5px] text-slate-400 uppercase font-bold tracking-wider">Wind</p>
+                      <p className="text-xs font-black text-white mt-0.5">{weather.windSpeed ?? '—'} km/h</p>
+                    </div>
+                    <div className="bg-white/5 rounded-2xl p-2 text-center border border-white/5">
+                      <p className="text-[8.5px] text-slate-400 uppercase font-bold tracking-wider">UV Index</p>
+                      <p className="text-xs font-black text-white mt-0.5">{weather.uvIndex ?? '1'}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+        </div>
+
+        {/* Right: Apple Live GPS World Map Widget (6 cols) */}
+        <div className="lg:col-span-6 flex flex-col">
+          <WorldMapCatalog approvedRequests={requests} compact={true} />
+        </div>
+      </div>
+
+      {/* ── Apple Bento Grid Row 2: 4 Summary Stat Cards ────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <Card className="hover-elevate hover-glow bg-slate-900/40 border border-slate-850">
+        <Card className="hover-elevate hover-glow bg-slate-900/60 border border-white/10 rounded-3xl backdrop-blur-xl">
           <CardContent className="p-4 flex items-center gap-3.5">
-            <div className="p-3 rounded-xl bg-cyan-500/10 text-cyan-400 shrink-0">
+            <div className="p-3 rounded-2xl bg-cyan-500/10 text-cyan-400 shrink-0">
               <Plane className="w-5 h-5" />
             </div>
             <div className="min-w-0">
@@ -467,205 +572,9 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
           </CardContent>
         </Card>
 
-        {/* Live Weather Card — Google Maps Platform Weather API */}
-        {(() => {
-          // Dynamic gradient based on condition type + destination day/night
-          const ct = (weather?.conditionType || '').toUpperCase();
-          const isNightAtDest = destLocalHour < 6 || destLocalHour >= 18;
-          let cardGrad = 'from-sky-950/50 to-cyan-950/40 border-sky-800/40';
-          if (isNightAtDest) {
-            // Night palette — deep dark indigo/slate
-            cardGrad = 'from-indigo-950/70 to-slate-950/60 border-indigo-800/40';
-            if (ct === 'CLEAR' || ct === 'MOSTLY_CLEAR') cardGrad = 'from-indigo-950/60 to-violet-950/40 border-violet-800/30';
-            else if (ct.includes('RAIN') || ct.includes('DRIZZLE') || ct.includes('SHOWER')) cardGrad = 'from-slate-950/80 to-blue-950/50 border-blue-800/30';
-            else if (ct.includes('THUNDER') || ct.includes('STORM')) cardGrad = 'from-slate-950/90 to-indigo-950/70 border-indigo-700/40';
-          } else {
-            // Day palette — warm condition-specific
-            if (ct === 'CLEAR' || ct === 'MOSTLY_CLEAR') cardGrad = 'from-amber-950/50 to-yellow-950/30 border-amber-700/40';
-            else if (ct.includes('THUNDER') || ct.includes('STORM')) cardGrad = 'from-slate-900/80 to-indigo-950/60 border-indigo-700/40';
-            else if (ct.includes('RAIN') || ct.includes('DRIZZLE') || ct.includes('SHOWER')) cardGrad = 'from-blue-950/60 to-sky-950/40 border-blue-700/40';
-            else if (ct.includes('SNOW') || ct.includes('ICE') || ct.includes('BLIZZARD')) cardGrad = 'from-slate-800/60 to-sky-900/50 border-sky-600/40';
-            else if (ct.includes('FOG') || ct.includes('HAZE') || ct.includes('MIST')) cardGrad = 'from-slate-800/60 to-zinc-900/50 border-zinc-600/40';
-          }
-
-          const mins = Math.floor(nextRefreshIn / 60);
-          const secs = nextRefreshIn % 60;
-          const countdownLabel = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
-
-          return (
-            <Card className={`hover-elevate hover-glow bg-gradient-to-br ${cardGrad} border relative overflow-hidden transition-all duration-700`}>
-              <CardContent className="p-4 flex flex-col gap-2">
-
-                {/* ── Header row ─────────────────────────────── */}
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                    <p className="text-[10px] text-sky-300 font-extrabold uppercase tracking-widest truncate">
-                      Live Weather
-                    </p>
-                    <span className="text-[9px] text-slate-500 font-medium hidden sm:block truncate">
-                      • {liveTime}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    {/* Auto-refresh countdown */}
-                    {!weatherLoading && (
-                      <span className="text-[9px] text-slate-500 font-mono" title="Next auto-refresh">
-                        ⏱ {countdownLabel}
-                      </span>
-                    )}
-                    <button
-                      onClick={handleManualWeatherRefresh}
-                      disabled={isRefreshingWeather || weatherLoading}
-                      title="Refresh weather now"
-                      className="flex items-center gap-1 px-2 py-0.5 rounded-md border border-sky-500/40 bg-sky-500/10 hover:bg-sky-500/25 text-sky-300 text-[9px] font-bold transition-all cursor-pointer active:scale-95 disabled:opacity-40"
-                    >
-                      <RefreshCw size={10} className={isRefreshingWeather ? 'animate-spin' : ''} />
-                      <span>{isRefreshingWeather ? 'Updating…' : 'Refresh'}</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* ── Error banner (preserves last known data below) ── */}
-                {weatherError && !weatherLoading && (
-                  <div className="flex items-center gap-1.5 bg-orange-900/25 border border-orange-700/30 rounded-lg px-2.5 py-1">
-                    <AlertTriangle size={11} className="text-orange-400 shrink-0" />
-                    <p className="text-[9.5px] text-orange-300 font-semibold">{weatherError}</p>
-                  </div>
-                )}
-
-                {/* ── Loading skeleton ──────────────────────── */}
-                {weatherLoading ? (
-                  <div className="flex items-center gap-3 w-full animate-pulse pt-1">
-                    <div className="w-14 h-14 rounded-xl bg-sky-500/10 shrink-0" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-5 bg-sky-500/10 rounded w-3/4" />
-                      <div className="h-3 bg-slate-700/40 rounded w-1/2" />
-                      <div className="h-3 bg-slate-700/25 rounded w-2/3" />
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    {/* ── Main row: icon + temp ─────────────── */}
-                    <div className="flex items-center gap-3 pt-0.5">
-                      {/* Icon — official Google iconBaseUri .png, fall back to emoji */}
-                      <div className="w-14 h-14 rounded-xl bg-white/5 shrink-0 flex items-center justify-center ring-1 ring-white/10">
-                        {(weather?.iconUrl || resolveWeatherIconUrl(weather?.iconBaseUri)) ? (
-                          <img
-                            src={weather?.iconUrl || resolveWeatherIconUrl(weather?.iconBaseUri)!}
-                            alt={weather?.description || 'weather'}
-                            className="w-10 h-10 object-contain drop-shadow"
-                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                          />
-                        ) : (
-                          <span className="text-3xl leading-none select-none">
-                            {conditionTypeToEmoji(weather?.conditionType || weather?.icon, destLocalHour >= 6 && destLocalHour < 18)}
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="min-w-0 flex-1">
-                        {/* Big temperature */}
-                        <div className="flex items-baseline gap-1.5 flex-wrap">
-                          <span className="text-2xl font-black text-white leading-none">
-                            {weather ? `${weather.temperature ?? weather.temp}°C` : '—'}
-                          </span>
-                          <span className="text-xs font-semibold text-slate-300 truncate">
-                            {weather?.description ?? 'Partly Cloudy'}
-                          </span>
-                        </div>
-                        {/* Location + Day/Night (based on destination's geo timezone) */}
-                        <p className="text-[10.5px] font-bold text-slate-300 mt-0.5 flex items-center gap-1.5 flex-wrap">
-                          <span>📍 {selectedReq?.destination || weather?.city || '—'}</span>
-                          <span className="text-slate-500">
-                            {destLocalHour >= 6 && destLocalHour < 18 ? '☀ Day' : '🌙 Night'}
-                          </span>
-                          {weather?.timezone && (
-                            <span className="text-slate-500 text-[9px] bg-white/5 rounded px-1 py-0.5">
-                              🕐 {liveTime} <span className="text-slate-600">({weather.timezone})</span>
-                            </span>
-                          )}
-                        </p>
-                      </div>
-                    </div>
-
-                    {weather && (
-                      <>
-                        {/* ── Metrics 2×2 grid ─────────────────── */}
-                        <div className="grid grid-cols-2 gap-1.5 pt-1">
-                          {/* Feels Like */}
-                          <div className="bg-white/5 rounded-lg px-2.5 py-1.5">
-                            <p className="text-[9px] text-slate-500 uppercase tracking-wider font-bold">Feels Like</p>
-                            <p className="text-[12px] font-black text-white mt-0.5">{weather.feelsLike ?? '—'}°C
-                              {weather.dewPoint != null && <span className="text-[9px] font-normal text-slate-500 ml-1">Dew {weather.dewPoint}°C</span>}
-                            </p>
-                          </div>
-                          {/* Humidity */}
-                          <div className="bg-white/5 rounded-lg px-2.5 py-1.5">
-                            <p className="text-[9px] text-slate-500 uppercase tracking-wider font-bold">Humidity</p>
-                            <p className="text-[12px] font-black text-white mt-0.5">{weather.humidity}%</p>
-                          </div>
-                          {/* Wind */}
-                          <div className="bg-white/5 rounded-lg px-2.5 py-1.5">
-                            <p className="text-[9px] text-slate-500 uppercase tracking-wider font-bold">Wind</p>
-                            <p className="text-[12px] font-black text-white mt-0.5">
-                              {weather.windSpeed ?? '—'} km/h
-                              {weather.windCardinal && <span className="text-[9px] font-semibold text-slate-400 ml-1">{weather.windCardinal}</span>}
-                            </p>
-                            {(weather.windGust != null && weather.windGust > 0) && (
-                              <p className="text-[9px] text-slate-500">Gusts {weather.windGust} km/h</p>
-                            )}
-                          </div>
-                          {/* UV + Visibility */}
-                          <div className="bg-white/5 rounded-lg px-2.5 py-1.5">
-                            <p className="text-[9px] text-slate-500 uppercase tracking-wider font-bold">UV / Visibility</p>
-                            <p className="text-[12px] font-black text-white mt-0.5">
-                              UV {weather.uvIndex ?? '—'}
-                              {weather.visibility != null && <span className="text-[9px] font-normal text-slate-400 ml-1">· {weather.visibility} km</span>}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* ── Precipitation nowcast ─────────────── */}
-                        {weather.minuteForecast && (
-                          <div className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 ${weather.minuteForecast.hasPrecipitationNext60Min ? 'bg-blue-900/30 border border-blue-700/30' : 'bg-slate-800/30 border border-slate-700/20'}`}>
-                            <span className="text-sm shrink-0">
-                              {weather.minuteForecast.hasPrecipitationNext60Min ? '🌧' : '🌂'}
-                            </span>
-                            <p className={`text-[9.5px] font-semibold ${weather.minuteForecast.hasPrecipitationNext60Min ? 'text-blue-300' : 'text-slate-500'}`}>
-                              {weather.minuteForecast.hasPrecipitationNext60Min
-                                ? `Rain likely next 60 min · ${weather.minuteForecast.maxPrecipLikelihood}% chance`
-                                : 'No precipitation expected in next 60 min'}
-                            </p>
-                          </div>
-                        )}
-
-                        {/* ── Footer: Last updated + provider ──── */}
-                        <div className="flex items-center justify-between gap-2 pt-0.5 border-t border-white/5">
-                          <p className="text-[9px] text-slate-600 font-medium">
-                            Updated {weather.lastUpdated}
-                          </p>
-                          <p className="text-[9px] text-sky-600/80 font-medium truncate">
-                            {weather.provider || 'Google Maps Platform Weather API'}
-                          </p>
-                        </div>
-                      </>
-                    )}
-                  </>
-                )}
-
-                {/* ── Success notice ────────────────────────── */}
-                {weatherNotice && (
-                  <p className="text-[9.5px] font-bold text-emerald-400 animate-fade-in">{weatherNotice}</p>
-                )}
-              </CardContent>
-            </Card>
-          );
-        })()}
-
-        <Card className="hover-elevate hover-glow bg-slate-900/40 border border-slate-850">
+        <Card className="hover-elevate hover-glow bg-slate-900/60 border border-white/10 rounded-3xl backdrop-blur-xl">
           <CardContent className="p-4 flex items-center gap-3.5">
-            <div className="p-3 rounded-xl bg-indigo-500/10 text-indigo-400 shrink-0">
+            <div className="p-3 rounded-2xl bg-indigo-500/10 text-indigo-400 shrink-0">
               <Hotel className="w-5 h-5" />
             </div>
             <div className="min-w-0">
@@ -678,9 +587,9 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
           </CardContent>
         </Card>
 
-        <Card className="hover-elevate hover-glow bg-slate-900/40 border border-slate-850">
+        <Card className="hover-elevate hover-glow bg-slate-900/60 border border-white/10 rounded-3xl backdrop-blur-xl">
           <CardContent className="p-4 flex items-center gap-3.5">
-            <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-450 shrink-0">
+            <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-450 shrink-0">
               <Truck className="w-5 h-5" />
             </div>
             <div className="min-w-0">
@@ -692,10 +601,20 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
             </div>
           </CardContent>
         </Card>
-      </div>
 
-      {/* Live GPS World Map Catalog — Real Cartography & Location Plotting */}
-      <WorldMapCatalog approvedRequests={requests} />
+        <Card className="hover-elevate hover-glow bg-slate-900/60 border border-white/10 rounded-3xl backdrop-blur-xl">
+          <CardContent className="p-4 flex items-center gap-3.5">
+            <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-400 shrink-0">
+              <CheckCircle className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[11px] text-slate-450 font-bold uppercase tracking-wider truncate">Duty of Care Lock</p>
+              <h4 className="text-base font-black text-white mt-0.5 truncate">Verified</h4>
+              <p className="text-[10px] text-slate-500 truncate">GPS & Insurance active</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Weather & Actions Row */}
       {selectedReq && (

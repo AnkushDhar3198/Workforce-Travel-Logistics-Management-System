@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Alert, AlertTitle, AlertDescription } from '../../components/ui/alert';
 import { fetchLiveSatelliteWeather, resolveWeatherIconUrl, conditionTypeToEmoji } from '../../utils/liveWeather';
+import WorldMapCatalog from '../../components/WorldMapCatalog';
 
 interface ItineraryTabProps {
   onNavigateToRequisition?: () => void;
@@ -692,6 +693,9 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
           </CardContent>
         </Card>
       </div>
+
+      {/* Live GPS World Map Catalog — Real Cartography & Location Plotting */}
+      <WorldMapCatalog approvedRequests={requests} />
 
       {/* Weather & Actions Row */}
       {selectedReq && (

@@ -21,6 +21,7 @@ public class WeatherService {
     private final WebClient openWeatherClient;
     private final WebClient openMeteoGeoClient;
     private final WebClient openMeteoClient;
+    private final WebClient wttrClient;
 
     public WeatherService() {
         this.googleMapsWeatherClient = WebClient.builder()
@@ -43,6 +44,12 @@ public class WeatherService {
         this.openMeteoClient = WebClient.builder()
                 .baseUrl("https://api.open-meteo.com/v1")
                 .build();
+
+        this.wttrClient = WebClient.builder()
+                .baseUrl("https://wttr.in")
+                .defaultHeader("Accept", "application/json")
+                .defaultHeader("User-Agent", "VoyaCore-Weather/1.0")
+                .build();
     }
 
     public Map<String, Object> getWeatherForecast(String city) {
@@ -53,55 +60,175 @@ public class WeatherService {
     public Map<String, Object> getCurrentWeather(String cityQuery) {
         String city = (cityQuery == null || cityQuery.isBlank()) ? "Manali" : cityQuery.trim();
 
-        // Step 1: Geocode city → lat/lon (Open-Meteo Geocoding — free, keyless, worldwide)
+        // ═══════════════════════════════════════════════════════════════
+        // ENGINE 1 (PRIMARY): wttr.in — Real Weather Station Observations
+        // Free, no API key, uses actual ground station data worldwide
+        // Most accurate for current conditions (matches timeanddate.com)
+        // ═══════════════════════════════════════════════════════════════
+        Map<String, Object> wttrData = fetchWttrIn(city);
+        if (wttrData != null && wttrData.containsKey("temperature")) {
+            log.info("[Weather] ENGINE 1 (wttr.in station obs): Live weather for '{}'", city);
+            return wttrData;
+        }
+
+        // Geocode for lat/lon-based fallbacks
         double[] latLon = geocodeCity(city);
         double lat = latLon != null ? latLon[0] : 32.2432;
         double lon = latLon != null ? latLon[1] : 77.1892;
-        // Resolved city name from geocoding
-        String resolvedCity = latLon != null ? city : "Manali";
 
         // ═══════════════════════════════════════════════════════════════
-        // ENGINE 1 (PRIMARY): Open-Meteo Global Meteorological Network
-        // 100% free, NO API key, real-time satellite+station data
-        // Covers every city, town, and village on Earth
+        // ENGINE 2 (FALLBACK): Open-Meteo Global Meteorological Network
+        // Free, no API key, satellite+model data (can differ ~2-5°C)
         // ═══════════════════════════════════════════════════════════════
-        Map<String, Object> openMeteoData = fetchOpenMeteoWeather(resolvedCity, lat, lon);
+        Map<String, Object> openMeteoData = fetchOpenMeteoWeather(city, lat, lon);
         if (openMeteoData != null && openMeteoData.containsKey("temperature")) {
-            log.info("[Weather] ENGINE 1 (Open-Meteo): Live weather for '{}' [{}, {}]", resolvedCity, lat, lon);
+            log.info("[Weather] ENGINE 2 (Open-Meteo model): Live weather for '{}' [{}, {}]", city, lat, lon);
             return openMeteoData;
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // ENGINE 2 (OPTIONAL): WeatherAPI.com — requires WEATHER_API_KEY env var
+        // ENGINE 3 (OPTIONAL): WeatherAPI.com — requires WEATHER_API_KEY env var
         // ═══════════════════════════════════════════════════════════════
         Map<String, Object> weatherApiData = fetchWeatherApiCom(city);
         if (weatherApiData != null && weatherApiData.containsKey("temperature")) {
-            log.info("[Weather] ENGINE 2 (WeatherAPI.com): Live weather for '{}'", city);
+            log.info("[Weather] ENGINE 3 (WeatherAPI.com): Live weather for '{}'", city);
             return weatherApiData;
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // ENGINE 3 (OPTIONAL): OpenWeatherMap — requires OPENWEATHER_API_KEY env var
+        // ENGINE 4 (OPTIONAL): OpenWeatherMap — requires OPENWEATHER_API_KEY env var
         // ═══════════════════════════════════════════════════════════════
         Map<String, Object> openWeatherData = fetchOpenWeatherMap(city);
         if (openWeatherData != null && openWeatherData.containsKey("temperature")) {
-            log.info("[Weather] ENGINE 3 (OpenWeatherMap): Live weather for '{}'", city);
+            log.info("[Weather] ENGINE 4 (OpenWeatherMap): Live weather for '{}'", city);
             return openWeatherData;
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // ENGINE 4 (OPTIONAL): Google Maps Platform Weather API — requires GOOGLE_WEATHER_API_KEY env var
+        // ENGINE 5 (OPTIONAL): Google Maps Platform Weather API
         // ═══════════════════════════════════════════════════════════════
         Map<String, Object> googleData = fetchGoogleMapsCurrentConditions(city, lat, lon);
         if (googleData != null && googleData.containsKey("temperature")) {
             Map<String, Object> minuteData = fetchGoogleMapsMinuteForecast(lat, lon);
             if (minuteData != null) googleData.put("minuteForecast", minuteData);
-            log.info("[Weather] ENGINE 4 (Google Maps): Live weather for '{}'", city);
+            log.info("[Weather] ENGINE 5 (Google Maps): Live weather for '{}'", city);
             return googleData;
         }
 
-        // ENGINE 5: Deterministic fallback (should never reach here)
         return getDynamicFallback(city);
+    }
+
+    /**
+     * wttr.in — Free worldwide weather station observation data.
+     * Uses actual ground station measurements, not model/forecast data.
+     * URL format: https://wttr.in/{city}?format=j1
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> fetchWttrIn(String city) {
+        try {
+            Map<String, Object> response = wttrClient.get()
+                    .uri("/{city}?format=j1", city)
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block();
+
+            if (response == null || !response.containsKey("current_condition")) return null;
+
+            List<Map<String, Object>> ccList = (List<Map<String, Object>>) response.get("current_condition");
+            if (ccList == null || ccList.isEmpty()) return null;
+            Map<String, Object> cc = ccList.get(0);
+
+            // Parse observation values
+            int tempC = parseIntSafe(cc.get("temp_C"), 20);
+            int feelsLikeC = parseIntSafe(cc.get("FeelsLikeC"), tempC);
+            int humidity = parseIntSafe(cc.get("humidity"), 70);
+            int windKmph = parseIntSafe(cc.get("windspeedKmph"), 0);
+            int windDeg = parseIntSafe(cc.get("winddirDegree"), 0);
+            String windDir16 = cc.get("winddir16Point") != null ? cc.get("winddir16Point").toString() : degreesToCardinal(windDeg);
+            int uvIndex = parseIntSafe(cc.get("uvIndex"), 0);
+            int visKm = parseIntSafe(cc.get("visibility"), 10);
+            int dewPointC = parseIntSafe(cc.get("DewPointC"), 0);
+            int pressure = parseIntSafe(cc.get("pressure"), 1013);
+
+            // Weather description
+            String conditionText = "Partly Cloudy";
+            List<Map<String, Object>> descList = (List<Map<String, Object>>) cc.get("weatherDesc");
+            if (descList != null && !descList.isEmpty() && descList.get(0).get("value") != null) {
+                conditionText = descList.get(0).get("value").toString();
+            }
+
+            // Weather icon URL from wttr.in
+            String iconUrl = "";
+            List<Map<String, Object>> iconList = (List<Map<String, Object>>) cc.get("weatherIconUrl");
+            if (iconList != null && !iconList.isEmpty() && iconList.get(0).get("value") != null) {
+                iconUrl = iconList.get(0).get("value").toString();
+            }
+
+            // Nearest area info for resolved location name + timezone
+            String resolvedName = city;
+            String country = "";
+            String timezone = "";
+            List<Map<String, Object>> nearestArea = (List<Map<String, Object>>) response.get("nearest_area");
+            if (nearestArea != null && !nearestArea.isEmpty()) {
+                Map<String, Object> area = nearestArea.get(0);
+                List<Map<String, Object>> areaName = (List<Map<String, Object>>) area.get("areaName");
+                if (areaName != null && !areaName.isEmpty() && areaName.get(0).get("value") != null) {
+                    resolvedName = areaName.get(0).get("value").toString();
+                }
+                List<Map<String, Object>> countryList = (List<Map<String, Object>>) area.get("country");
+                if (countryList != null && !countryList.isEmpty() && countryList.get(0).get("value") != null) {
+                    country = countryList.get(0).get("value").toString();
+                }
+                // wttr.in provides UTC offset info in time_zone block
+                List<Map<String, Object>> tzList = (List<Map<String, Object>>) response.get("time_zone");
+                if (tzList != null && !tzList.isEmpty()) {
+                    Map<String, Object> tzInfo = tzList.get(0);
+                    if (tzInfo.get("zone") != null) timezone = tzInfo.get("zone").toString();
+                }
+            }
+
+            String displayCity = resolvedName + (country.isEmpty() ? "" : ", " + country);
+
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("city", displayCity);
+            result.put("source", "Live Station Observation · wttr.in");
+            result.put("temperature", tempC);
+            result.put("temp", tempC);
+            result.put("feelsLike", feelsLikeC);
+            result.put("humidity", humidity);
+            result.put("dewPoint", dewPointC);
+            result.put("uvIndex", uvIndex);
+            result.put("visibility", visKm);
+            result.put("pressure", pressure);
+            result.put("windSpeed", windKmph);
+            result.put("windDegrees", windDeg);
+            result.put("windCardinal", windDir16);
+            result.put("condition", conditionText);
+            result.put("description", conditionText);
+            result.put("conditionType", mapConditionTextToType(conditionText));
+            result.put("icon", mapConditionTextToIcon(conditionText));
+            result.put("iconUrl", iconUrl);
+            result.put("timezone", timezone);
+            result.put("isLive", true);
+            result.put("lastUpdated", new SimpleDateFormat("HH:mm:ss").format(new Date()));
+            return result;
+        } catch (Exception e) {
+            log.debug("[Weather] wttr.in fetch failed for '{}': {}", city, e.getMessage());
+        }
+        return null;
+    }
+
+    private int parseIntSafe(Object val, int defaultVal) {
+        if (val == null) return defaultVal;
+        try {
+            return Integer.parseInt(val.toString().trim());
+        } catch (NumberFormatException e) {
+            try {
+                return (int) Math.round(Double.parseDouble(val.toString().trim()));
+            } catch (NumberFormatException ex) {
+                return defaultVal;
+            }
+        }
     }
 
     /**

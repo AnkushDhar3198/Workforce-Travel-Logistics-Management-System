@@ -28,6 +28,20 @@ const GENDERS = ['MALE', 'FEMALE', 'OTHER'];
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 const RELATIONSHIPS = ['Spouse', 'Parent', 'Sibling', 'Friend', 'Other'];
 
+const COUNTRY_DIAL_CODES: Record<string, string> = {
+  'India': '+91', 'United States': '+1', 'United Kingdom': '+44', 'Germany': '+49',
+  'France': '+33', 'Australia': '+61', 'Canada': '+1', 'Japan': '+81', 'Singapore': '+65',
+  'United Arab Emirates': '+971', 'Saudi Arabia': '+966', 'China': '+86', 'Brazil': '+55',
+  'South Korea': '+82', 'Italy': '+39', 'Spain': '+34', 'Netherlands': '+31', 'Switzerland': '+41',
+  'Sweden': '+46', 'Norway': '+47', 'Russia': '+7', 'Turkey': '+90', 'Qatar': '+974',
+  'Thailand': '+66', 'Malaysia': '+60', 'Indonesia': '+62', 'Philippines': '+63', 'Mexico': '+52',
+  'South Africa': '+27', 'Nigeria': '+234', 'Kenya': '+254', 'Egypt': '+20', 'Argentina': '+54',
+  'Chile': '+56', 'Colombia': '+57', 'Pakistan': '+92', 'Bangladesh': '+880', 'Vietnam': '+84',
+  'New Zealand': '+64', 'Ireland': '+353', 'Austria': '+43', 'Belgium': '+32', 'Poland': '+48',
+  'Czech Republic': '+420', 'Denmark': '+45', 'Finland': '+358', 'Greece': '+30', 'Portugal': '+351',
+  'Hong Kong': '+852', 'Taiwan': '+886', 'Israel': '+972', 'Hungary': '+36', 'Romania': '+40'
+};
+
 const DEFAULT_COUNTRIES = [
   { name: 'Afghanistan', code: 'AF' }, { name: 'Albania', code: 'AL' }, { name: 'Algeria', code: 'DZ' },
   { name: 'Andorra', code: 'AD' }, { name: 'Angola', code: 'AO' }, { name: 'Argentina', code: 'AR' },
@@ -136,6 +150,10 @@ export default function LoginScreen() {
     password: '', confirmPassword: '',
   });
 
+  // Real-time inline field validation state
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
   // Pre-populated countries state (updated dynamically via API)
   const [countries, setCountries] = useState<{ name: string; code: string }[]>(DEFAULT_COUNTRIES);
 
@@ -157,13 +175,153 @@ export default function LoginScreen() {
       .catch(() => {});
   }, []);
 
-  const updateReg = (field: string, value: string) => setReg(prev => ({ ...prev, [field]: value }));
+  // Single field validation rule evaluation
+  const validateSingleField = (name: string, val: string, currentRegState = reg): string | null => {
+    switch (name) {
+      case 'firstName':
+        if (!val.trim()) return 'First name is required';
+        if (val.trim().length < 2) return 'First name must be at least 2 characters';
+        return null;
+      case 'lastName':
+        if (!val.trim()) return 'Last name is required';
+        return null;
+      case 'gender':
+        if (!val) return 'Please select your gender';
+        return null;
+      case 'nationality':
+        if (!val) return 'Please select your nationality';
+        return null;
+      case 'email':
+        if (!val.trim()) return 'Corporate email is required';
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim())) return 'Invalid email format (e.g. user@company.com)';
+        return null;
+      case 'department':
+        if (!val) return 'Please select your department';
+        return null;
+      case 'designation':
+        if (!val.trim()) return 'Designation is required';
+        if (val.trim().length < 2) return 'Designation must be at least 2 characters';
+        return null;
+      case 'role':
+        if (!val) return 'Please select a role';
+        return null;
+      case 'phone':
+        if (!val.trim()) return 'Phone number is required';
+        if (!/^\+?[0-9\-\s(),.]{7,25}$/.test(val.trim())) return 'Invalid phone format (e.g. +91 9876543210)';
+        return null;
+      case 'addressLine1':
+        if (!val.trim()) return 'Address line 1 is required';
+        if (val.trim().length < 3) return 'Address must be at least 3 characters';
+        return null;
+      case 'city':
+        if (!val.trim()) return 'City is required';
+        return null;
+      case 'state':
+        if (!val.trim()) return 'State is required';
+        return null;
+      case 'postalCode':
+        if (!val.trim()) return 'Postal code is required';
+        return null;
+      case 'country':
+        if (!val) return 'Please select your country';
+        return null;
+      case 'emergencyContactName':
+        if (!val.trim()) return 'Emergency contact name is required';
+        return null;
+      case 'emergencyContactPhone':
+        if (!val.trim()) return 'Emergency contact phone is required';
+        if (!/^\+?[0-9\-\s(),.]{7,25}$/.test(val.trim())) return 'Invalid phone format';
+        return null;
+      case 'emergencyContactRelation':
+        if (!val) return 'Please select relationship';
+        return null;
+      case 'password':
+        if (!val) return 'Password is required';
+        if (val.length < 8) return 'Password must be at least 8 characters';
+        return null;
+      case 'confirmPassword':
+        if (!val) return 'Please confirm your password';
+        if (val !== currentRegState.password) return 'Passwords do not match';
+        return null;
+      default:
+        return null;
+    }
+  };
+
+  // Instant update with real-time field validation & auto country code detection
+  const updateReg = (field: string, value: string) => {
+    let updatedVal = value;
+
+    // Auto country dial code detection for phone when country or nationality is chosen
+    let autoPhone = reg.phone;
+    let autoEmergencyPhone = reg.emergencyContactPhone;
+
+    if (field === 'country' || field === 'nationality') {
+      const detectedCode = COUNTRY_DIAL_CODES[value];
+      if (detectedCode) {
+        if (!reg.phone || reg.phone.trim().startsWith('+')) {
+          autoPhone = `${detectedCode} `;
+        }
+        if (!reg.emergencyContactPhone || reg.emergencyContactPhone.trim().startsWith('+')) {
+          autoEmergencyPhone = `${detectedCode} `;
+        }
+      }
+    }
+
+    const nextState = {
+      ...reg,
+      [field]: updatedVal,
+      ...(field === 'country' || field === 'nationality' ? { phone: autoPhone, emergencyContactPhone: autoEmergencyPhone } : {})
+    };
+
+    setReg(nextState);
+
+    // Instant real-time field validation
+    const err = validateSingleField(field, updatedVal, nextState);
+    setFieldErrors(prev => ({ ...prev, [field]: err || '' }));
+    setTouched(prev => ({ ...prev, [field]: true }));
+
+    // Re-check confirmPassword when password changes
+    if (field === 'password' && reg.confirmPassword) {
+      const matchErr = reg.confirmPassword !== updatedVal ? 'Passwords do not match' : '';
+      setFieldErrors(prev => ({ ...prev, confirmPassword: matchErr }));
+    }
+  };
+
+  const handleBlur = (field: string) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+    const err = validateSingleField(field, (reg as any)[field], reg);
+    setFieldErrors(prev => ({ ...prev, [field]: err || '' }));
+  };
+
+  // Helper to render inline error message below an input
+  const renderFieldError = (field: string) => {
+    if (touched[field] && fieldErrors[field]) {
+      return (
+        <span style={{ fontSize: '11px', color: '#f87171', marginTop: '3px', display: 'block', fontWeight: 600, animation: 'fadeIn 0.2s ease' }}>
+          ⚠️ {fieldErrors[field]}
+        </span>
+      );
+    }
+    return null;
+  };
+
+  // Get input style with dynamic red border on error
+  const getDynamicInputStyle = (field: string, baseStyle = inputStyle) => {
+    const hasErr = touched[field] && !!fieldErrors[field];
+    return {
+      ...baseStyle,
+      borderColor: hasErr ? '#ef4444' : baseStyle.borderColor,
+      boxShadow: hasErr ? '0 0 0 1px #ef4444' : 'none',
+      transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
+    };
+  };
 
   const openLogin = () => {
     setAuthMode('login'); setError(''); setIsAuthModalOpen(true); setIsMobileNavOpen(false);
   };
   const openSignUp = () => {
-    setAuthMode('signup'); setError(''); setRegStep(0); setIsAuthModalOpen(true); setIsMobileNavOpen(false);
+    setAuthMode('signup'); setError(''); setRegStep(0); setTouched({}); setFieldErrors({}); setIsAuthModalOpen(true); setIsMobileNavOpen(false);
   };
 
   const handleMouseEnterDropdown = (menu: 'solutions' | 'autonomy') => {
@@ -176,42 +334,33 @@ export default function LoginScreen() {
 
   // Validate current registration step
   const validateStep = (): string | null => {
-    switch (regStep) {
-      case 0:
-        if (!reg.firstName.trim()) return 'First name is required';
-        if (!reg.lastName.trim()) return 'Last name is required';
-        if (!reg.gender) return 'Gender is required';
-        if (!reg.nationality) return 'Nationality is required';
-        return null;
-      case 1:
-        if (!reg.email.trim()) return 'Email is required';
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(reg.email)) return 'Invalid email format';
-        if (!reg.department) return 'Department is required';
-        if (!reg.designation.trim()) return 'Designation is required';
-        if (!reg.role) return 'Role is required';
-        return null;
-      case 2:
-        if (!reg.phone.trim()) return 'Phone number is required';
-        if (!reg.addressLine1.trim()) return 'Address is required';
-        if (!reg.city.trim()) return 'City is required';
-        if (!reg.state.trim()) return 'State is required';
-        if (!reg.postalCode.trim()) return 'Postal code is required';
-        if (!reg.country) return 'Country is required';
-        return null;
-      case 3:
-        return null; // Travel docs are optional
-      case 4:
-        if (!reg.emergencyContactName.trim()) return 'Emergency contact name is required';
-        if (!reg.emergencyContactPhone.trim()) return 'Emergency contact phone is required';
-        if (!reg.emergencyContactRelation) return 'Relationship is required';
-        return null;
-      case 5:
-        if (!reg.password) return 'Password is required';
-        if (reg.password.length < 8) return 'Password must be at least 8 characters';
-        if (reg.password !== reg.confirmPassword) return 'Passwords do not match';
-        return null;
-      default: return null;
-    }
+    const stepFields: Record<number, string[]> = {
+      0: ['firstName', 'lastName', 'gender', 'nationality'],
+      1: ['email', 'department', 'designation', 'role'],
+      2: ['phone', 'addressLine1', 'city', 'state', 'postalCode', 'country'],
+      3: [], // Optional docs
+      4: ['emergencyContactName', 'emergencyContactPhone', 'emergencyContactRelation'],
+      5: ['password', 'confirmPassword']
+    };
+
+    const currentFields = stepFields[regStep] || [];
+    let firstError: string | null = null;
+    const newErrors: Record<string, string> = {};
+    const newTouched: Record<string, boolean> = {};
+
+    currentFields.forEach(f => {
+      newTouched[f] = true;
+      const err = validateSingleField(f, (reg as any)[f], reg);
+      if (err) {
+        newErrors[f] = err;
+        if (!firstError) firstError = err;
+      }
+    });
+
+    setTouched(prev => ({ ...prev, ...newTouched }));
+    setFieldErrors(prev => ({ ...prev, ...newErrors }));
+
+    return firstError;
   };
 
   const handleNextStep = () => {
@@ -280,8 +429,8 @@ export default function LoginScreen() {
       });
       if (!regRes.ok) {
         const errData = await regRes.json().catch(() => null);
-        const fieldErrors = errData?.errors?.map((e: any) => e.defaultMessage).join(', ');
-        const errMsg = fieldErrors || errData?.message || 'Registration failed. Please check your inputs.';
+        const fieldErrorsMsg = errData?.errors?.map((e: any) => e.defaultMessage).join(', ');
+        const errMsg = fieldErrorsMsg || errData?.message || 'Registration failed. Please check your inputs.';
         throw new Error(errMsg);
       }
       const data = await regRes.json();
@@ -295,7 +444,7 @@ export default function LoginScreen() {
     }
   };
 
-  // Password strength
+  // Password strength helper
   const getPasswordStrength = (pw: string): { level: number; label: string; color: string } => {
     if (!pw) return { level: 0, label: '', color: 'transparent' };
     let score = 0;
@@ -318,11 +467,25 @@ export default function LoginScreen() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <div>
               <label style={labelStyle}>First Name *</label>
-              <input style={inputStyle} value={reg.firstName} onChange={e => updateReg('firstName', e.target.value)} placeholder="John" />
+              <input
+                style={getDynamicInputStyle('firstName')}
+                value={reg.firstName}
+                onChange={e => updateReg('firstName', e.target.value)}
+                onBlur={() => handleBlur('firstName')}
+                placeholder="John"
+              />
+              {renderFieldError('firstName')}
             </div>
             <div>
               <label style={labelStyle}>Last Name *</label>
-              <input style={inputStyle} value={reg.lastName} onChange={e => updateReg('lastName', e.target.value)} placeholder="Doe" />
+              <input
+                style={getDynamicInputStyle('lastName')}
+                value={reg.lastName}
+                onChange={e => updateReg('lastName', e.target.value)}
+                onBlur={() => handleBlur('lastName')}
+                placeholder="Doe"
+              />
+              {renderFieldError('lastName')}
             </div>
           </div>
           <div>
@@ -332,10 +495,16 @@ export default function LoginScreen() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <div>
               <label style={labelStyle}>Gender *</label>
-              <select style={selectStyle} value={reg.gender} onChange={e => updateReg('gender', e.target.value)}>
+              <select
+                style={getDynamicInputStyle('gender', selectStyle)}
+                value={reg.gender}
+                onChange={e => updateReg('gender', e.target.value)}
+                onBlur={() => handleBlur('gender')}
+              >
                 <option value="" style={optionStyle}>Select...</option>
                 {GENDERS.map(g => <option key={g} value={g} style={optionStyle}>{g.charAt(0) + g.slice(1).toLowerCase()}</option>)}
               </select>
+              {renderFieldError('gender')}
             </div>
             <div>
               <label style={labelStyle}>Blood Group</label>
@@ -347,10 +516,16 @@ export default function LoginScreen() {
           </div>
           <div>
             <label style={labelStyle}>Nationality *</label>
-            <select style={selectStyle} value={reg.nationality} onChange={e => updateReg('nationality', e.target.value)}>
+            <select
+              style={getDynamicInputStyle('nationality', selectStyle)}
+              value={reg.nationality}
+              onChange={e => updateReg('nationality', e.target.value)}
+              onBlur={() => handleBlur('nationality')}
+            >
               <option value="" style={optionStyle}>Select Country / Nationality...</option>
               {countries.map(c => <option key={c.code} value={c.name} style={optionStyle}>{c.name}</option>)}
             </select>
+            {renderFieldError('nationality')}
           </div>
         </div>
       );
@@ -358,26 +533,53 @@ export default function LoginScreen() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <div>
             <label style={labelStyle}>Corporate Email *</label>
-            <input type="email" style={inputStyle} value={reg.email} onChange={e => updateReg('email', e.target.value)} placeholder="john.doe@company.com" />
+            <input
+              type="email"
+              style={getDynamicInputStyle('email')}
+              value={reg.email}
+              onChange={e => updateReg('email', e.target.value)}
+              onBlur={() => handleBlur('email')}
+              placeholder="john.doe@company.com"
+            />
+            {renderFieldError('email')}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <div>
               <label style={labelStyle}>Department *</label>
-              <select style={selectStyle} value={reg.department} onChange={e => updateReg('department', e.target.value)}>
+              <select
+                style={getDynamicInputStyle('department', selectStyle)}
+                value={reg.department}
+                onChange={e => updateReg('department', e.target.value)}
+                onBlur={() => handleBlur('department')}
+              >
                 <option value="" style={optionStyle}>Select...</option>
                 {DEPARTMENTS.map(d => <option key={d} value={d} style={optionStyle}>{d}</option>)}
               </select>
+              {renderFieldError('department')}
             </div>
             <div>
               <label style={labelStyle}>Role *</label>
-              <select style={selectStyle} value={reg.role} onChange={e => updateReg('role', e.target.value)}>
+              <select
+                style={getDynamicInputStyle('role', selectStyle)}
+                value={reg.role}
+                onChange={e => updateReg('role', e.target.value)}
+                onBlur={() => handleBlur('role')}
+              >
                 {ROLES.map(r => <option key={r.value} value={r.value} style={optionStyle}>{r.label}</option>)}
               </select>
+              {renderFieldError('role')}
             </div>
           </div>
           <div>
             <label style={labelStyle}>Designation / Job Title *</label>
-            <input style={inputStyle} value={reg.designation} onChange={e => updateReg('designation', e.target.value)} placeholder="e.g. Senior Sales Executive" />
+            <input
+              style={getDynamicInputStyle('designation')}
+              value={reg.designation}
+              onChange={e => updateReg('designation', e.target.value)}
+              onBlur={() => handleBlur('designation')}
+              placeholder="e.g. Senior Sales Executive"
+            />
+            {renderFieldError('designation')}
           </div>
           <div>
             <label style={labelStyle}>Reporting Manager ID (Optional)</label>
@@ -388,38 +590,80 @@ export default function LoginScreen() {
       case 2: return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <div>
-            <label style={labelStyle}>Phone Number *</label>
-            <input type="tel" style={inputStyle} value={reg.phone} onChange={e => updateReg('phone', e.target.value)} placeholder="+91-9876543210" />
+            <label style={labelStyle}>Phone Number (Auto Country Code Detected) *</label>
+            <input
+              type="tel"
+              style={getDynamicInputStyle('phone')}
+              value={reg.phone}
+              onChange={e => updateReg('phone', e.target.value)}
+              onBlur={() => handleBlur('phone')}
+              placeholder="+91 98765 43210"
+            />
+            {renderFieldError('phone')}
           </div>
           <div>
-            <label style={labelStyle}>Address Line 1 *</label>
-            <input style={inputStyle} value={reg.addressLine1} onChange={e => updateReg('addressLine1', e.target.value)} placeholder="Street address" />
+            <label style={labelStyle}>Address Line 1 (Accepts , . # / -) *</label>
+            <input
+              style={getDynamicInputStyle('addressLine1')}
+              value={reg.addressLine1}
+              onChange={e => updateReg('addressLine1', e.target.value)}
+              onBlur={() => handleBlur('addressLine1')}
+              placeholder="123 Corporate Blvd, Suite 400, Bldg. A/2"
+            />
+            {renderFieldError('addressLine1')}
           </div>
           <div>
-            <label style={labelStyle}>Address Line 2</label>
-            <input style={inputStyle} value={reg.addressLine2} onChange={e => updateReg('addressLine2', e.target.value)} placeholder="Apt, Suite (optional)" />
+            <label style={labelStyle}>Address Line 2 (Optional, Accepts , . # / -)</label>
+            <input style={inputStyle} value={reg.addressLine2} onChange={e => updateReg('addressLine2', e.target.value)} placeholder="Apt, Suite, Floor #2" />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <div>
               <label style={labelStyle}>City *</label>
-              <input style={inputStyle} value={reg.city} onChange={e => updateReg('city', e.target.value)} placeholder="Mumbai" />
+              <input
+                style={getDynamicInputStyle('city')}
+                value={reg.city}
+                onChange={e => updateReg('city', e.target.value)}
+                onBlur={() => handleBlur('city')}
+                placeholder="Mumbai"
+              />
+              {renderFieldError('city')}
             </div>
             <div>
               <label style={labelStyle}>State *</label>
-              <input style={inputStyle} value={reg.state} onChange={e => updateReg('state', e.target.value)} placeholder="Maharashtra" />
+              <input
+                style={getDynamicInputStyle('state')}
+                value={reg.state}
+                onChange={e => updateReg('state', e.target.value)}
+                onBlur={() => handleBlur('state')}
+                placeholder="Maharashtra"
+              />
+              {renderFieldError('state')}
             </div>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <div>
               <label style={labelStyle}>Postal Code *</label>
-              <input style={inputStyle} value={reg.postalCode} onChange={e => updateReg('postalCode', e.target.value)} placeholder="400001" />
+              <input
+                style={getDynamicInputStyle('postalCode')}
+                value={reg.postalCode}
+                onChange={e => updateReg('postalCode', e.target.value)}
+                onBlur={() => handleBlur('postalCode')}
+                placeholder="400001"
+              />
+              {renderFieldError('postalCode')}
             </div>
             <div>
               <label style={labelStyle}>Country *</label>
-              <select style={selectStyle} value={reg.country} onChange={e => updateReg('country', e.target.value)}>
+              <select
+                style={getDynamicInputStyle('country', selectStyle)}
+                value={reg.country}
+                onChange={e => updateReg('country', e.target.value)}
+                onBlur={() => handleBlur('country')}
+              >
                 <option value="" style={optionStyle}>Select Country...</option>
                 {countries.map(c => <option key={c.code} value={c.name} style={optionStyle}>{c.name}</option>)}
               </select>
+              {renderFieldError('country')}
             </div>
           </div>
         </div>
@@ -446,18 +690,39 @@ export default function LoginScreen() {
           </div>
           <div>
             <label style={labelStyle}>Emergency Contact Name *</label>
-            <input style={inputStyle} value={reg.emergencyContactName} onChange={e => updateReg('emergencyContactName', e.target.value)} placeholder="Full name" />
+            <input
+              style={getDynamicInputStyle('emergencyContactName')}
+              value={reg.emergencyContactName}
+              onChange={e => updateReg('emergencyContactName', e.target.value)}
+              onBlur={() => handleBlur('emergencyContactName')}
+              placeholder="Full name"
+            />
+            {renderFieldError('emergencyContactName')}
           </div>
           <div>
-            <label style={labelStyle}>Emergency Contact Phone *</label>
-            <input type="tel" style={inputStyle} value={reg.emergencyContactPhone} onChange={e => updateReg('emergencyContactPhone', e.target.value)} placeholder="+91-9876543210" />
+            <label style={labelStyle}>Emergency Contact Phone (Auto Dial Code) *</label>
+            <input
+              type="tel"
+              style={getDynamicInputStyle('emergencyContactPhone')}
+              value={reg.emergencyContactPhone}
+              onChange={e => updateReg('emergencyContactPhone', e.target.value)}
+              onBlur={() => handleBlur('emergencyContactPhone')}
+              placeholder="+91 98765 43210"
+            />
+            {renderFieldError('emergencyContactPhone')}
           </div>
           <div>
             <label style={labelStyle}>Relationship *</label>
-            <select style={selectStyle} value={reg.emergencyContactRelation} onChange={e => updateReg('emergencyContactRelation', e.target.value)}>
-              <option value="">Select...</option>
-              {RELATIONSHIPS.map(r => <option key={r} value={r}>{r}</option>)}
+            <select
+              style={getDynamicInputStyle('emergencyContactRelation', selectStyle)}
+              value={reg.emergencyContactRelation}
+              onChange={e => updateReg('emergencyContactRelation', e.target.value)}
+              onBlur={() => handleBlur('emergencyContactRelation')}
+            >
+              <option value="" style={optionStyle}>Select...</option>
+              {RELATIONSHIPS.map(r => <option key={r} value={r} style={optionStyle}>{r}</option>)}
             </select>
+            {renderFieldError('emergencyContactRelation')}
           </div>
         </div>
       );
@@ -469,14 +734,19 @@ export default function LoginScreen() {
               <label style={labelStyle}>Password *</label>
               <div style={{ position: 'relative' }}>
                 <input
-                  type={showPassword ? 'text' : 'password'} style={{ ...inputStyle, paddingRight: '38px' }}
-                  value={reg.password} onChange={e => updateReg('password', e.target.value)} placeholder="Minimum 8 characters"
+                  type={showPassword ? 'text' : 'password'}
+                  style={{ ...getDynamicInputStyle('password'), paddingRight: '38px' }}
+                  value={reg.password}
+                  onChange={e => updateReg('password', e.target.value)}
+                  onBlur={() => handleBlur('password')}
+                  placeholder="Minimum 8 characters"
                 />
                 <button type="button" onClick={() => setShowPassword(v => !v)}
                   style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
                   {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
               </div>
+              {renderFieldError('password')}
               {reg.password && (
                 <div style={{ marginTop: '6px' }}>
                   <div style={{ display: 'flex', gap: '3px', marginBottom: '3px' }}>
@@ -490,10 +760,15 @@ export default function LoginScreen() {
             </div>
             <div>
               <label style={labelStyle}>Confirm Password *</label>
-              <input type="password" style={inputStyle} value={reg.confirmPassword} onChange={e => updateReg('confirmPassword', e.target.value)} placeholder="Re-enter password" />
-              {reg.confirmPassword && reg.password !== reg.confirmPassword && (
-                <span style={{ fontSize: '10px', color: '#ef4444', marginTop: '3px', display: 'block' }}>Passwords do not match</span>
-              )}
+              <input
+                type="password"
+                style={getDynamicInputStyle('confirmPassword')}
+                value={reg.confirmPassword}
+                onChange={e => updateReg('confirmPassword', e.target.value)}
+                onBlur={() => handleBlur('confirmPassword')}
+                placeholder="Re-enter password"
+              />
+              {renderFieldError('confirmPassword')}
             </div>
           </div>
         );
@@ -503,41 +778,35 @@ export default function LoginScreen() {
   };
 
   return (
-    <div style={{ width: '100vw', height: '100dvh', position: 'fixed', inset: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', boxSizing: 'border-box' }}>
+    <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', background: 'var(--bg-gradient)', fontFamily: 'Inter, system-ui, sans-serif' }}>
       <Canvas3DBackground />
 
-      {/* TOP NAVIGATION BAR */}
-      <header style={{
-        position: 'relative', zIndex: 40, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '12px 20px', paddingTop: 'calc(12px + env(safe-area-inset-top, 0px))',
-        borderBottom: '1px solid var(--border-subtle)', backdropFilter: 'blur(24px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(24px) saturate(180%)', background: 'var(--header-bg)', boxSizing: 'border-box', width: '100%',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
-          onClick={() => { setIsAuthModalOpen(false); setFeatureModal(null); setIsMobileNavOpen(false); }}>
-          <div style={{ width: '34px', height: '34px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--btn-primary-bg)', boxShadow: '0 4px 16px var(--accent-glow)', flexShrink: 0 }}>
-            <Plane size={18} style={{ color: 'var(--btn-primary-text)' }} />
+      {/* HEADER */}
+      <header style={{ position: 'relative', zIndex: 30, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 24px', background: 'var(--card-bg)', borderBottom: '1px solid var(--card-border)', backdropFilter: 'blur(24px) saturate(180%)', WebkitBackdropFilter: 'blur(24px)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'var(--btn-primary-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px var(--accent-glow)' }}>
+            <Plane size={20} style={{ color: 'var(--btn-primary-text)' }} />
           </div>
           <div>
-            <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: '1.05rem', color: 'var(--text-primary)', letterSpacing: '-0.03em', display: 'block', lineHeight: 1.1 }}>VOYACORE</span>
-            <span style={{ fontSize: '8.5px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent-primary)', display: 'block' }}>TRAVEL & LOGISTICS</span>
+            <span style={{ fontWeight: 900, fontSize: '1.1rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>VoyaCore</span>
+            <span style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--accent-primary)', marginLeft: '8px' }}>ENTERPRISE</span>
           </div>
         </div>
 
-        {/* Center Nav */}
-        <nav className="hidden lg:flex" style={{ alignItems: 'center', gap: '24px', position: 'relative' }}>
+        {/* Desktop Navigation */}
+        <nav className="hidden lg:flex" style={{ alignItems: 'center', gap: '24px' }}>
           <div onMouseEnter={() => handleMouseEnterDropdown('solutions')} onMouseLeave={handleMouseLeaveDropdown} style={{ position: 'relative', padding: '8px 0', cursor: 'pointer' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: 700, color: activeDropdown === 'solutions' ? 'var(--accent-primary)' : 'var(--text-secondary)', transition: 'color 0.2s' }}>
-              <span>Solutions</span>
+              <span>Solutions Suite</span>
               <ChevronDown size={14} style={{ transform: activeDropdown === 'solutions' ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
             </div>
             {activeDropdown === 'solutions' && (
               <div style={{ position: 'absolute', top: '100%', left: '-20px', width: '520px', padding: '18px', borderRadius: '20px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', boxShadow: '0 20px 60px rgba(0,0,0,0.35)', backdropFilter: 'blur(28px) saturate(180%)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', zIndex: 50, animation: 'fadeSlideUp 0.2s ease both' }}>
                 {[
-                  { icon: Plane, color: '#22d3ee', bg: 'rgba(34,211,238,0.15)', title: 'Workforce Mobility', desc: 'Flight booking & PNR digital boarding passes.' },
-                  { icon: CheckCircle2, color: '#a78bfa', bg: 'rgba(167,139,250,0.15)', title: 'Manager Approvals', desc: 'Budget authorization & compliance routing.' },
-                  { icon: DollarSign, color: '#fbbf24', bg: 'rgba(251,191,36,0.15)', title: 'Expense Auditing', desc: 'OCR receipt parsing & per-diem rules.' },
-                  { icon: Truck, color: '#fb923c', bg: 'rgba(251,146,60,0.15)', title: 'Cargo Logistics', desc: 'Air freight manifests & customs clearance.' },
+                  { icon: Plane, color: '#38bdf8', bg: 'rgba(56,189,248,0.15)', title: 'Travel Management', desc: 'Real-time booking engine & itinerary sync.' },
+                  { icon: Truck, color: '#818cf8', bg: 'rgba(129,140,248,0.15)', title: 'Logistics Manifest', desc: 'Customs clearance & prototype cargo tracking.' },
+                  { icon: DollarSign, color: '#facc15', bg: 'rgba(250,204,21,0.15)', title: 'Expense Auditing', desc: 'AI receipt OCR & multi-currency claim routing.' },
+                  { icon: ShieldAlert, color: '#f87171', bg: 'rgba(248,113,113,0.15)', title: 'Duty of Care Security', desc: 'GPS traveler heatmap & SOS emergency alerts.' },
                 ].map((item, i) => (
                   <div key={i} onClick={openLogin} style={{ padding: '12px', borderRadius: '14px', background: 'var(--nav-hover-bg)', border: '1px solid var(--border-subtle)', cursor: 'pointer', transition: 'all 0.2s' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
@@ -646,48 +915,6 @@ export default function LoginScreen() {
         </div>
       </main>
 
-      {/* FOOTER */}
-      <footer style={{ position: 'relative', zIndex: 20, padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', fontSize: '11px', color: 'var(--text-muted)', borderTop: '1px solid var(--border-subtle)', backdropFilter: 'blur(20px)', background: 'var(--header-bg)' }}>
-        <div>Copyright © 2026 VoyaCore Enterprise Inc.</div>
-        <div style={{ display: 'flex', gap: '14px' }}>
-          <span>Privacy Policy</span><span>Terms</span><span>Security</span>
-        </div>
-      </footer>
-
-      {/* FEATURE MODALS */}
-      {featureModal === 'duty' && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', background: 'transparent', backdropFilter: 'blur(16px)', animation: 'fadeIn 0.2s ease both' }}
-          onClick={(e) => { if (e.target === e.currentTarget) setFeatureModal(null); }}>
-          <div style={{ width: 'calc(100vw - 32px)', maxWidth: '520px', borderRadius: '24px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', padding: '20px', backdropFilter: 'blur(32px)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(248,113,113,0.15)', color: '#f87171', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Shield size={18} /></div>
-                <div><h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>Duty of Care & Security</h3><span style={{ fontSize: '10.5px', color: 'var(--text-secondary)' }}>Global Real-Time Risk Engine</span></div>
-              </div>
-              <button onClick={() => setFeatureModal(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><X size={18} /></button>
-            </div>
-            <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '18px' }}>Protects corporate travelers with real-time GPS heatmaps, automated travel warning alerts, and instant 24/7 SOS dispatch with emergency responder coordination.</p>
-            <button onClick={() => { setFeatureModal(null); openLogin(); }} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)', fontWeight: 800, fontSize: '0.88rem', cursor: 'pointer' }}>Sign In to Access →</button>
-          </div>
-        </div>
-      )}
-      {featureModal === 'logistics' && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', background: 'transparent', backdropFilter: 'blur(16px)', animation: 'fadeIn 0.2s ease both' }}
-          onClick={(e) => { if (e.target === e.currentTarget) setFeatureModal(null); }}>
-          <div style={{ width: 'calc(100vw - 32px)', maxWidth: '520px', borderRadius: '24px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', padding: '20px', backdropFilter: 'blur(32px)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(251,146,60,0.15)', color: '#fb923c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Truck size={18} /></div>
-                <div><h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>Supply Cargo Logistics</h3><span style={{ fontSize: '10.5px', color: 'var(--text-secondary)' }}>Air Cargo & Customs Manifests</span></div>
-              </div>
-              <button onClick={() => setFeatureModal(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><X size={18} /></button>
-            </div>
-            <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '18px' }}>Tracks international cargo manifests, custom clearance documents, bills of lading, and automated freight handler pipeline statuses in real-time.</p>
-            <button onClick={() => { setFeatureModal(null); openLogin(); }} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)', fontWeight: 800, fontSize: '0.88rem', cursor: 'pointer' }}>Sign In to Access →</button>
-          </div>
-        </div>
-      )}
-
       {/* AUTH MODAL */}
       {isAuthModalOpen && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', background: 'transparent', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', animation: 'fadeIn 0.25s ease both' }}
@@ -710,10 +937,10 @@ export default function LoginScreen() {
               {/* Tab Toggle */}
               <div style={{ display: 'flex', borderRadius: '12px', background: 'var(--nav-hover-bg)', padding: '3px', marginBottom: '14px' }}>
                 <button onClick={() => { setAuthMode('login'); setError(''); }} style={{ flex: 1, padding: '7px', borderRadius: '10px', border: 'none', background: authMode === 'login' ? 'var(--card-bg)' : 'transparent', color: authMode === 'login' ? 'var(--accent-primary)' : 'var(--text-muted)', fontWeight: 700, fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s ease' }}>Log In</button>
-                <button onClick={() => { setAuthMode('signup'); setError(''); setRegStep(0); }} style={{ flex: 1, padding: '7px', borderRadius: '10px', border: 'none', background: authMode === 'signup' ? 'var(--card-bg)' : 'transparent', color: authMode === 'signup' ? 'var(--accent-primary)' : 'var(--text-muted)', fontWeight: 700, fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s ease' }}>Sign Up</button>
+                <button onClick={() => { setAuthMode('signup'); setError(''); setRegStep(0); setTouched({}); setFieldErrors({}); }} style={{ flex: 1, padding: '7px', borderRadius: '10px', border: 'none', background: authMode === 'signup' ? 'var(--card-bg)' : 'transparent', color: authMode === 'signup' ? 'var(--accent-primary)' : 'var(--text-muted)', fontWeight: 700, fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s ease' }}>Sign Up</button>
               </div>
 
-              {/* Error */}
+              {/* General Error Banner */}
               {error && (
                 <div style={{ marginBottom: '12px', padding: '10px 12px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)', color: '#fca5a5', fontSize: '0.78rem', fontWeight: 600 }}>
                   <ShieldAlert size={14} /><span>{error}</span>

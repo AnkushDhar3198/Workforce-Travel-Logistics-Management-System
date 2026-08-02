@@ -302,11 +302,11 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [], c
       {/* ── Apple Floating Control Bar Overlay (Guaranteed Single Row 317px footprint) ── */}
       <div className="absolute top-2 left-2 right-2 z-30 flex items-center justify-between gap-1 pointer-events-none">
         {/* Pill 1: Left Info Pill */}
-        <div className="pointer-events-auto flex items-center gap-1 border border-white/20 backdrop-blur-2xl px-2 py-0.5 rounded-full shadow-lg shrink-0 whitespace-nowrap" style={{ background: 'rgba(15, 23, 42, 0.92)' }}>
-          <Globe className="w-3 h-3 text-sky-400 animate-spin-slow shrink-0" />
-          <span className="text-[9px] font-black tracking-tight text-white shrink-0">Live GPS Catalog</span>
+        <div className="pointer-events-auto flex items-center gap-1.5 border border-white/20 backdrop-blur-2xl px-2.5 py-1 rounded-full shadow-lg shrink-0 whitespace-nowrap" style={{ background: 'rgba(15, 23, 42, 0.92)' }}>
+          <Globe className="w-3.5 h-3.5 text-sky-400 animate-spin-slow shrink-0" />
+          <span className="text-[10px] font-black tracking-tight shrink-0" style={{ color: '#ffffff' }}>Live GPS Catalog</span>
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-          <span className="text-[8.5px] font-bold text-sky-400 shrink-0">{displayRequests.length} Active</span>
+          <span className="text-[9px] font-bold shrink-0" style={{ color: '#38bdf8' }}>{displayRequests.length} Active</span>
         </div>
 
         {/* Right Floating Controls Container (Pill 2, Pill 3, Pill 4) */}
@@ -315,7 +315,7 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [], c
           <div className="flex items-center border border-white/20 backdrop-blur-2xl p-0.5 rounded-full shadow-lg shrink-0" style={{ background: 'rgba(15, 23, 42, 0.92)' }}>
             <button
               onClick={() => setActiveLayer('dark')}
-              className="px-1.5 py-0.5 rounded-full text-[8.5px] font-black transition-all cursor-pointer whitespace-nowrap"
+              className="px-2 py-0.5 rounded-full text-[9px] font-black transition-all cursor-pointer whitespace-nowrap"
               style={{
                 background: activeLayer === 'dark' ? '#0ea5e9' : 'transparent',
                 color: '#ffffff',
@@ -326,18 +326,18 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [], c
             </button>
             <button
               onClick={() => setActiveLayer('satellite')}
-              className="px-1.5 py-0.5 rounded-full text-[8.5px] font-black transition-all cursor-pointer whitespace-nowrap"
+              className="px-2 py-0.5 rounded-full text-[9px] font-black transition-all cursor-pointer whitespace-nowrap"
               style={{
                 background: activeLayer === 'satellite' ? '#0ea5e9' : 'transparent',
                 color: '#ffffff',
                 boxShadow: activeLayer === 'satellite' ? '0 0 6px rgba(14, 165, 233, 0.6)' : 'none',
               }}
             >
-              Sat
+              Satellite
             </button>
             <button
               onClick={() => setActiveLayer('street')}
-              className="px-1.5 py-0.5 rounded-full text-[8.5px] font-black transition-all cursor-pointer whitespace-nowrap"
+              className="px-2 py-0.5 rounded-full text-[9px] font-black transition-all cursor-pointer whitespace-nowrap"
               style={{
                 background: activeLayer === 'street' ? '#0ea5e9' : 'transparent',
                 color: '#ffffff',

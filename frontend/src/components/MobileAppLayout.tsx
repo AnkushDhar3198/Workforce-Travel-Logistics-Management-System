@@ -82,7 +82,7 @@ export default function MobileAppLayout({
 
   return (
     <div
-      className="flex flex-col h-screen max-h-screen w-full overflow-hidden"
+      className="flex flex-col h-[100dvh] max-h-[100dvh] w-full overflow-hidden"
       style={{
         background: 'var(--bg-main)',
         color: 'var(--text-primary)',
@@ -183,15 +183,21 @@ export default function MobileAppLayout({
         </div>
       </header>
 
-      {/* MAIN SMARTPHONE CONTENT AREA (SMOOTH MOMENTUM SCROLLABLE) */}
+      {/* MAIN SMARTPHONE CONTENT AREA (SMOOTH FULL-LENGTH SCROLLABLE) */}
       <main
-        className="flex-1 w-full p-4 pb-32 overflow-y-auto"
+        className="flex-1 w-full p-4 overflow-y-auto"
         style={{
           WebkitOverflowScrolling: 'touch',
           touchAction: 'pan-y',
+          paddingBottom: 'calc(160px + env(safe-area-inset-bottom, 20px))',
         }}
       >
         {children}
+
+        {/* Extra Bottom Spacer to guarantee 100% full content visibility above bottom dock */}
+        <div className="h-28 w-full shrink-0 flex items-center justify-center text-[10px] text-slate-500 font-medium pt-6">
+          <span>End of Content • VoyaCore Mobile Protocol</span>
+        </div>
       </main>
 
       {/* APPLE iOS & ANDROID NATIVE BOTTOM NAVIGATION DOCK */}

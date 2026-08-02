@@ -201,35 +201,36 @@ function DashboardContent() {
             {activeTab === 'users' && <UsersTab />}
           </div>
 
-          {/* DASHBOARD FOOTER */}
+          {/* APPLE-STYLE MINIMAL DASHBOARD FOOTER */}
           <footer
             style={{
               marginTop: '40px',
-              paddingTop: '20px',
+              paddingTop: '16px',
               borderTop: '1px solid var(--border-subtle)',
               display: 'flex',
               flexWrap: 'wrap',
               alignItems: 'center',
               justifyContent: 'space-between',
               gap: '12px',
-              fontSize: '11px',
+              fontSize: '10.5px',
               color: 'var(--text-muted)',
+              lineHeight: 1.5,
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#22c55e' }} />
-              <span>VoyaCore Level-5 Autonomous Session Active</span>
-              <span>•</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }} />
               <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>
-                Role: {user?.role ? user.role.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()) : 'Employee'}
+                {user?.role ? user.role.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()) : 'Employee'} Session
               </span>
+              <span>•</span>
+              <span>Level-5 Autonomous Protocol</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <span>256-Bit SSL Encrypted</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <span>256-Bit SSL</span>
               <span>•</span>
-              <span>SSE Stream Connected</span>
+              <span>SSE Connected</span>
               <span>•</span>
-              <span>© 2026 VoyaCore Enterprise</span>
+              <span>Copyright © 2026 VoyaCore Inc. All rights reserved.</span>
             </div>
           </footer>
         </main>

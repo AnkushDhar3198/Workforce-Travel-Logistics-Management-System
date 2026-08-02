@@ -1348,58 +1348,94 @@ export default function LoginScreen() {
         </div>
       )}
 
-      {/* RICH LANDING PAGE FOOTER */}
-      <footer style={{ background: 'rgba(10, 15, 29, 0.85)', borderTop: '1px solid var(--border-subtle)', backdropFilter: 'blur(16px)', padding: '48px 24px 24px', marginTop: '60px', width: '100%' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '32px', marginBottom: '40px' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'var(--btn-primary-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-                <Plane size={18} />
+      {/* APPLE-STYLE MINIMAL LANDING PAGE FOOTER */}
+      <footer
+        style={{
+          width: '100%',
+          borderTop: '1px solid var(--border-subtle)',
+          background: 'var(--card-bg)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          padding: '32px 24px 24px',
+          marginTop: '60px',
+          fontSize: '11px',
+          color: 'var(--text-secondary)',
+          lineHeight: 1.6,
+        }}
+      >
+        <div style={{ maxWidth: '980px', margin: '0 auto' }}>
+          {/* Apple-style Footnotes / Disclaimers */}
+          <div style={{ paddingBottom: '16px', borderBottom: '1px solid var(--border-subtle)', marginBottom: '20px', color: 'var(--text-muted)', fontSize: '10.5px' }}>
+            <p style={{ margin: '0 0 6px' }}>1. VoyaCore Level-5 Autonomous Travel Protocol provides real-time destination risk monitoring, preferred rate locking, and automated expense auditing across 140+ international enterprise corridors.</p>
+            <p style={{ margin: 0 }}>2. Emergency SOS satellite dispatch operates 24/7 with encrypted location pings. Duty-of-care compliance requires real-time traveler profile authorization.</p>
+          </div>
+
+          {/* Apple-style Column Navigation Links */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '24px', marginBottom: '24px' }}>
+            <div>
+              <h5 style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 10px' }}>Platform</h5>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', color: 'var(--text-secondary)' }}>
+                <span style={{ cursor: 'pointer' }}>Solutions Suite</span>
+                <span style={{ cursor: 'pointer' }}>Platform Autonomy</span>
+                <span style={{ cursor: 'pointer' }}>Duty of Care Map</span>
+                <span style={{ cursor: 'pointer' }}>Logistics Manifest</span>
+                <span style={{ cursor: 'pointer' }}>Expense Auditing</span>
               </div>
-              <span style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '0.05em' }}>VOYACORE</span>
             </div>
-            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-              Enterprise autonomous workforce travel management, duty-of-care emergency tracking, customs logistics manifest, and automated expense auditing system.
-            </p>
-          </div>
 
-          <div>
-            <h4 style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--accent-primary)', marginBottom: '12px' }}>Platform Modules</h4>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px', color: 'var(--text-secondary)' }}>
-              <li>✈️ Automated Policy Engine</li>
-              <li>🗺️ Duty of Care GPS Heatmap</li>
-              <li>📦 Encrypted Cargo Manifest</li>
-              <li>💳 Real-Time Expense Auditing</li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--accent-primary)', marginBottom: '12px' }}>Security & Compliance</h4>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px', color: 'var(--text-secondary)' }}>
-              <li>🛡️ ISO 27001 Certified</li>
-              <li>🔒 SOC2 Type II Security</li>
-              <li>🇪🇺 GDPR Data Compliance</li>
-              <li>⚡ 256-Bit SSL Encrypted</li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--accent-primary)', marginBottom: '12px' }}>System Operational Health</h4>
-            <div style={{ padding: '12px', borderRadius: '14px', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', color: '#4ade80', fontSize: '11px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e' }} />
-              <span>All 14 Nodes Operational (99.99% Uptime)</span>
+            <div>
+              <h5 style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 10px' }}>Enterprise</h5>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', color: 'var(--text-secondary)' }}>
+                <span style={{ cursor: 'pointer' }}>Corporate Onboarding</span>
+                <span style={{ cursor: 'pointer' }}>Preferred Vendors</span>
+                <span style={{ cursor: 'pointer' }}>Policy Engine</span>
+                <span style={{ cursor: 'pointer' }}>ROI Analytics</span>
+                <span style={{ cursor: 'pointer' }}>Audit Trail</span>
+              </div>
             </div>
-            <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '10px 0 0' }}>Level-5 Autonomous Protocol Active</p>
-          </div>
-        </div>
 
-        <div style={{ maxWidth: '1200px', margin: '0 auto', paddingTop: '20px', borderTop: '1px solid var(--border-subtle)', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '12px', fontSize: '11px', color: 'var(--text-muted)' }}>
-          <span>© 2026 VoyaCore Inc. All Rights Reserved. Enterprise Level 5 Autonomous Protocol.</span>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <span>Privacy Policy</span>
-            <span>Terms of Service</span>
-            <span>Security Portal</span>
-            <span>Status Page</span>
+            <div>
+              <h5 style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 10px' }}>Security</h5>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', color: 'var(--text-secondary)' }}>
+                <span style={{ cursor: 'pointer' }}>ISO 27001 Certification</span>
+                <span style={{ cursor: 'pointer' }}>SOC2 Type II Report</span>
+                <span style={{ cursor: 'pointer' }}>GDPR Compliance</span>
+                <span style={{ cursor: 'pointer' }}>256-Bit SSL Encryption</span>
+                <span style={{ cursor: 'pointer' }}>Security Desk Call</span>
+              </div>
+            </div>
+
+            <div>
+              <h5 style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 10px' }}>Account Access</h5>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', color: 'var(--text-secondary)' }}>
+                <span style={{ cursor: 'pointer' }} onClick={openLogin}>Sign In to Portal</span>
+                <span style={{ cursor: 'pointer' }} onClick={openSignUp}>Create Corporate Account</span>
+                <span style={{ cursor: 'pointer' }}>Role Security Verification</span>
+                <span style={{ cursor: 'pointer' }}>System Administrator</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Apple-style Copyright & Bottom Legal Navigation */}
+          <div style={{ paddingTop: '16px', borderTop: '1px solid var(--border-subtle)', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '10px', fontSize: '10.5px', color: 'var(--text-muted)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }} />
+              <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>System Status: Operational</span>
+              <span>•</span>
+              <span>Copyright © 2026 VoyaCore Inc. All rights reserved.</span>
+            </div>
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+              <span style={{ cursor: 'pointer' }}>Privacy Policy</span>
+              <span>|</span>
+              <span style={{ cursor: 'pointer' }}>Terms of Use</span>
+              <span>|</span>
+              <span style={{ cursor: 'pointer' }}>Sales & Refunds</span>
+              <span>|</span>
+              <span style={{ cursor: 'pointer' }}>Legal</span>
+              <span>|</span>
+              <span style={{ cursor: 'pointer' }}>Site Map</span>
+            </div>
           </div>
         </div>
       </footer>

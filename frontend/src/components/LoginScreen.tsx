@@ -1382,94 +1382,48 @@ export default function LoginScreen() {
         </div>
       )}
 
-      {/* APPLE-STYLE MINIMAL LANDING PAGE FOOTER */}
+      {/* APPLE-STYLE ULTRA-MINIMAL LANDING PAGE FOOTER */}
       <footer
         style={{
           flexShrink: 0,
           width: '100%',
           borderTop: '1px solid var(--border-subtle)',
           background: 'var(--card-bg)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          padding: '24px 24px 32px',
-          marginTop: '20px',
-          fontSize: '11px',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          padding: '16px 20px 20px',
+          marginTop: '16px',
+          fontSize: '10px',
           color: 'var(--text-secondary)',
-          lineHeight: 1.6,
+          lineHeight: 1.4,
         }}
       >
-        <div style={{ maxWidth: '1040px', margin: '0 auto' }}>
-          {/* Apple-style Footnotes / Disclaimers */}
-          <div style={{ paddingBottom: '14px', borderBottom: '1px solid var(--border-subtle)', marginBottom: '18px', color: 'var(--text-muted)', fontSize: '10.5px' }}>
-            <p style={{ margin: '0 0 4px' }}>1. VoyaCore Level-5 Autonomous Travel Protocol provides real-time destination risk monitoring, preferred rate locking, and automated expense auditing across 140+ international enterprise corridors.</p>
-            <p style={{ margin: 0 }}>2. Emergency SOS satellite dispatch operates 24/7 with encrypted location pings. Duty-of-care compliance requires real-time traveler profile authorization.</p>
+        <div style={{ maxWidth: '960px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {/* Compact Footnotes */}
+          <div style={{ color: 'var(--text-muted)', fontSize: '9.5px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '8px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+            <div>1. VoyaCore Level-5 Autonomous Travel Protocol provides real-time destination risk monitoring and automated expense auditing across 140+ enterprise corridors.</div>
+            <div>2. Emergency SOS satellite dispatch operates 24/7 with encrypted location pings. Duty-of-care compliance requires real-time profile authorization.</div>
           </div>
 
-          {/* Apple-style Column Navigation Links */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '24px', marginBottom: '24px' }}>
-            <div>
-              <h5 style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 10px' }}>Platform</h5>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', color: 'var(--text-secondary)' }}>
-                <span style={{ cursor: 'pointer' }}>Solutions Suite</span>
-                <span style={{ cursor: 'pointer' }}>Platform Autonomy</span>
-                <span style={{ cursor: 'pointer' }}>Duty of Care Map</span>
-                <span style={{ cursor: 'pointer' }}>Logistics Manifest</span>
-                <span style={{ cursor: 'pointer' }}>Expense Auditing</span>
-              </div>
-            </div>
-
-            <div>
-              <h5 style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 10px' }}>Enterprise</h5>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', color: 'var(--text-secondary)' }}>
-                <span style={{ cursor: 'pointer' }}>Corporate Onboarding</span>
-                <span style={{ cursor: 'pointer' }}>Preferred Vendors</span>
-                <span style={{ cursor: 'pointer' }}>Policy Engine</span>
-                <span style={{ cursor: 'pointer' }}>ROI Analytics</span>
-                <span style={{ cursor: 'pointer' }}>Audit Trail</span>
-              </div>
-            </div>
-
-            <div>
-              <h5 style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 10px' }}>Security</h5>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', color: 'var(--text-secondary)' }}>
-                <span style={{ cursor: 'pointer' }}>ISO 27001 Certification</span>
-                <span style={{ cursor: 'pointer' }}>SOC2 Type II Report</span>
-                <span style={{ cursor: 'pointer' }}>GDPR Compliance</span>
-                <span style={{ cursor: 'pointer' }}>256-Bit SSL Encryption</span>
-                <span style={{ cursor: 'pointer' }}>Security Desk Call</span>
-              </div>
-            </div>
-
-            <div>
-              <h5 style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 10px' }}>Account Access</h5>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', color: 'var(--text-secondary)' }}>
-                <span style={{ cursor: 'pointer' }} onClick={openLogin}>Sign In to Portal</span>
-                <span style={{ cursor: 'pointer' }} onClick={openSignUp}>Create Corporate Account</span>
-                <span style={{ cursor: 'pointer' }}>Role Security Verification</span>
-                <span style={{ cursor: 'pointer' }}>System Administrator</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Apple-style Copyright & Bottom Legal Navigation */}
-          <div style={{ paddingTop: '16px', borderTop: '1px solid var(--border-subtle)', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '10px', fontSize: '10.5px', color: 'var(--text-muted)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }} />
-              <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>System Status: Operational</span>
+          {/* Compact Links & Legal Horizontal Row */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '10px', fontSize: '10px', color: 'var(--text-muted)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+              <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#22c55e' }} />
+              <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>Operational</span>
               <span>•</span>
               <span>Copyright © 2026 VoyaCore Inc. All rights reserved.</span>
             </div>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', fontWeight: 600 }}>
+              <span style={{ cursor: 'pointer' }} onClick={openLogin}>Sign In</span>
+              <span>•</span>
+              <span style={{ cursor: 'pointer' }} onClick={openSignUp}>Create Account</span>
+              <span>•</span>
               <span style={{ cursor: 'pointer' }}>Privacy Policy</span>
-              <span>|</span>
-              <span style={{ cursor: 'pointer' }}>Terms of Use</span>
-              <span>|</span>
-              <span style={{ cursor: 'pointer' }}>Sales & Refunds</span>
-              <span>|</span>
-              <span style={{ cursor: 'pointer' }}>Legal</span>
-              <span>|</span>
-              <span style={{ cursor: 'pointer' }}>Site Map</span>
+              <span>•</span>
+              <span style={{ cursor: 'pointer' }}>Terms</span>
+              <span>•</span>
+              <span style={{ cursor: 'pointer' }}>Security</span>
             </div>
           </div>
         </div>

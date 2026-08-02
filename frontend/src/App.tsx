@@ -197,36 +197,36 @@ function DashboardContent() {
             {activeTab === 'users' && <UsersTab />}
           </div>
 
-          {/* APPLE-STYLE MINIMAL DASHBOARD FOOTER */}
+          {/* APPLE-STYLE ULTRA-MINIMAL DASHBOARD FOOTER */}
           <footer
             style={{
-              marginTop: '40px',
-              paddingTop: '16px',
+              marginTop: '24px',
+              paddingTop: '12px',
               borderTop: '1px solid var(--border-subtle)',
               display: 'flex',
               flexWrap: 'wrap',
               alignItems: 'center',
               justifyContent: 'space-between',
-              gap: '12px',
-              fontSize: '10.5px',
+              gap: '10px',
+              fontSize: '10px',
               color: 'var(--text-muted)',
-              lineHeight: 1.5,
+              lineHeight: 1.4,
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }} />
-              <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>
+              <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#22c55e' }} />
+              <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>
                 {user?.role ? user.role.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()) : 'Employee'} Session
               </span>
               <span>•</span>
               <span>Level-5 Autonomous Protocol</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span>256-Bit SSL</span>
               <span>•</span>
               <span>SSE Connected</span>
               <span>•</span>
-              <span>Copyright © 2026 VoyaCore Inc. All rights reserved.</span>
+              <span>Copyright © 2026 VoyaCore Inc.</span>
             </div>
           </footer>
         </main>

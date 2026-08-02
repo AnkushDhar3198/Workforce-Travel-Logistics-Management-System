@@ -6,6 +6,7 @@ import LoginScreen from './components/LoginScreen';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import MobileAppLayout from './components/MobileAppLayout';
+import LegalModal, { type LegalTabType } from './components/LegalModal';
 import Canvas3DBackground from './components/Canvas3DBackground';
 
 // Import Tab Views
@@ -29,6 +30,7 @@ function DashboardContent() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [sosStatus, setSosStatus] = useState<string>('idle');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [legalModal, setLegalModal] = useState<LegalTabType | null>(null);
   const [isMobileMode, setIsMobileMode] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       return window.innerWidth < 768;
@@ -235,15 +237,25 @@ function DashboardContent() {
               <span>Level-5 Autonomous Protocol</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span>256-Bit SSL</span>
+              <span style={{ cursor: 'pointer', color: 'var(--accent-primary)', fontWeight: 600 }} onClick={() => setLegalModal('privacy')}>Privacy</span>
               <span>•</span>
-              <span>SSE Connected</span>
+              <span style={{ cursor: 'pointer', color: 'var(--accent-primary)', fontWeight: 600 }} onClick={() => setLegalModal('terms')}>Terms</span>
+              <span>•</span>
+              <span style={{ cursor: 'pointer', color: 'var(--accent-primary)', fontWeight: 600 }} onClick={() => setLegalModal('security')}>Security</span>
               <span>•</span>
               <span>Copyright © 2026 VoyaCore Inc.</span>
             </div>
           </footer>
         </main>
       </div>
+
+      {/* ENTERPRISE LEGAL & SECURITY GOVERNANCE MODAL */}
+      {legalModal && (
+        <LegalModal
+          initialTab={legalModal}
+          onClose={() => setLegalModal(null)}
+        />
+      )}
     </div>
   );
 }

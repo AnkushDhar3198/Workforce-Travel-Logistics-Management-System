@@ -7,6 +7,7 @@ import {
 import { useAuth, API_BASE, BACKEND_URL } from '../context/AuthContext';
 import { useTheme, THEMES, type ThemeId } from '../context/ThemeContext';
 import Canvas3DBackground from './Canvas3DBackground';
+import LegalModal, { type LegalTabType } from './LegalModal';
 
 const DEPARTMENTS = [
   'Sales', 'Engineering', 'Marketing', 'Finance', 'Human Resources',
@@ -220,6 +221,7 @@ export default function LoginScreen() {
   // Navbar state
   const [activeDropdown, setActiveDropdown] = useState<'solutions' | 'autonomy' | null>(null);
   const [featureModal, setFeatureModal] = useState<'duty' | 'logistics' | null>(null);
+  const [legalModal, setLegalModal] = useState<LegalTabType | null>(null);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const dropdownTimerRef = useRef<any>(null);
 
@@ -1502,15 +1504,23 @@ export default function LoginScreen() {
               <span>•</span>
               <span style={{ cursor: 'pointer' }} onClick={openSignUp}>Create Account</span>
               <span>•</span>
-              <span style={{ cursor: 'pointer' }}>Privacy Policy</span>
+              <span style={{ cursor: 'pointer', color: 'var(--accent-primary)' }} onClick={() => setLegalModal('privacy')}>Privacy Policy</span>
               <span>•</span>
-              <span style={{ cursor: 'pointer' }}>Terms</span>
+              <span style={{ cursor: 'pointer', color: 'var(--accent-primary)' }} onClick={() => setLegalModal('terms')}>Terms</span>
               <span>•</span>
-              <span style={{ cursor: 'pointer' }}>Security</span>
+              <span style={{ cursor: 'pointer', color: 'var(--accent-primary)' }} onClick={() => setLegalModal('security')}>Security</span>
             </div>
           </div>
         </div>
       </footer>
+
+      {/* ENTERPRISE LEGAL & SECURITY GOVERNANCE MODAL */}
+      {legalModal && (
+        <LegalModal
+          initialTab={legalModal}
+          onClose={() => setLegalModal(null)}
+        />
+      )}
     </div>
   );
 }

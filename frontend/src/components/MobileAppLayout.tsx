@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import LegalModal, { type LegalTabType } from './LegalModal';
 
 interface MobileAppLayoutProps {
   activeTab: string;
@@ -30,6 +31,7 @@ export default function MobileAppLayout({
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [legalModal, setLegalModal] = useState<LegalTabType | null>(null);
 
   const unreadCount = notifications.filter(n => !n.readStatus).length;
 
@@ -331,6 +333,15 @@ export default function MobileAppLayout({
               </div>
             </div>
 
+            {/* Legal Governance & Security Links */}
+            <div className="pt-2 border-t flex items-center justify-around text-[10px] font-bold text-slate-400" style={{ borderColor: 'var(--border-subtle)' }}>
+              <button onClick={() => { setIsDrawerOpen(false); setLegalModal('privacy'); }} className="hover:text-cyan-400">Privacy</button>
+              <span>•</span>
+              <button onClick={() => { setIsDrawerOpen(false); setLegalModal('terms'); }} className="hover:text-cyan-400">Terms</button>
+              <span>•</span>
+              <button onClick={() => { setIsDrawerOpen(false); setLegalModal('security'); }} className="hover:text-cyan-400">Security</button>
+            </div>
+
             {/* Bottom Logout Button */}
             <button
               onClick={() => {
@@ -344,6 +355,14 @@ export default function MobileAppLayout({
             </button>
           </div>
         </div>
+      )}
+
+      {/* ENTERPRISE LEGAL & SECURITY GOVERNANCE MODAL */}
+      {legalModal && (
+        <LegalModal
+          initialTab={legalModal}
+          onClose={() => setLegalModal(null)}
+        />
       )}
     </div>
   );

@@ -25,6 +25,7 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
   const [weatherError, setWeatherError] = useState<string | null>(null);
   const [nextRefreshIn, setNextRefreshIn] = useState<number>(600); // seconds until next auto-refresh
   const [liveTime, setLiveTime] = useState<string>(() => new Date().toLocaleTimeString());
+  const [destLocalHour, setDestLocalHour] = useState<number>(new Date().getHours());
   const [isRefreshingWeather, setIsRefreshingWeather] = useState(false);
   const [weatherNotice, setWeatherNotice] = useState<string | null>(null);
 
@@ -48,13 +49,25 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
     setIsRefreshingWeather(false);
   };
 
-  // Live 1-second clock timer for destination real-time updates
+  // Live 1-second clock timer for destination timezone time
   useEffect(() => {
-    const timer = setInterval(() => {
+    const tick = () => {
+      const tz = weather?.timezone;
+      if (tz) {
+        try {
+          const destDate = new Date(new Date().toLocaleString('en-US', { timeZone: tz }));
+          setLiveTime(destDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }));
+          setDestLocalHour(destDate.getHours());
+          return;
+        } catch { /* fall through to local time */ }
+      }
       setLiveTime(new Date().toLocaleTimeString());
-    }, 1000);
+      setDestLocalHour(new Date().getHours());
+    };
+    tick();
+    const timer = setInterval(tick, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [weather?.timezone]);
 
   // Countdown timer: ticks every second, shows time until next auto-refresh
   useEffect(() => {
@@ -439,14 +452,24 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
 
         {/* Live Weather Card — Google Maps Platform Weather API */}
         {(() => {
-          // Dynamic gradient based on condition type
+          // Dynamic gradient based on condition type + destination day/night
           const ct = (weather?.conditionType || '').toUpperCase();
+          const isNightAtDest = destLocalHour < 6 || destLocalHour >= 18;
           let cardGrad = 'from-sky-950/50 to-cyan-950/40 border-sky-800/40';
-          if (ct === 'CLEAR' || ct === 'MOSTLY_CLEAR') cardGrad = 'from-amber-950/50 to-yellow-950/30 border-amber-700/40';
-          else if (ct.includes('THUNDER') || ct.includes('STORM')) cardGrad = 'from-slate-900/80 to-indigo-950/60 border-indigo-700/40';
-          else if (ct.includes('RAIN') || ct.includes('DRIZZLE') || ct.includes('SHOWER')) cardGrad = 'from-blue-950/60 to-sky-950/40 border-blue-700/40';
-          else if (ct.includes('SNOW') || ct.includes('ICE') || ct.includes('BLIZZARD')) cardGrad = 'from-slate-800/60 to-sky-900/50 border-sky-600/40';
-          else if (ct.includes('FOG') || ct.includes('HAZE') || ct.includes('MIST')) cardGrad = 'from-slate-800/60 to-zinc-900/50 border-zinc-600/40';
+          if (isNightAtDest) {
+            // Night palette — deep dark indigo/slate
+            cardGrad = 'from-indigo-950/70 to-slate-950/60 border-indigo-800/40';
+            if (ct === 'CLEAR' || ct === 'MOSTLY_CLEAR') cardGrad = 'from-indigo-950/60 to-violet-950/40 border-violet-800/30';
+            else if (ct.includes('RAIN') || ct.includes('DRIZZLE') || ct.includes('SHOWER')) cardGrad = 'from-slate-950/80 to-blue-950/50 border-blue-800/30';
+            else if (ct.includes('THUNDER') || ct.includes('STORM')) cardGrad = 'from-slate-950/90 to-indigo-950/70 border-indigo-700/40';
+          } else {
+            // Day palette — warm condition-specific
+            if (ct === 'CLEAR' || ct === 'MOSTLY_CLEAR') cardGrad = 'from-amber-950/50 to-yellow-950/30 border-amber-700/40';
+            else if (ct.includes('THUNDER') || ct.includes('STORM')) cardGrad = 'from-slate-900/80 to-indigo-950/60 border-indigo-700/40';
+            else if (ct.includes('RAIN') || ct.includes('DRIZZLE') || ct.includes('SHOWER')) cardGrad = 'from-blue-950/60 to-sky-950/40 border-blue-700/40';
+            else if (ct.includes('SNOW') || ct.includes('ICE') || ct.includes('BLIZZARD')) cardGrad = 'from-slate-800/60 to-sky-900/50 border-sky-600/40';
+            else if (ct.includes('FOG') || ct.includes('HAZE') || ct.includes('MIST')) cardGrad = 'from-slate-800/60 to-zinc-900/50 border-zinc-600/40';
+          }
 
           const mins = Math.floor(nextRefreshIn / 60);
           const secs = nextRefreshIn % 60;
@@ -519,7 +542,7 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
                           />
                         ) : (
                           <span className="text-3xl leading-none select-none">
-                            {conditionTypeToEmoji(weather?.conditionType || weather?.icon, weather?.isDaytime !== false)}
+                            {conditionTypeToEmoji(weather?.conditionType || weather?.icon, destLocalHour >= 6 && destLocalHour < 18)}
                           </span>
                         )}
                       </div>
@@ -534,14 +557,16 @@ export default function ItineraryTab({ onNavigateToRequisition }: ItineraryTabPr
                             {weather?.description ?? 'Partly Cloudy'}
                           </span>
                         </div>
-                        {/* Location + Day/Night */}
+                        {/* Location + Day/Night (based on destination's geo timezone) */}
                         <p className="text-[10.5px] font-bold text-slate-300 mt-0.5 flex items-center gap-1.5 flex-wrap">
                           <span>📍 {selectedReq?.destination || weather?.city || '—'}</span>
-                          {weather?.isDaytime !== undefined && (
-                            <span className="text-slate-500">{weather.isDaytime ? '☀ Day' : '🌙 Night'}</span>
-                          )}
+                          <span className="text-slate-500">
+                            {destLocalHour >= 6 && destLocalHour < 18 ? '☀ Day' : '🌙 Night'}
+                          </span>
                           {weather?.timezone && (
-                            <span className="text-slate-600 text-[9px]">{weather.timezone}</span>
+                            <span className="text-slate-500 text-[9px] bg-white/5 rounded px-1 py-0.5">
+                              🕐 {liveTime} <span className="text-slate-600">({weather.timezone})</span>
+                            </span>
                           )}
                         </p>
                       </div>

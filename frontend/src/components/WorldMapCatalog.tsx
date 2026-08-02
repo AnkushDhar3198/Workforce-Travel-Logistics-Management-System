@@ -299,23 +299,25 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [], c
 
   return (
     <div className="relative w-full rounded-3xl overflow-hidden bg-slate-950/90 border border-white/20 ring-1 ring-white/10 shadow-2xl flex flex-col select-none backdrop-blur-2xl">
-      {/* ── Apple Floating Control Bar Overlay (Guaranteed Single Row 317px footprint) ── */}
-      <div className="absolute top-2 left-2 right-2 z-30 flex items-center justify-between gap-1 pointer-events-none">
+      {/* ── Apple Floating Control Bar Overlay (Phone & Desktop Responsive Single Row) ── */}
+      <div className="absolute top-2 left-2 right-2 z-30 flex items-center justify-between gap-1 pointer-events-none max-w-[calc(100%-1rem)]">
         {/* Pill 1: Left Info Pill */}
-        <div className="pointer-events-auto flex items-center gap-1.5 border border-white/20 backdrop-blur-2xl px-2.5 py-1 rounded-full shadow-lg shrink-0 whitespace-nowrap" style={{ background: 'rgba(15, 23, 42, 0.92)' }}>
-          <Globe className="w-3.5 h-3.5 text-sky-400 animate-spin-slow shrink-0" />
-          <span className="text-[10px] font-black tracking-tight shrink-0" style={{ color: '#ffffff' }}>Live GPS Catalog</span>
+        <div className="pointer-events-auto flex items-center gap-1 sm:gap-1.5 border border-white/20 backdrop-blur-2xl px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full shadow-lg shrink-0 whitespace-nowrap" style={{ background: 'rgba(15, 23, 42, 0.92)' }}>
+          <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sky-400 animate-spin-slow shrink-0" />
+          <span className="text-[9px] sm:text-[10px] font-black tracking-tight shrink-0" style={{ color: '#ffffff' }}>
+            Live GPS<span className="hidden sm:inline"> Catalog</span>
+          </span>
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-          <span className="text-[9px] font-bold shrink-0" style={{ color: '#38bdf8' }}>{displayRequests.length} Active</span>
+          <span className="text-[8.5px] sm:text-[9px] font-bold shrink-0" style={{ color: '#38bdf8' }}>{displayRequests.length}<span className="hidden xs:inline"> Active</span></span>
         </div>
 
-        {/* Right Floating Controls Container (Pill 2, Pill 3, Pill 4) */}
-        <div className="pointer-events-auto flex items-center gap-1 shrink-0">
+        {/* Right Floating Controls Container (Pills 2, 3, 4) */}
+        <div className="pointer-events-auto flex items-center gap-0.5 sm:gap-1 shrink-0">
           {/* Pill 2: Layer Selector Frosted Pill */}
           <div className="flex items-center border border-white/20 backdrop-blur-2xl p-0.5 rounded-full shadow-lg shrink-0" style={{ background: 'rgba(15, 23, 42, 0.92)' }}>
             <button
               onClick={() => setActiveLayer('dark')}
-              className="px-2 py-0.5 rounded-full text-[9px] font-black transition-all cursor-pointer whitespace-nowrap"
+              className="px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-black transition-all cursor-pointer whitespace-nowrap"
               style={{
                 background: activeLayer === 'dark' ? '#0ea5e9' : 'transparent',
                 color: '#ffffff',
@@ -326,18 +328,18 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [], c
             </button>
             <button
               onClick={() => setActiveLayer('satellite')}
-              className="px-2 py-0.5 rounded-full text-[9px] font-black transition-all cursor-pointer whitespace-nowrap"
+              className="px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-black transition-all cursor-pointer whitespace-nowrap"
               style={{
                 background: activeLayer === 'satellite' ? '#0ea5e9' : 'transparent',
                 color: '#ffffff',
                 boxShadow: activeLayer === 'satellite' ? '0 0 6px rgba(14, 165, 233, 0.6)' : 'none',
               }}
             >
-              Satellite
+              Sat<span className="hidden sm:inline">ellite</span>
             </button>
             <button
               onClick={() => setActiveLayer('street')}
-              className="px-2 py-0.5 rounded-full text-[9px] font-black transition-all cursor-pointer whitespace-nowrap"
+              className="px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-black transition-all cursor-pointer whitespace-nowrap"
               style={{
                 background: activeLayer === 'street' ? '#0ea5e9' : 'transparent',
                 color: '#ffffff',
@@ -351,7 +353,7 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [], c
           {/* Pill 3: Toggle Roster Button */}
           <button
             onClick={() => setShowRosterOverlay(!showRosterOverlay)}
-            className="px-2 py-0.5 rounded-full text-[8.5px] font-extrabold flex items-center gap-1 transition-all shadow-lg border backdrop-blur-2xl cursor-pointer shrink-0 whitespace-nowrap"
+            className="px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[8.5px] font-extrabold flex items-center gap-0.5 sm:gap-1 transition-all shadow-lg border backdrop-blur-2xl cursor-pointer shrink-0 whitespace-nowrap"
             style={{
               background: showRosterOverlay ? '#0ea5e9' : 'rgba(15, 23, 42, 0.92)',
               color: '#ffffff',
@@ -367,7 +369,7 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [], c
           <div className="flex items-center border border-white/20 backdrop-blur-2xl p-0.5 rounded-full shadow-lg shrink-0" style={{ background: 'rgba(15, 23, 42, 0.92)' }}>
             <button
               onClick={() => mapInstanceRef.current?.zoomIn()}
-              className="p-1 rounded-full transition cursor-pointer hover:bg-white/10"
+              className="p-0.5 sm:p-1 rounded-full transition cursor-pointer hover:bg-white/10"
               style={{ color: '#ffffff' }}
               title="Zoom In"
             >
@@ -375,7 +377,7 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [], c
             </button>
             <button
               onClick={() => mapInstanceRef.current?.zoomOut()}
-              className="p-1 rounded-full transition cursor-pointer hover:bg-white/10"
+              className="p-0.5 sm:p-1 rounded-full transition cursor-pointer hover:bg-white/10"
               style={{ color: '#ffffff' }}
               title="Zoom Out"
             >
@@ -383,7 +385,7 @@ export default function WorldMapCatalog({ approvedRequests, activeAlerts = [], c
             </button>
             <button
               onClick={handleResetMap}
-              className="p-1 rounded-full transition cursor-pointer hover:bg-white/10"
+              className="p-0.5 sm:p-1 rounded-full transition cursor-pointer hover:bg-white/10"
               style={{ color: '#ffffff' }}
               title="Reset View"
             >

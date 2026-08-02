@@ -5,6 +5,7 @@ import { AlertProvider } from './context/AlertContext';
 import LoginScreen from './components/LoginScreen';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
+import MobileAppLayout from './components/MobileAppLayout';
 import Canvas3DBackground from './components/Canvas3DBackground';
 
 // Import Tab Views
@@ -28,8 +29,27 @@ function DashboardContent() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [sosStatus, setSosStatus] = useState<string>('idle');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileMode, setIsMobileMode] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768;
+    }
+    return false;
+  });
+
   const eventSourceRef = useRef<EventSource | null>(null);
   const reconnectTimerRef = useRef<any>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setIsMobileMode(true);
+      } else {
+        setIsMobileMode(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -56,63 +76,39 @@ function DashboardContent() {
   useEffect(() => {
     if (!token) return;
 
-    // Load initial notifications
     loadNotifications();
 
-    let retryDelay = 1000;
-
     const connectSSE = () => {
-      // Close existing connection
       if (eventSourceRef.current) {
-        try { eventSourceRef.current.close(); } catch (e) {}
+        eventSourceRef.current.close();
       }
 
-      try {
-        if (typeof window !== 'undefined' && 'EventSource' in window) {
-          const sseUrl = `${BACKEND_URL}/api/sse/subscribe?token=${encodeURIComponent(token)}`;
-          const eventSource = new EventSource(sseUrl);
-          eventSourceRef.current = eventSource;
+      const sseUrl = `${BACKEND_URL}/api/notifications/stream?token=${encodeURIComponent(token)}`;
+      const es = new EventSource(sseUrl);
+      eventSourceRef.current = es;
 
-          eventSource.addEventListener('connected', () => {
-            console.log('[SSE] Real-time connection established');
-            retryDelay = 1000;
-          });
+      es.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (Array.isArray(data)) {
+            setNotifications(data);
+          } else if (data && data.id) {
+            setNotifications(prev => [data, ...prev.filter(n => n.id !== data.id)]);
+          }
+        } catch (e) {}
+      };
 
-          eventSource.addEventListener('NOTIFICATION', (event) => {
-            try {
-              const notification = JSON.parse(event.data);
-              setNotifications(prev => [notification, ...prev]);
-            } catch (e) {}
-          });
-
-          eventSource.addEventListener('SHIPMENT_UPDATE', (event) => {
-            try {
-              loadNotifications();
-            } catch (e) {}
-          });
-
-          eventSource.onerror = () => {
-            try { eventSource.close(); } catch (e) {}
-            reconnectTimerRef.current = setTimeout(() => {
-              retryDelay = Math.min(retryDelay * 2, 30000);
-              connectSSE();
-            }, retryDelay);
-          };
-        }
-      } catch (err) {
-        console.warn('[SSE] EventSource unavailable on this environment:', err);
-      }
+      es.onerror = () => {
+        es.close();
+        reconnectTimerRef.current = setTimeout(connectSSE, 5000);
+      };
     };
 
     connectSSE();
 
-    // Fallback: still poll every 30s as a safety net (much less frequent than before)
-    const fallbackInterval = setInterval(loadNotifications, 30000);
-
     return () => {
       if (eventSourceRef.current) eventSourceRef.current.close();
       if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
-      clearInterval(fallbackInterval);
     };
   }, [token]);
 
@@ -131,6 +127,41 @@ function DashboardContent() {
       setSosStatus('error');
     }
   };
+
+  const renderActiveTabContent = () => (
+    <div key={activeTab} className="animate-fade-slide-up">
+      {activeTab === 'itinerary' && <ItineraryTab onNavigateToRequisition={() => setActiveTab('requisition')} />}
+      {activeTab === 'requisition' && <RequisitionTab />}
+      {activeTab === 'expenses-employee' && <ExpensesEmployeeTab />}
+      {activeTab === 'docs-employee' && <DocsEmployeeTab />}
+      {activeTab === 'approvals' && <ApprovalsTab />}
+      {activeTab === 'vendors' && <VendorsTab />}
+      {activeTab === 'policy' && <PolicyRulesTab />}
+      {activeTab === 'expenses-finance' && <ExpensesFinanceTab />}
+      {activeTab === 'logistics' && <LogisticsTab />}
+      {activeTab === 'security' && <SecurityTab />}
+      {activeTab === 'analytics' && <AnalyticsTab />}
+      {activeTab === 'audit' && <AuditLogsTab />}
+      {activeTab === 'users' && <UsersTab />}
+    </div>
+  );
+
+  // Smartphone Native Experience Layout
+  if (isMobileMode) {
+    return (
+      <MobileAppLayout
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        notifications={notifications}
+        loadNotifications={loadNotifications}
+        sosStatus={sosStatus}
+        triggerSOS={triggerSOS}
+        onToggleDesktopView={() => setIsMobileMode(false)}
+      >
+        {renderActiveTabContent()}
+      </MobileAppLayout>
+    );
+  }
 
   return (
     <div
@@ -171,26 +202,13 @@ function DashboardContent() {
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
           sosStatus={sosStatus}
           triggerSOS={triggerSOS}
+          onToggleMobileView={() => setIsMobileMode(true)}
         />
 
         <main
           className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-7 max-w-[1600px] mx-auto w-full"
         >
-          <div key={activeTab} className="animate-fade-slide-up">
-            {activeTab === 'itinerary' && <ItineraryTab onNavigateToRequisition={() => setActiveTab('requisition')} />}
-            {activeTab === 'requisition' && <RequisitionTab />}
-            {activeTab === 'expenses-employee' && <ExpensesEmployeeTab />}
-            {activeTab === 'docs-employee' && <DocsEmployeeTab />}
-            {activeTab === 'approvals' && <ApprovalsTab />}
-            {activeTab === 'vendors' && <VendorsTab />}
-            {activeTab === 'policy' && <PolicyRulesTab />}
-            {activeTab === 'expenses-finance' && <ExpensesFinanceTab />}
-            {activeTab === 'logistics' && <LogisticsTab />}
-            {activeTab === 'security' && <SecurityTab />}
-            {activeTab === 'analytics' && <AnalyticsTab />}
-            {activeTab === 'audit' && <AuditLogsTab />}
-            {activeTab === 'users' && <UsersTab />}
-          </div>
+          {renderActiveTabContent()}
 
           {/* APPLE-STYLE ULTRA-MINIMAL DASHBOARD FOOTER */}
           <footer

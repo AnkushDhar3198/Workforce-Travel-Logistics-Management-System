@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, X, Check, Sparkles, Menu, LogOut, ShieldAlert, Phone } from 'lucide-react';
+import { Bell, X, Check, Sparkles, Menu, LogOut, ShieldAlert, Phone, Smartphone } from 'lucide-react';
 import { useAuth, API_BASE } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import VoiceCallModal from './VoiceCallModal';
@@ -11,6 +11,7 @@ interface HeaderProps {
   onOpenMobileMenu?: () => void;
   sosStatus?: string;
   triggerSOS?: () => void;
+  onToggleMobileView?: () => void;
 }
 
 const TAB_LABELS: Record<string, { label: string; emoji: string }> = {
@@ -29,7 +30,7 @@ const TAB_LABELS: Record<string, { label: string; emoji: string }> = {
   users: { label: 'User Directory', emoji: '👥' },
 };
 
-export default function Header({ activeTab, notifications, loadNotifications, onOpenMobileMenu, sosStatus, triggerSOS }: HeaderProps) {
+export default function Header({ activeTab, notifications, loadNotifications, onOpenMobileMenu, sosStatus, triggerSOS, onToggleMobileView }: HeaderProps) {
   const { user, authFetch, logout } = useAuth();
   const { themeData } = useTheme();
   const [showNotifPanel, setShowNotifPanel] = useState(false);
@@ -121,6 +122,23 @@ export default function Header({ activeTab, notifications, loadNotifications, on
           <Phone className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Hotline</span>
         </button>
+
+        {/* Smartphone View Toggle Button */}
+        {onToggleMobileView && (
+          <button
+            onClick={onToggleMobileView}
+            title="Switch to Smartphone Mobile Layout"
+            className="px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shrink-0"
+            style={{
+              background: 'var(--nav-hover-bg)',
+              border: '1px solid var(--border-subtle)',
+              color: 'var(--accent-primary)',
+            }}
+          >
+            <Smartphone className="w-4 h-4" />
+            <span className="hidden sm:inline">Phone View</span>
+          </button>
+        )}
 
         {/* Emergency SOS Button for Traveling Employees */}
         {user?.role === 'TRAVELING_EMPLOYEE' && triggerSOS && (
